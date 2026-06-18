@@ -35,7 +35,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'http',
-        hostname: '27.71.24.102',
+        hostname: 'cloudcamera.online',
       },
       {
         protocol: 'https',
