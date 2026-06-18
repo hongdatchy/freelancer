@@ -1,0 +1,34 @@
+{
+  "kind": "collectionType",
+  "collectionName": "teacher_schedules",
+  "info": {
+    "singularName": "teacher-schedule",
+    "pluralName": "teacher-schedules",
+    "displayName": "TeacherSchedule"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "day": {
+      "type": "string"
+    },
+    "time_slot": {
+      "type": "string"
+    },
+    "student_name": {
+      "type": "string"
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "teacher_schedules"
+    },
+    "isVietSureEnglish": {
+      "type": "boolean",
+      "required": true
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "common": {
+    "post": {
+      "postDetailTitle": "Xem chi tiết"
+    }
+  },
+  "header": {
+    "post": {
+      "title": "Bài viết",
+      "subItems": {
+        "trending": {
+          "title": "Xu hướng",
+          "description": "Xu hướng"
+        },
+        "allPosts": {
+          "title": "Tất cả bài viết",
+          "description": "Tất cả bài viết"
+        }
+      }
+    },
+    "categories": {
+      "title": "Loại bài viết"
+    },
+    "author": {
+      "title": "Tác giả"
+    }
+  },
+  "pageRight": {
+    "categories": "Loại bài viết",
+    "trending": "Xu hướng"
+  },
+  "searchPage": {
+    "noResultSearch": "Xin lỗi, nhưng không có kết quả nào khớp với từ khóa tìm kiếm của bạn. Vui lòng thử lại với các từ khóa khác.",
+    "noPost": "Không có bài viết nào.",
+    "haveResultSearch1": "Chúng tôi đã tìm thấy",
+    "haveResultSearch2": "kết quả cho tìm kiếm của bạn"
+  }
+}

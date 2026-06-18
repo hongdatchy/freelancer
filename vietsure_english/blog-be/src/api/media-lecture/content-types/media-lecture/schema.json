@@ -1,0 +1,76 @@
+{
+  "kind": "collectionType",
+  "collectionName": "media_lectures",
+  "info": {
+    "singularName": "media-lecture",
+    "pluralName": "media-lectures",
+    "displayName": "MediaLecture",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "content": {
+      "type": "media",
+      "conditions": {
+        "visible": {
+          "!=": [
+            {
+              "var": "type"
+            },
+            "canva"
+          ]
+        }
+      },
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "lecture": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::lecture.lecture",
+      "inversedBy": "media_lectures"
+    },
+    "type": {
+      "type": "enumeration",
+      "required": true,
+      "default": "video",
+      "enum": [
+        "video",
+        "ppt",
+        "canva",
+        "pdf"
+      ]
+    },
+    "url": {
+      "type": "string",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "type"
+            },
+            "canva"
+          ]
+        }
+      }
+    },
+    "requiredMinutes": {
+      "type": "integer"
+    },
+    "currentMinutes": {
+      "type": "integer"
+    }
+  }
+}

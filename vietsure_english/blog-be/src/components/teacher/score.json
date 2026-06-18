@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_teacher_score_s",
+  "info": {
+    "displayName": "score "
+  },
+  "options": {},
+  "attributes": {
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "IELTS",
+        "TOEIC"
+      ]
+    },
+    "vaule": {
+      "type": "float"
+    }
+  },
+  "config": {}
+}

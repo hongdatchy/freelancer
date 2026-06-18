@@ -1,0 +1,21 @@
+services:
+  db2:
+    image: postgres:latest
+    container_name: db2
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: hongdat10
+      POSTGRES_DB: vietsure-english
+    volumes:
+      - postgres_data_2:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - postgres
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+  postgres_data_2:

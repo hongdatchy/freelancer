@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_teacher_experiences",
+  "info": {
+    "displayName": "achievements"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    }
+  },
+  "config": {}
+}

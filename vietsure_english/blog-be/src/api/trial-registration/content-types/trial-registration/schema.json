@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "trial_registrations",
+  "info": {
+    "singularName": "trial-registration",
+    "pluralName": "trial-registrations",
+    "displayName": "TrialRegistration"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "parentName": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "childAge": {
+      "type": "string"
+    }
+  }
+}

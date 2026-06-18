@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_teacher_educations",
+  "info": {
+    "displayName": "educations"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    }
+  },
+  "config": {}
+}
