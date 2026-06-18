@@ -1,6 +1,6 @@
 services:
   db2:
-    image: postgres:latest
+    image: postgres:17.5
     container_name: db2
     environment:
       POSTGRES_USER: postgres
