@@ -1,2 +1,8 @@
 net stop winnat
 net start winnat
+
+npx strapi export --no-encrypt
+
+npx strapi import -f export_20260619011623.tar.gz
+
+chmod 777 filename
