@@ -4,14 +4,16 @@ export default function LearnFromStart() {
             <section
                 className="px-6 py-16 bg-gradient-to-b from-[#D4E8FC] to-white"
             >
-                <div className="max-w-6xl mx-auto flex flex-col items-center">
-                    <div className="text-center mx-auto mb-10 max-w-4xl">
+                <div className="w-full max-w-none px-6 md:px-16 lg:px-28 flex flex-col items-center">
+                    <div className="text-center mx-auto mb-10 max-w-6xl">
                         <h2 className="text-2xl md:text-3xl lg:text-[36px] font-black text-[#2E357F] uppercase tracking-wide">
                             Học đúng ngay từ đầu
                         </h2>
 
                         <p className="text-[#3F489A] font-semibold text-sm md:text-[15px] leading-relaxed mt-4">
-                            Chương trình được phát triển từ kinh nghiệm giảng dạy trong môi trường quốc tế, giúp trẻ hiểu – phản xạ – giao tiếp tự nhiên, không học thuộc. Phụ huynh lựa chọn Vietsure English không chỉ vì kết quả, mà vì cách học đúng ngay từ đầu và lộ trình phát triển lâu dài cho con.
+                            Chương trình được phát triển từ kinh nghiệm giảng dạy trong môi trường quốc tế, giúp trẻ hiểu – phản xạ – giao tiếp tự nhiên, không học thuộc.
+                            <br className="hidden xl:inline" />
+                            Phụ huynh lựa chọn Vietsure English không chỉ vì kết quả, mà vì cách học đúng ngay từ đầu và lộ trình phát triển lâu dài cho con.
                         </p>
                     </div>
 

@@ -79,7 +79,7 @@ export default function TeacherFilter({ regions }: FilterProps) {
   };
 
   return (
-    <div className="flex items-center gap-3 mb-8 flex-wrap">
+    <div className="flex items-center justify-center gap-3 mb-8 flex-wrap">
 
       {/* Region Filter */}
       {/* 
@@ -176,7 +176,7 @@ export default function TeacherFilter({ regions }: FilterProps) {
       {(selectedRegion || selectedGender || selectedTimeSlot) && (
         <button
           onClick={handleResetAll}
-          className="ml-auto px-4 py-2 text-[#27ba77] font-semibold text-sm hover:underline flex items-center gap-2 transition-all"
+          className="px-4 py-2 text-[#27ba77] font-semibold text-sm hover:underline flex items-center gap-2 transition-all"
         >
           ↻ Reset all
         </button>

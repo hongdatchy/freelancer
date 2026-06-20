@@ -3,10 +3,10 @@ import Image from "next/image";
 export default function MediaSection() {
     return (
         <section className="px-6 py-10 bg-gradient-to-b from-[#EBF5FF] to-white overflow-hidden">
-            <div className="max-w-6xl mx-auto">
+            <div className="w-full max-w-none px-6 md:px-16 lg:px-28">
                 
                 {/* Logos */}
-                <div className="flex flex-wrap items-center justify-center gap-10 md:gap-16">
+                <div className="flex flex-wrap items-center justify-around gap-10 md:gap-16">
                     {[
                         { src: "/images/media-3.png", alt: "VnExpress" },
                         { src: "/images/media-2.png", alt: "Tuổi Trẻ" },

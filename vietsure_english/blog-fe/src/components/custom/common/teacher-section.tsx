@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/carousel"
 import { postData } from "@/service/api"
 import { TeacherDTO } from "@/dto/TeacherDTO"
+import Link from "next/link"
 
 export default function TeacherSection() {
     const [teachers, setTeachers] = useState<TeacherDTO[]>([])
@@ -27,13 +28,13 @@ export default function TeacherSection() {
         <section
             className="px-6 py-20 bg-gradient-to-b from-[#EBF5FF] to-white"
         >
-            <div className="max-w-6xl mx-auto relative">
+            <div className="w-full max-w-none px-6 md:px-16 lg:px-28 relative">
                 {/* TITLE */}
                 <div className="text-center mb-16">
-                    <p className="text-[#3F489A] text-lg font-bold uppercase tracking-wider">
+                    <p className="section-subtitle">
                         Giáo viên
                     </p>
-                    <h2 className="text-2xl md:text-3xl lg:text-[36px] font-black text-[#2E357F] uppercase mt-2 tracking-wide">
+                    <h2 className="section-title">
                         ĐỘI NGŨ GIÁO VIÊN CHẤT LƯỢNG VÀ TÂM HUYẾT
                     </h2>
                 </div>
@@ -46,14 +47,27 @@ export default function TeacherSection() {
                                 ? process.env.NEXT_PUBLIC_BE_HOST + t.avatarHomePage.url
                                 : '/images/default-avatar.png'
 
+                            // Get IELTS or first score
+                            const ieltsScoreObj = t.score?.find(s => s.type.toUpperCase() === 'IELTS');
+                            const scoreVal = ieltsScoreObj ? ieltsScoreObj.vaule : (t.score?.[0]?.vaule || '');
+                            const scoreType = ieltsScoreObj ? ieltsScoreObj.type : (t.score?.[0]?.type || '');
+
+                            const yearsExp = t.experiences !== undefined && t.experiences !== null ? t.experiences : '';
+
+                            const namePrefix = t.gender?.toLowerCase() === 'female'
+                                ? 'Ms. '
+                                : t.gender?.toLowerCase() === 'male'
+                                    ? 'Mr. '
+                                    : '';
+
                             return (
                                 <CarouselItem
                                     key={index}
                                     className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 pt-20"
                                 >
-                                    <div className="p-2 h-full">
-                                        <Card className="h-full rounded-[32px] border-2 border-sky-100 shadow-[0_12px_30px_rgba(59,130,246,0.06)] bg-white relative">
-                                            <CardContent className="px-5 pb-8 pt-0 flex flex-col items-center">
+                                    <Link href={`/teachers/${t.id}`} className="block p-2 h-full">
+                                        <Card className="h-full rounded-[32px] border-2 border-sky-100 shadow-[0_12px_30px_rgba(59,130,246,0.06)] bg-white relative hover:scale-[1.02] transition-transform duration-300">
+                                            <CardContent className="px-5 pb-8 pt-0 flex flex-col items-center h-full">
 
                                                 {/* AVATAR + TEXT CONG */}
                                                 <div className="relative w-32 h-32 -mt-16 mb-6 flex-shrink-0">
@@ -104,25 +118,36 @@ export default function TeacherSection() {
                                                 </div>
 
                                                 {/* NAME */}
-                                                <h3 className="text-[#2E357F] font-black uppercase text-[15px] text-center leading-tight mb-4 min-h-[40px] flex items-center justify-center">
-                                                    {t.fullName}
+                                                <h3 className="text-[#2E357F] font-black uppercase text-[15px] text-center leading-tight mb-6 min-h-[44px] flex items-center justify-center">
+                                                    {namePrefix}{t.fullName}
                                                 </h3>
 
-                                                {/* DESC */}
-                                                <ul className="text-sm space-y-3 text-left w-full border-t border-slate-100 pt-4">
-                                                    {t.educations?.slice(0, 3).map((edu, i) => (
-                                                        <li key={i} className="flex items-start gap-2">
-                                                            <span className="mt-1.5 flex-shrink-0 w-2.5 h-2.5 rounded-full bg-[#FF6B00]" />
-                                                            <span className="text-[#2E357F] font-semibold text-xs md:text-sm leading-snug">
-                                                                {edu.title}
-                                                            </span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
+                                                {/* 2 BADGE BLOCKS SIDE BY SIDE */}
+                                                <div className="flex gap-2.5 w-full mt-auto border-t border-slate-100 pt-4">
+                                                    {/* Score Box */}
+                                                    <div className="flex-1 bg-[#3F489A] rounded-2xl p-2.5 flex flex-col items-center justify-center text-center shadow-[4px_4px_0px_0px_rgba(56,189,248,0.6)] h-[74px]">
+                                                        <p className="text-yellow-300 font-extrabold text-[13px] md:text-sm leading-none">
+                                                            {scoreVal} {scoreType}
+                                                        </p>
+                                                        <p className="text-white text-[9px] md:text-[10px] font-semibold mt-1 opacity-95">
+                                                            Overall
+                                                        </p>
+                                                    </div>
+
+                                                    {/* Experience Box */}
+                                                    <div className="flex-1 bg-[#3F489A] rounded-2xl p-2.5 flex flex-col items-center justify-center text-center shadow-[4px_4px_0px_0px_rgba(56,189,248,0.6)] h-[74px]">
+                                                        <p className="text-yellow-300 font-extrabold text-[13px] md:text-sm leading-none">
+                                                            {yearsExp}
+                                                        </p>
+                                                        <p className="text-white text-[9px] md:text-[10px] font-semibold mt-1 opacity-95 leading-tight">
+                                                            Năm k.nghiệm giảng dạy
+                                                        </p>
+                                                    </div>
+                                                </div>
 
                                             </CardContent>
                                         </Card>
-                                    </div>
+                                    </Link>
                                 </CarouselItem>
                             )
                         })}

@@ -51,9 +51,7 @@ export default function Contact() {
 
       {/* Trial Section at the bottom */}
       <section className="bg-white">
-        <div className="max-w-6xl mx-auto">
-          <TrialSection />
-        </div>
+        <TrialSection />
       </section>
     </div>
   );

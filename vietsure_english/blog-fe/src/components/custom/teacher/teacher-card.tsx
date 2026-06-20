@@ -69,7 +69,7 @@ export default function TeacherCard({ teacher }: { teacher: TeacherDTO }) {
 
                 {/* NAME */}
                 <h3 className="text-[#2E357F] font-black uppercase text-[15px] text-center leading-tight mb-6 min-h-[44px] flex items-center justify-center">
-                    {teacher.fullName}
+                    {teacher.gender?.toLowerCase() === 'female' ? 'Ms. ' : teacher.gender?.toLowerCase() === 'male' ? 'Mr. ' : ''}{teacher.fullName}
                 </h3>
 
                 {/* 2 BADGE BLOCKS SIDE BY SIDE */}

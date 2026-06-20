@@ -5,16 +5,19 @@ const ratingCards = [
         name: 'Trình Ngô',
         role: 'Local Guide • 61 bài đánh giá • 127 ảnh',
         content: 'Con tiến bộ rõ rệt về phát âm và vốn từ vựng chỉ sau 3 tháng học online, vượt mong đợi của gia đình !',
+        avatar: '/images/people-1.png',
     },
     {
         name: 'SupeAlien',
         role: 'Local Guide • 88 bài đánh giá • 103 ảnh',
         content: 'Tôi đánh giá cao cách trung tâm thường xuyên update tình hình học tập để có thể theo sát quá trình của con.',
+        avatar: '/images/people-2.png',
     },
     {
         name: 'Andrea Nguyen',
         role: 'Local Guide • 136 bài đánh giá • 280 ảnh',
         content: 'Tôi đánh giá cao cách trung tâm thường xuyên update tình hình học tập để có thể theo sát quá trình của con.',
+        avatar: '/images/people-3.png',
     },
 ];
 
@@ -65,11 +68,15 @@ export default function GgMapRatingSection() {
                             return (
                                 <div 
                                     key={index} 
-                                    className={`bg-white rounded-[24px] p-5 shadow-md border border-slate-100 flex gap-4 transition-all duration-300 hover:rotate-0 hover:translate-x-0 hover:translate-y-0 hover:mt-0 ${offsetClass} max-w-[420px] w-full`}
+                                    className={`bg-white rounded-[24px] p-5 shadow-md border border-slate-100 flex gap-4 transition-all duration-300 hover:rotate-0 hover:translate-x-0 hover:translate-y-0 ${offsetClass} max-w-[420px] w-full`}
                                 >
                                     {/* Avatar */}
-                                    <div className="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex-shrink-0 flex items-center justify-center font-bold text-[#3F489A]">
-                                        {item.name[0]}
+                                    <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-slate-100">
+                                        <img 
+                                            src={item.avatar} 
+                                            alt={item.name} 
+                                            className="w-full h-full object-cover" 
+                                        />
                                     </div>
 
                                     {/* Review Details */}

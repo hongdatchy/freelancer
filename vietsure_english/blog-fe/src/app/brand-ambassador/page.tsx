@@ -38,52 +38,57 @@ export default function BrandAmbassadorPage() {
           <div className="grid items-center gap-12 lg:grid-cols-2">
             
             {/* Left side: Banner composite image */}
-            <div className="flex justify-center order-2 lg:order-1">
-              <div className="relative max-w-full">
+            <div className="flex justify-center lg:justify-start order-2 lg:order-1 w-full">
+              <div className="relative w-full max-w-[560px] select-none">
                 <Image
-                  src="/images/img-banner.png"
+                  src="/images/Group18.png"
                   alt="VietSure Ambassador Banner"
                   width={560}
                   height={560}
-                  className="h-auto max-w-full object-contain filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.1)]"
+                  className="h-auto w-full object-contain filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.1)] hover:scale-105 transition-transform duration-500"
                   priority
                 />
               </div>
             </div>
 
             {/* Right side: Introduction content */}
-            <div className="flex flex-col items-center lg:items-start text-center lg:text-left order-1 lg:order-2">
-              <h1 className="text-3xl md:text-[40px] font-black leading-[1.2] tracking-wide text-[#2E357F] uppercase mb-4">
-                GIỚI THIỆU KHÓA HỌC <br className="hidden md:inline" />
-                <span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span>
+            <div className="flex flex-col items-center lg:items-end text-center lg:text-right order-1 lg:order-2 w-full">
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-[34px] sm:whitespace-nowrap font-black leading-tight tracking-wide text-[#2E357F] uppercase mb-3">
+                GIỚI THIỆU KHÓA HỌC <span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span>
               </h1>
               
-              <h2 className="text-lg md:text-xl font-extrabold text-[#3F489A] mb-8 leading-snug">
-                VỪA TRAO GIÁ TRỊ, VỪA NHẬN THƯỞNG TIỀN TRIỆU
+              <h2 className="text-base md:text-lg lg:text-[20px] font-black text-[#3F489A] mb-8 uppercase tracking-wide">
+                VỪA TẠO GIÁ TRỊ, VỪA NHẬN THƯỞNG TIỀN TRIỆU
               </h2>
 
-              <ul className="mb-8 space-y-4 max-w-lg">
-                <li className="flex items-start gap-3 text-left">
-                  <div className="mt-1 h-5 w-5 rounded-full bg-[#FF6B00] flex items-center justify-center text-white text-[10px] font-bold">✓</div>
-                  <p className="text-sm md:text-base font-semibold text-slate-600">
-                    Thu nhập thụ động - chia sẻ mọi lúc mọi nơi để phát triển bền vững
+              <ul className="mb-8 space-y-4 max-w-lg w-full flex flex-col items-center lg:items-end">
+                <li className="flex items-center justify-end gap-3 text-right">
+                  <p className="text-sm md:text-[16px] font-extrabold text-[#3F489A] leading-snug">
+                    Thưởng hấp dẫn cho mỗi học viên đăng ký thành công
                   </p>
+                  <div className="h-5 w-5 rounded-full bg-[#FF6B00] flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                    ✓
+                  </div>
                 </li>
-                <li className="flex items-start gap-3 text-left">
-                  <div className="mt-1 h-5 w-5 rounded-full bg-[#FF6B00] flex items-center justify-center text-white text-[10px] font-bold">✓</div>
-                  <p className="text-sm md:text-base font-semibold text-slate-600">
-                    Định hướng thời gian, phát triển bản thân và mở rộng quan hệ
+                <li className="flex items-center justify-end gap-3 text-right">
+                  <p className="text-sm md:text-[16px] font-extrabold text-[#3F489A] leading-snug">
+                    Linh hoạt thời gian, phù hợp làm thêm tại nhà
                   </p>
+                  <div className="h-5 w-5 rounded-full bg-[#FF6B00] flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                    ✓
+                  </div>
                 </li>
-                <li className="flex items-start gap-3 text-left">
-                  <div className="mt-1 h-5 w-5 rounded-full bg-[#FF6B00] flex items-center justify-center text-white text-[10px] font-bold">✓</div>
-                  <p className="text-sm md:text-base font-semibold text-slate-600">
-                    Chương trình cộng tác hoàn toàn miễn phí
+                <li className="flex items-center justify-end gap-3 text-right">
+                  <p className="text-sm md:text-[16px] font-extrabold text-[#3F489A] leading-snug">
+                    Chương trình cộng tác miễn phí linh hoạt
                   </p>
+                  <div className="h-5 w-5 rounded-full bg-[#FF6B00] flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                    ✓
+                  </div>
                 </li>
               </ul>
 
-              <Button className="h-14 rounded-2xl bg-[#2E357F] hover:bg-[#3F489A] px-10 text-base font-bold uppercase transition-all duration-300 transform hover:scale-105 shadow-md">
+              <Button className="h-12 rounded-full bg-[#3F489A] hover:bg-[#252a60] px-10 text-base font-bold uppercase transition-all duration-300 transform hover:scale-105 shadow-lg">
                 Học thử miễn phí
               </Button>
             </div>
@@ -326,9 +331,7 @@ export default function BrandAmbassadorPage() {
 
       {/* 6. REGISTRATION FORM */}
       <section className="bg-white">
-        <div className="max-w-6xl mx-auto">
-          <TrialSection />
-        </div>
+        <TrialSection />
       </section>
 
     </div>

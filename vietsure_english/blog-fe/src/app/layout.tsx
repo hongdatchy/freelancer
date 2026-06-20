@@ -19,7 +19,7 @@ if (typeof Promise.withResolvers === 'undefined') {
 
 const nunito = Nunito({
   subsets: ['vietnamese', 'latin'],
-  weight: ['400', '500', '600', '700', '800', '900'],
+  weight: ['200', '300', '400', '500', '600', '700', '800', '900'],
   variable: '--font-nunito',
 });
 

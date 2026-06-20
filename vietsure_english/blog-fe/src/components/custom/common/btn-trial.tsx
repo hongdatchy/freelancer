@@ -18,7 +18,7 @@ export default function BtnTrial() {
     }
     return (
         <button
-            className="px-6 h-10 bg-[#1e3a8a] text-white rounded-full hover:bg-blue-800 transition-all text-sm font-bold shadow-md hover:shadow-lg"
+            className="px-9 h-12 bg-[#1e3a8a] text-white rounded-full hover:bg-blue-800 transition-all text-lg font-bold shadow-md hover:shadow-lg flex items-center justify-center"
             onClick={handleTrialClick}
         >
             Học Thử Miễn Phí

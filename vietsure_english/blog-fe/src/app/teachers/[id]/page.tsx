@@ -32,9 +32,7 @@ export default async function TeacherDetailPage(props: {
           background:
             "linear-gradient(270deg, rgba(239, 29, 106, 0.47), rgba(172, 71, 78, 0.1))",
         }}>
-        <div className="max-w-6xl mx-auto">
-          <TrialSection />
-        </div>
+        <TrialSection />
       </section>
     </div>
   );

@@ -34,7 +34,7 @@ export default function MarketingPopup() {
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent className="max-w-3xl p-0 overflow-y-auto max-h-[90vh] rounded-[32px] bg-[#badeff] border-[3px] border-[#7cbef7] shadow-2xl">
+            <DialogContent className="max-w-5xl p-0 overflow-y-auto max-h-[90vh] rounded-[32px] bg-[#badeff] brand-light-border shadow-2xl">
                 <DialogTitle className="sr-only">Đăng ký học thử</DialogTitle>
                 <TrialSection isPopup={true} />
             </DialogContent>

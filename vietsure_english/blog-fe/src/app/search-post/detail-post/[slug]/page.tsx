@@ -156,9 +156,7 @@ export default function Detail() {
             "linear-gradient(270deg, rgba(249, 245, 247, 0.47), rgba(244, 236, 236, 0.1))",
         }}
       >
-        <div className="max-w-6xl mx-auto">
-          <TrialSection />
-        </div>
+        <TrialSection />
       </section>
     </div>
   );

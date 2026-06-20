@@ -59,25 +59,25 @@ export default function TrialSection({ isPopup = false }: { isPopup?: boolean })
 
     return (
         <section id="trial-section" className={isPopup ? "px-2 py-4 w-full" : "px-4 py-16"}>
-            <div className="max-w-6xl mx-auto flex flex-col items-center">
+            <div className="w-full max-w-none px-6 md:px-16 lg:px-28 flex flex-col items-center">
                 {/* Tiêu đề phía trên Form */}
                 {!isPopup && (
                     <div className="text-center mb-8">
-                        <p className="text-[#3b4cb4] text-lg md:text-xl font-bold uppercase tracking-wider mb-2">
+                        <p className="section-subtitle mb-2">
                             Form đăng ký
                         </p>
-                        <h2 className="text-2xl md:text-4xl font-extrabold text-[#1b2b85] uppercase leading-tight tracking-wide">
+                        <h2 className="section-title text-[#1b2b85]">
                             BA MẸ ĐIỀN THÔNG TIN ĐỂ<br />VIETSURE ENGLISH TƯ VẤN NHÉ!
                         </h2>
                     </div>
                 )}
 
                 {/* Card chứa Form */}
-                <div className={`w-full bg-[#badeff] ${isPopup ? 'border-none shadow-none p-3 rounded-[28px]' : 'border-[3px] border-[#7cbef7] rounded-[36px] md:rounded-[48px] shadow-2xl p-6'} grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch`}>
+                <div className={`w-full bg-[#badeff] ${isPopup ? 'border-none shadow-none p-3 rounded-[28px]' : 'brand-light-border rounded-[36px] md:rounded-[48px] shadow-2xl p-6'} grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch`}>
                     
                     {/* Phần bên trái: Mascot & Khuyến mãi */}
                     <div className={`lg:col-span-5 pt-8 px-6 md:pt-10 md:px-8 pb-0 flex flex-col justify-between items-center relative overflow-hidden ${isPopup ? 'min-h-[220px]' : 'min-h-[380px]'} lg:min-h-full`}>
-                        <h3 className="text-[#1b2b85] font-extrabold text-xl md:text-2xl lg:text-[24px] uppercase leading-snug tracking-wide text-left w-full max-w-[320px]">
+                        <h3 className="text-[#1b2b85] font-black text-xl md:text-2xl lg:text-[24px] uppercase leading-snug tracking-wide text-center lg:text-left w-full max-w-none lg:max-w-[320px]">
                             NHẬN ƯU ĐÃI 1 BUỔI HỌC ONLINE MIỄN PHÍ TẠI VIETSURE ENGLISH
                         </h3>
                         

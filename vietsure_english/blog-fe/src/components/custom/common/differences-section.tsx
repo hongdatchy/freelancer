@@ -1,16 +1,16 @@
 export default function DifferencesSection() {
   return (
     <section className="px-6 py-20 bg-gradient-to-b from-white to-sky-50/20 overflow-hidden">
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full max-w-none px-6 md:px-16 lg:px-28">
         
         {/* Header */}
-        <div className="text-center max-w-5xl mx-auto mb-16">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-[#2E357F] uppercase tracking-wide whitespace-normal md:whitespace-nowrap">
+        <div className="text-center max-w-none mx-auto mb-16">
+          <h2 className="section-title">
             ĐIỂM KHÁC BIỆT CỦA CHƯƠNG TRÌNH <span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span>
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center w-full">
           
           {/* Left Column */}
           <div className="flex flex-col gap-8 h-full justify-center">

@@ -12,46 +12,39 @@ import { VideoItem } from "@/components/custom/brand/video-item";
 const feedbacks = [
   {
     id: 1,
-    title: "Nguyễn Anh Thư",
+    title: "Bé Jenna",
     subtitle: "Phụ huynh",
-    thumbnail: "/images/thumb-clip-1.png",
-    youtube: "dQw4w9WgXcQ",
+    thumbnail: "/images/feed-back.webp",
+    youtube: "Ge0YwiOU6Ko",
   },
   {
     id: 2,
-    title: "Nguyễn Anh Thư",
+    title: "Bé Phillip",
     subtitle: "Phụ huynh",
-    thumbnail: "/images/thumb-clip-2.png",
-    youtube: "dQw4w9WgXcQ",
+    thumbnail: "/images/feed-back.webp",
+    youtube: "uin1UJ5xkqU",
   },
   {
     id: 3,
-    title: "Nguyễn Anh Thư",
+    title: "Bé Sophie Katie",
     subtitle: "Phụ huynh",
-    thumbnail: "/images/thumb-clip-3.png",
-    youtube: "dQw4w9WgXcQ",
-  },
-  {
-    id: 4,
-    title: "Nguyễn Anh Thư",
-    subtitle: "Phụ huynh",
-    thumbnail: "/images/thumb-clip-4.png",
-    youtube: "dQw4w9WgXcQ",
+    thumbnail: "/images/feed-back.webp",
+    youtube: "KfYFVtMZVNo",
   },
 ];
 
 export default function ParentFeedbackSection() {
   return (
     <section className="px-6 py-20 bg-gradient-to-b from-[#EBF5FF] to-white overflow-hidden" data-purpose="parent-feedback-section">
-      <div className="max-w-6xl mx-auto relative">
+      <div className="w-full max-w-none px-6 md:px-16 lg:px-28 relative">
         
         {/* Header */}
-        <div className="text-center mx-auto mb-16 max-w-4xl">
-          <h2 className="text-2xl md:text-3xl lg:text-[36px] font-black text-[#2E357F] uppercase tracking-wide">
+        <div className="text-center mx-auto mb-16 max-w-none">
+          <h2 className="section-title">
             PHỤ HUYNH NÓI VỀ VIETSURE ENGLISH
           </h2>
-          <p className="text-[#3F489A] font-semibold text-sm md:text-[15px] leading-relaxed mt-4 opacity-90 max-w-3xl mx-auto">
-            Được hàng trăm phụ huynh tin tưởng và lựa chọn, Vietsure English mang đến chương trình học tiếng Anh trực tuyến hiệu quả, giúp trẻ tiến bộ mỗi ngày
+          <p className="text-[#3F489A] font-semibold text-base md:text-lg lg:text-[19px] leading-relaxed mt-4 opacity-75 max-w-6xl mx-auto">
+            Được hàng trăm phụ huynh tin tưởng và lựa chọn, Vietsure English mang đến chương trình học tiếng Anh <br className="hidden xl:inline" /> trực tuyến hiệu quả, giúp trẻ tiến bộ mỗi ngày
           </p>
         </div>
 

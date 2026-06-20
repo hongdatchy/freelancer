@@ -232,9 +232,7 @@ export default function FAQ() {
 
       {/* Trial Register Section */}
       <section className="bg-white">
-        <div className="max-w-6xl mx-auto">
-          <TrialSection />
-        </div>
+        <TrialSection />
       </section>
     </>
   );

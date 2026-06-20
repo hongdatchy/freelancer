@@ -3,18 +3,16 @@ import Image from "next/image";
 export default function PenguinAdventuresSection() {
   return (
     <section className="px-6 py-20 bg-gradient-to-b from-sky-50/20 to-white overflow-hidden" data-purpose="penguin-adventures-section">
-      <div className="max-w-6xl mx-auto">
+      <div className="w-full max-w-none px-6 md:px-16 lg:px-28">
         
         {/* Header */}
-        <div className="text-center max-w-4xl mx-auto mb-12">
-          <h2 className="uppercase tracking-wide leading-tight text-center">
-            <span className="block text-lg md:text-xl lg:text-[25px] font-bold text-[#2E357F]">
-              KHÁC BIỆT TỪ SERIES PHIM NGẮN TIẾNG ANH
-            </span>
-            <span className="block text-2xl md:text-3xl lg:text-[36px] font-black text-[#FF6B00] mt-2">
-              &quot;PENGUIN ADVENTURES&quot;
-            </span>
+        <div className="text-center max-w-none mx-auto mb-12">
+          <h2 className="section-title text-center !font-extrabold !text-lg md:!text-xl lg:!text-2xl opacity-90">
+            KHÁC BIỆT TỪ SERIES PHIM NGẮN TIẾNG ANH
           </h2>
+          <h3 className="section-subtitle text-center text-[#FF6B00] !font-black !text-2xl md:!text-3xl lg:!text-4xl tracking-wider mt-2">
+            &quot;PENGUIN ADVENTURES&quot;
+          </h3>
           <p className="text-[#2E357F] font-semibold text-sm md:text-base leading-relaxed mt-4 opacity-90 max-w-3xl mx-auto">
             Penguin Adventures được thiết kế theo từng giai đoạn học gắn liền with những giá trị văn hóa người Việt Nam, giúp trẻ hứng thú học tập và chuyển từ &quot;học tiếng Anh&quot; sang &quot;sử dụng tiếng Anh&quot; một cách tự nhiên, chủ động.
           </p>
@@ -26,7 +24,7 @@ export default function PenguinAdventuresSection() {
           <div className="lg:col-span-7 space-y-6">
             
             {/* Card 1: Học viên */}
-            <div className="bg-white rounded-[32px] border-2 border-[#60A5FA] p-6 md:p-8 shadow-[0_10px_35px_rgba(96,165,250,0.06)]">
+            <div className="bg-white rounded-[32px] brand-light-border p-6 md:p-8 shadow-[0_10px_35px_rgba(96,165,250,0.06)]">
               <h3 className="text-[#2E357F] font-black text-lg md:text-xl mb-4">
                 Giá trị với học viên:
               </h3>
@@ -48,7 +46,7 @@ export default function PenguinAdventuresSection() {
             </div>
 
             {/* Card 2: Phụ huynh */}
-            <div className="bg-white rounded-[32px] border-2 border-[#60A5FA] p-6 md:p-8 shadow-[0_10px_35px_rgba(96,165,250,0.06)]">
+            <div className="bg-white rounded-[32px] brand-light-border p-6 md:p-8 shadow-[0_10px_35px_rgba(96,165,250,0.06)]">
               <h3 className="text-[#2E357F] font-black text-lg md:text-xl mb-4">
                 Giá trị đối với phụ huynh:
               </h3>
@@ -73,7 +71,7 @@ export default function PenguinAdventuresSection() {
 
           {/* Right Column: Poster Image */}
           <div className="lg:col-span-5 flex justify-center w-full">
-            <div className="w-full max-w-[400px] lg:max-w-full select-none pointer-events-none filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] rounded-2xl overflow-hidden hover:scale-[1.02] transition-transform duration-300">
+            <div className="w-full max-w-[370px] lg:max-w-[420px] select-none pointer-events-none filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] rounded-2xl overflow-hidden hover:scale-[1.02] transition-transform duration-300 border-4 border-[#2E357F]">
               <Image
                 src="/images/penguin.png"
                 alt="Poster Penguin Adventures Series Phim Ngắn Tiếng Anh"

@@ -5,17 +5,17 @@ import Image from "next/image";
 export default function LearningPathSection() {
   return (
     <section className="px-6 py-20 bg-gradient-to-b from-sky-50/50 to-white" data-purpose="learning-path">
-      <div className="max-w-[1200px] mx-auto">
+      <div className="w-full max-w-none px-6 md:px-16 lg:px-28">
 
         {/* Header */}
-        <div className="text-center max-w-5xl mx-auto mb-16">
-          <h2 className="text-xl md:text-2xl lg:text-3xl font-extrabold text-[#2E357F] uppercase tracking-wide whitespace-normal lg:whitespace-nowrap">
+        <div className="text-center max-w-none mx-auto mb-16">
+          <h2 className="section-title">
             LỘ TRÌNH HỌC TIẾNG ANH ONLINE QUỐC TẾ - DÙNG CẢ ĐỜI
           </h2>
-          <h3 className="text-lg md:text-xl font-bold text-[#2E357F] mt-2">
+          <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold text-[#2E357F] mt-2">
             (CHUẨN CEFR & CAMBRIDGE)
           </h3>
-          <p className="text-[#3F489A] mt-4 text-sm md:text-base leading-relaxed">
+          <p className="text-[#3F489A] mt-4 text-base md:text-[18px] font-semibold leading-relaxed text-balance">
             Từ kinh nghiệm dạy online cho trẻ em Việt sinh ra tại nước ngoài chỉ biết tiếng Anh học tiếng mẹ đẻ. Vietsure tiếp tục xây dựng lộ trình học tiếng Anh cho trẻ em Việt Nam từ &quot;Nền tảng - Theo 1 lộ trình học liền mạch, cá nhân hóa - Dùng cả đời&quot; giúp trẻ tiến bộ, tự tin phản xạ tiếng Anh trong cuộc sống như trẻ em nước ngoài và chuẩn chương trình Cambridge.
           </p>
         </div>
@@ -23,8 +23,8 @@ export default function LearningPathSection() {
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
           
           {/* Left Content: Diagram Image with Overlaid Text */}
-          <div className="w-full lg:w-[65%] flex justify-center">
-            <div className="relative w-full max-w-[580px] aspect-[580/460]">
+          <div className="w-full lg:w-[52%] flex justify-center">
+            <div className="relative w-full max-w-[850px] aspect-[580/460]">
               {/* Background Diagram Image */}
               <Image 
                 src="/images/learning-path-diagram.png" 
@@ -89,20 +89,20 @@ export default function LearningPathSection() {
           </div>
 
           {/* Right Content: Mascot and CTA */}
-          <div className="w-full lg:w-[30%] flex flex-col items-center justify-center text-center">
-            <div className="relative select-none pointer-events-none mb-6">
+          <div className="w-full lg:w-[43%] flex flex-col items-center justify-center text-center">
+            <div className="relative w-full max-w-[700px] select-none pointer-events-none mb-6">
               <Image 
                 src="/images/character-penguin.png" 
                 alt="VietSure Penguin Mascot" 
-                width={280} 
-                height={280} 
-                className="w-64 h-auto object-contain animate-float-up"
+                width={700} 
+                height={700} 
+                className="w-full h-auto object-contain animate-float-up"
               />
             </div>
             
             <a 
               href="#trial-section" 
-              className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-bold py-3.5 px-10 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md text-sm uppercase tracking-wide"
+              className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-black py-5 px-10 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md text-base md:text-xl uppercase tracking-wide"
             >
               Học thử miễn phí
             </a>

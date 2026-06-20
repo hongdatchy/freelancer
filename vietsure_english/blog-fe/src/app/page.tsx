@@ -1,16 +1,7 @@
-import BtnTrial from '@/components/custom/common/btn-trial';
 import LearnFromStart from '@/components/custom/common/learn-from-start';
 import MediaSection from '@/components/custom/common/media-section';
 import TrialSection from '@/components/custom/common/traial-section';
 import MarketingPopup from '@/components/custom/homepage/maketing-popup';
-import { VideoItem } from '@/components/custom/brand/video-item';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 import TeacherSection from '@/components/custom/common/teacher-section';
 import Image from "next/image"
 import BrandStats from '@/components/custom/common/brand-stats';
@@ -27,7 +18,7 @@ export default async function Home() {
       <MarketingPopup />
 
       {/* BEGIN: HeroSection */}
-      <section className="relative min-h-[700px] lg:min-h-[850px] flex flex-col justify-center py-16 overflow-hidden bg-white">
+      <section className="relative min-h-[700px] lg:min-h-[850px] flex flex-col justify-center pt-6 pb-16 overflow-hidden bg-white">
         {/* Custom background shapes to mimic the organic curves in the reference */}
         <div aria-hidden="true" className="absolute top-0 right-0 w-[40%] h-[40%] bg-[radial-gradient(circle_at_top_right,rgba(254,243,199,0.4)_0%,transparent_70%)] z-0 pointer-events-none"></div>
         <div aria-hidden="true" className="absolute bottom-0 right-0 w-[50%] h-[60%] bg-[radial-gradient(circle_at_bottom_right,rgba(239,246,255,0.6)_0%,transparent_70%)] z-0 pointer-events-none"></div>
@@ -55,13 +46,13 @@ export default async function Home() {
             {/* BEGIN: RightContent - Typography and CTA */}
             <div className="w-full lg:w-[48%] flex flex-col items-center lg:items-start text-center lg:text-left space-y-4 md:space-y-6">
               <div className="space-y-2 md:space-y-4" data-purpose="heading-group">
-                <h2 className="text-xl md:text-2xl lg:text-4xl font-bold text-[#3F489A] tracking-wide uppercase">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-[#3F489A] tracking-wide uppercase">
                   TIẾNG ANH PHẢN XẠ ONLINE QUỐC TẾ
                 </h2>
                 <h1 className="text-5xl md:text-6xl font-black text-[#FF6B00] leading-tight uppercase lg:text-7xl">
                   CHẤT LƯỢNG CAO
                 </h1>
-                <p className="text-lg md:text-2xl lg:text-4xl font-bold text-[#3F489A] opacity-90 uppercase">
+                <p className="text-xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-[#3F489A] opacity-90 uppercase">
                   CHO TRẺ 4 - 12+ TẠI VIỆT NAM
                 </p>
               </div>
@@ -103,12 +94,12 @@ export default async function Home() {
 
 
       <section className="px-6 py-20 bg-gradient-to-b from-white to-sky-50/30">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center max-w-5xl mx-auto mb-16">
-            <p className="text-[#3F489A] text-lg font-bold">
+        <div className="w-full max-w-none px-6 md:px-16 lg:px-28">
+          <div className="text-center max-w-none mx-auto mb-16">
+            <p className="section-subtitle">
               Dùng tiếng Anh như trẻ quốc tế
             </p>
-            <h2 className="text-3xl md:text-4xl font-black text-[#2E357F] mt-2 uppercase tracking-wide whitespace-normal md:whitespace-nowrap">
+            <h2 className="section-title mt-2">
               LÝ DO PHỤ HUYNH LUÔN TIN CHỌN VIETSURE ENGLISH
             </h2>
           </div>
@@ -119,9 +110,9 @@ export default async function Home() {
               <Image 
                 src="/images/Tap trung, quyet liet.png" 
                 alt="Lý do chọn VietSure" 
-                width={500} 
-                height={500} 
-                className="w-full max-w-[450px] h-auto object-contain select-none pointer-events-none filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.06)]" 
+                width={700} 
+                height={700} 
+                className="w-full max-w-[700px] h-auto object-contain select-none pointer-events-none filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.06)]" 
               />
             </div>
 
@@ -156,14 +147,14 @@ export default async function Home() {
       <ValuesSection />
 
       <section className="px-6 py-20 bg-gradient-to-b from-sky-50/20 to-white overflow-hidden">
-        <div className="max-w-6xl mx-auto">
+        <div className="w-full max-w-none px-6 md:px-16 lg:px-28">
           
           {/* Header */}
           <div className="text-left mb-16">
-            <p className="text-[#3F489A] text-lg font-bold">
+            <p className="section-subtitle">
               Phương pháp giảng dạy
             </p>
-            <h2 className="text-3xl md:text-4xl font-black text-[#2E357F] mt-2 uppercase tracking-wide">
+            <h2 className="section-title mt-2">
               MÔ HÌNH GIẢNG DẠY HIỆN ĐẠI, THỰC TẾ
             </h2>
           </div>
@@ -288,9 +279,7 @@ export default async function Home() {
       {/* END: ParentFeedbackSection */}
 
       <section className="bg-white">
-        <div className="max-w-6xl mx-auto">
-          <TrialSection />
-        </div>
+        <TrialSection />
       </section>
 
     </div>

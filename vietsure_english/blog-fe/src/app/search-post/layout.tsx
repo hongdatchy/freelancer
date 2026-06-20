@@ -36,9 +36,7 @@ export default async function BlogLayout({
 
       {/* Full-width Trial Form at the bottom */}
       <div className="w-full bg-white border-t border-slate-100">
-        <div className="mx-auto max-w-6xl">
-          <TrialSection />
-        </div>
+        <TrialSection />
       </div>
     </section>
   );

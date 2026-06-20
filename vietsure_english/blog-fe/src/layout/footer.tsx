@@ -141,7 +141,7 @@ export default function Footer() {
                 {/* Youtube */}
                 <Link
                   target="_blank"
-                  href="https://www.youtube.com"
+                  href="https://www.youtube.com/@vietsure"
                   className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 hover:bg-red-600 transition-all text-white"
                 >
                   <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">

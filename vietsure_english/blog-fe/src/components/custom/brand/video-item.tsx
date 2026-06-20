@@ -20,11 +20,11 @@ export function VideoItem({
     const [open, setOpen] = useState(false);
 
     const padding =
-        ratio === "1/1" ? "pt-[100%]" : "pt-[56.25%]";
+        ratio === "1/1" ? "pt-[100%]" : variant === "feedback" ? "pt-[65%]" : "pt-[56.25%]";
 
     if (variant === "feedback") {
         return (
-            <div className="bg-white rounded-[32px] border-2 border-sky-100 p-5 shadow-[0_12px_30px_rgba(59,130,246,0.06)] h-full flex flex-col">
+            <div className="bg-white rounded-[32px] border-2 border-sky-200 p-4 md:p-5 shadow-[0_0_30px_rgba(59,130,246,0.15)] h-full flex flex-col">
                 <div className={`relative overflow-hidden rounded-[24px] shadow-sm flex-shrink-0 ${padding}`}>
                     {open ? (
                         <iframe

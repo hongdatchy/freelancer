@@ -68,7 +68,7 @@ export function HeaderMenu({ onChange, user }: Props) {
                     href={item.href}
                     onClick={(e) => e.stopPropagation()}
                     className={cn(
-                      'text-[15px] font-extrabold transition-all duration-200 px-6 py-2 rounded-full inline-block',
+                      'text-[18px] font-extrabold transition-all duration-200 px-6 py-2 rounded-full inline-block',
                       isActive(item)
                         ? 'bg-[#3F489A] text-white shadow-sm'
                         : 'text-[#3F489A] hover:text-[#3F489A] hover:bg-slate-100/50'
@@ -100,7 +100,7 @@ export function HeaderMenu({ onChange, user }: Props) {
                 <NavigationMenuLink
                   onClick={() => handleItemClick(item)}
                   className={cn(
-                    'text-[15px] font-extrabold transition-all duration-200 px-6 py-2 rounded-full inline-block select-none cursor-pointer',
+                    'text-[18px] font-extrabold transition-all duration-200 px-6 py-2 rounded-full inline-block select-none cursor-pointer',
                     isActive(item)
                       ? 'bg-[#3F489A] text-white shadow-sm'
                       : 'text-[#3F489A] hover:text-[#3F489A] hover:bg-slate-100/50'
