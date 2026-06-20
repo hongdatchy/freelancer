@@ -53,12 +53,12 @@ export default async function ElearningPage(props: {
             CÁC KHÓA HỌC TẠI VIETSURE ENGLISH
           </h2>
           <div className="mt-4">
-            <a
+            <Link
               href="/#trial-section"
               className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-extrabold py-3.5 px-9 rounded-full shadow-md text-sm md:text-base transition-all duration-300 hover:scale-105"
             >
               Test đầu vào
-            </a>
+            </Link>
           </div>
         </div>
 
