@@ -7,6 +7,7 @@ interface FiltersCourse {
     id: number;
   };
   isStudentLecture?: boolean;
+  level?: string;
 }
 
 interface Pagination {
@@ -20,7 +21,7 @@ export default factories.createCoreController('api::course.course', ({ strapi })
       const { locale } = ctx.query;
       const defaultLocale = strapi.config.get('plugin::i18n.defaultLocale', null);
 
-      const { name, token, isStudentLecture } = ctx.request.body;
+      const { name, token, isStudentLecture, level } = ctx.request.body;
 
       if (!token) {
         return ctx.unauthorized('Token is required');
@@ -41,6 +42,10 @@ export default factories.createCoreController('api::course.course', ({ strapi })
 
       if (name) {
         filters.name = { $containsi: name };
+      }
+
+      if (level) {
+        filters.level = level;
       }
 
       filters.locale = (locale as string) || defaultLocale;
@@ -69,10 +74,14 @@ export default factories.createCoreController('api::course.course', ({ strapi })
       };
 
       const courses = await strapi.documents('api::course.course').findMany({
-        filters,
+        filters: filters as any,
         populate: {
           thumbnail: true,
-          lectures: true,
+          lectures: {
+            populate: {
+              media_lectures: true,
+            }
+          },
         },
         ...pagination,
         status: 'published',
@@ -80,7 +89,7 @@ export default factories.createCoreController('api::course.course', ({ strapi })
       });
 
       const total = await strapi.documents('api::course.course').count({
-        filters,
+        filters: filters as any,
         status: 'published',
       });
 

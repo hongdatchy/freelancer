@@ -5,7 +5,6 @@
 import { factories } from '@strapi/strapi';
 interface FiltersPost {
   title?: { $containsi: string };
-  categories?: any;
   locale?: string;
   users ?: {
     id: { $eq: string }
@@ -23,7 +22,7 @@ export default factories.createCoreController('api::post.post', ({ strapi }) => 
     try {
       const { locale } = ctx.query;
       const defaultLocale = strapi.config.get('plugin::i18n.defaultLocale', null);
-      const { title, category, userId, trending } = ctx.request.body;
+      const { title, userId, trending } = ctx.request.body;
       const paginationQuery = ctx.query.pagination as Pagination;
       const populateQuery = ctx.query.populate;
 
@@ -38,9 +37,6 @@ export default factories.createCoreController('api::post.post', ({ strapi }) => 
       const filters: FiltersPost = {};
       if (title) {
         filters.title = { $containsi: title as string };
-      }
-      if (category) {
-        filters.categories = category;
       }
       if (userId) {
         filters.users = {
@@ -67,11 +63,10 @@ export default factories.createCoreController('api::post.post', ({ strapi }) => 
       const posts = await strapi.documents('api::post.post').findMany({
         filters,
         populate: {
-          categories: true,
           thumbnail: true,
           createdBy: true,
           posts: {
-            populate: ['thumbnail', 'categories'],
+            populate: ['thumbnail'],
           },
         },
         ...pagination,

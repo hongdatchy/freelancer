@@ -1,3 +1,5 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -5,8 +7,24 @@ import {
   Mail,
   MapPin,
 } from 'lucide-react';
+import { useBreadcrumb } from '@/context/useBreadcrumb';
+import Script from 'next/script';
 
 export default function Footer() {
+  const { setMenuState } = useBreadcrumb();
+
+  const handleFooterLinkClick = (label: string, href: string) => {
+    if (href === '/') {
+      setMenuState(null);
+    } else {
+      setMenuState({
+        itemTitle: label,
+        itemHref: href,
+        level: 'item'
+      });
+    }
+  };
+
   const aboutLinks = [
     { href: '/about', label: 'Giới thiệu' },
     { href: '/course', label: 'Khóa học' },
@@ -30,7 +48,20 @@ export default function Footer() {
           <h2 className="text-lg md:text-xl font-extrabold uppercase tracking-wider text-white">
             HỆ THỐNG GIÁO DỤC ONLINE <span className="text-[#ff791a]">CHẤT LƯỢNG CAO</span> CHO TRẺ EM TRONG VÀ NGOÀI NƯỚC
           </h2>
-          <div className="w-full h-[2px] bg-white/50 mt-6"></div>
+          <div className="w-[70%] mx-auto h-[2px] bg-white/50 mt-6"></div>
+        </div>
+
+        {/* Logo row below horizontal line, left-aligned */}
+        <div className="flex justify-start mb-4 mt-8">
+          <Link href="/" onClick={() => handleFooterLinkClick('Home', '/')}>
+            <Image
+              src="/images/Vietsure English_Logo-15.png"
+              alt="Vietsure English"
+              width={180}
+              height={56}
+              className="h-auto w-[170px]"
+            />
+          </Link>
         </div>
 
         {/* Grid content */}
@@ -38,16 +69,6 @@ export default function Footer() {
           
           {/* Cột 1: Thông tin liên hệ */}
           <div className="flex flex-col gap-4">
-            <Link href="/" className="inline-block mb-2">
-              <Image
-                src="/images/Vietsure English_Logo-15.png"
-                alt="Vietsure English"
-                width={160}
-                height={50}
-                className="h-auto w-[150px]"
-              />
-            </Link>
-
             <h3 className="text-sm font-black uppercase tracking-wider text-white">
               THÔNG TIN LIÊN HỆ
             </h3>
@@ -96,6 +117,7 @@ export default function Footer() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => handleFooterLinkClick(item.label, item.href)}
                   className="transition-colors hover:text-sky-400"
                 >
                   {item.label}
@@ -115,6 +137,7 @@ export default function Footer() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    onClick={() => handleFooterLinkClick(item.label, item.href)}
                     className="transition-colors hover:text-sky-400"
                   >
                     {item.label}
@@ -171,13 +194,20 @@ export default function Footer() {
                   className="h-[34px] w-auto rounded"
                 />
 
-                <Image
-                  src="/images/dmca-badge-w100-5x1-01.png"
-                  alt="DMCA Protected"
-                  width={90}
-                  height={34}
-                  className="h-[34px] w-auto rounded"
-                />
+                <a
+                  href="//www.dmca.com/Protection/Status.aspx?ID=e685908c-9b2d-4137-a267-1c1636e19ab9"
+                  title="DMCA.com Protection Status"
+                  className="dmca-badge inline-block"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="https://images.dmca.com/Badges/dmca_protected_sml_120j.png?ID=e685908c-9b2d-4137-a267-1c1636e19ab9"
+                    alt="DMCA.com Protection Status"
+                    className="h-[34px] w-auto rounded"
+                  />
+                </a>
               </div>
             </div>
           </div>
@@ -211,6 +241,7 @@ export default function Footer() {
         </div>
 
       </div>
+      <Script src="https://images.dmca.com/Badges/DMCABadgeHelper.min.js" strategy="lazyOnload" />
     </footer>
   );
 }

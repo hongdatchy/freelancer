@@ -98,79 +98,91 @@ export default function BrandAmbassadorPage() {
       </section>
 
       {/* 2. ĐỐI TƯỢNG THAM GIA SECTION */}
-      <section className="bg-[#3F489A] py-16 text-white relative">
+      <section className="bg-[#3F489A] py-20 text-white relative">
         <div className="container mx-auto px-6 lg:px-24">
           <div className="text-center max-w-xl mx-auto mb-16">
-            <h2 className="text-2xl md:text-3xl font-black uppercase text-[#FBBC05] tracking-widest">
+            <h2 className="text-2xl md:text-3xl font-black uppercase text-[#FFC700] tracking-widest">
               Đối tượng tham gia
             </h2>
-            <div className="w-16 h-1 bg-white mx-auto mt-3 rounded-full"></div>
+            <div className="w-24 h-[1.5px] bg-white/60 mx-auto mt-4 rounded-full"></div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-y-12 gap-x-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 lg:gap-x-24 gap-y-10 max-w-6xl mx-auto">
             
             {/* Item 1 */}
-            <div className="relative flex items-center bg-white rounded-3xl pl-16 pr-6 py-4 shadow-md max-w-[280px] w-full mx-auto min-h-[80px]">
-              <div className="absolute left-[-16px] w-[64px] h-[64px] rounded-full border-[3px] border-[#3F489A] bg-white overflow-hidden shadow-md">
+            <div className="flex items-center w-full max-w-[520px] mx-auto relative">
+              <div className="relative w-[110px] h-[110px] md:w-[130px] md:h-[130px] rounded-full border-[5px] border-white shadow-lg overflow-hidden shrink-0 z-10 select-none">
                 <Image
-                  src="/images/people-1.png"
-                  alt="people"
-                  width={120}
-                  height={120}
-                  className="w-full h-full object-cover"
+                  src="/images/doituongthamgia1.png"
+                  alt="Đối tượng 1"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 110px, 130px"
                 />
               </div>
-              <p className="text-xs md:text-sm text-[#2E357F] font-bold leading-tight text-left">
-                Bạn đang có con học tại <span className="text-[#FF6B00]">Vietsure English</span>
-              </p>
+              <div className="bg-white rounded-[32px] md:rounded-[40px] pl-14 md:pl-20 pr-6 md:pr-10 py-5 md:py-6 shadow-md flex-1 min-h-[96px] md:min-h-[114px] flex items-center relative ml-[-35px] md:ml-[-45px] z-0
+                              before:content-[''] before:absolute before:top-1/2 before:-left-3 md:before:-left-4 before:-translate-y-1/2 before:w-0 before:h-0 before:border-t-[12px] md:before:border-t-[16px] before:border-t-transparent before:border-b-[12px] md:before:border-b-[16px] before:border-b-transparent before:border-r-[16px] md:before:border-r-[20px] before:border-r-white">
+                <p className="text-sm md:text-[17px] text-[#2E357F] font-extrabold leading-tight text-left">
+                  Bạn đang có con học tại <br /><span className="text-[#FF6B00] font-black">Vietsure English</span>
+                </p>
+              </div>
             </div>
 
             {/* Item 2 */}
-            <div className="relative flex items-center bg-white rounded-3xl pl-16 pr-6 py-4 shadow-md max-w-[280px] w-full mx-auto min-h-[80px]">
-              <div className="absolute left-[-16px] w-[64px] h-[64px] rounded-full border-[3px] border-[#3F489A] bg-white overflow-hidden shadow-md">
+            <div className="flex items-center w-full max-w-[520px] mx-auto relative">
+              <div className="relative w-[110px] h-[110px] md:w-[130px] md:h-[130px] rounded-full border-[5px] border-white shadow-lg overflow-hidden shrink-0 z-10 select-none">
                 <Image
-                  src="/images/people-3.png"
-                  alt="people"
-                  width={120}
-                  height={120}
-                  className="w-full h-full object-cover"
+                  src="/images/doituongthamgia2.png"
+                  alt="Đối tượng 2"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 110px, 130px"
                 />
               </div>
-              <p className="text-xs md:text-sm text-[#2E357F] font-bold leading-tight text-left">
-                Bạn là <span className="text-[#FF6B00]">giáo viên, giảng viên</span> trong mảng giáo dục
-              </p>
+              <div className="bg-white rounded-[32px] md:rounded-[40px] pl-14 md:pl-20 pr-6 md:pr-10 py-5 md:py-6 shadow-md flex-1 min-h-[96px] md:min-h-[114px] flex items-center relative ml-[-35px] md:ml-[-45px] z-0
+                              before:content-[''] before:absolute before:top-1/2 before:-left-3 md:before:-left-4 before:-translate-y-1/2 before:w-0 before:h-0 before:border-t-[12px] md:before:border-t-[16px] before:border-t-transparent before:border-b-[12px] md:before:border-b-[16px] before:border-b-transparent before:border-r-[16px] md:before:border-r-[20px] before:border-r-white">
+                <p className="text-sm md:text-[17px] text-[#2E357F] font-extrabold leading-tight text-left">
+                  Bạn là <span className="text-[#FF6B00] font-black">giáo viên, giảng viên</span> <br />trong mảng giáo dục
+                </p>
+              </div>
             </div>
 
             {/* Item 3 */}
-            <div className="relative flex items-center bg-white rounded-3xl pl-16 pr-6 py-4 shadow-md max-w-[280px] w-full mx-auto min-h-[80px]">
-              <div className="absolute left-[-16px] w-[64px] h-[64px] rounded-full border-[3px] border-[#3F489A] bg-white overflow-hidden shadow-md">
+            <div className="flex items-center w-full max-w-[520px] mx-auto relative">
+              <div className="relative w-[110px] h-[110px] md:w-[130px] md:h-[130px] rounded-full border-[5px] border-white shadow-lg overflow-hidden shrink-0 z-10 select-none">
                 <Image
-                  src="/images/people-2.png"
-                  alt="people"
-                  width={120}
-                  height={120}
-                  className="w-full h-full object-cover"
+                  src="/images/doituongthamgia3.png"
+                  alt="Đối tượng 3"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 110px, 130px"
                 />
               </div>
-              <p className="text-xs md:text-sm text-[#2E357F] font-bold leading-tight text-left">
-                Bạn là <span className="text-[#FF6B00]">mẹ bỉm sữa, NV văn phòng</span> muốn kiếm thêm thu nhập
-              </p>
+              <div className="bg-white rounded-[32px] md:rounded-[40px] pl-14 md:pl-20 pr-6 md:pr-10 py-5 md:py-6 shadow-md flex-1 min-h-[96px] md:min-h-[114px] flex items-center relative ml-[-35px] md:ml-[-45px] z-0
+                              before:content-[''] before:absolute before:top-1/2 before:-left-3 md:before:-left-4 before:-translate-y-1/2 before:w-0 before:h-0 before:border-t-[12px] md:before:border-t-[16px] before:border-t-transparent before:border-b-[12px] md:before:border-b-[16px] before:border-b-transparent before:border-r-[16px] md:before:border-r-[20px] before:border-r-white">
+                <p className="text-sm md:text-[17px] text-[#2E357F] font-extrabold leading-tight text-left">
+                  Bạn là <span className="text-[#FF6B00] font-black">mẹ bỉm sữa, nhân viên văn phòng</span> kiếm thêm thu nhập
+                </p>
+              </div>
             </div>
 
             {/* Item 4 */}
-            <div className="relative flex items-center bg-white rounded-3xl pl-16 pr-6 py-4 shadow-md max-w-[280px] w-full mx-auto min-h-[80px]">
-              <div className="absolute left-[-16px] w-[64px] h-[64px] rounded-full border-[3px] border-[#3F489A] bg-white overflow-hidden shadow-md">
+            <div className="flex items-center w-full max-w-[520px] mx-auto relative">
+              <div className="relative w-[110px] h-[110px] md:w-[130px] md:h-[130px] rounded-full border-[5px] border-white shadow-lg overflow-hidden shrink-0 z-10 select-none">
                 <Image
-                  src="/images/people-4.png"
-                  alt="people"
-                  width={120}
-                  height={120}
-                  className="w-full h-full object-cover"
+                  src="/images/doituongthamgia4.png"
+                  alt="Đối tượng 4"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 110px, 130px"
                 />
               </div>
-              <p className="text-xs md:text-sm text-[#2E357F] font-bold leading-tight text-left">
-                Bạn là <span className="text-[#FF6B00]">Affiliate giáo dục</span>, muốn tìm đối tác uy tín
-              </p>
+              <div className="bg-white rounded-[32px] md:rounded-[40px] pl-14 md:pl-20 pr-6 md:pr-10 py-5 md:py-6 shadow-md flex-1 min-h-[96px] md:min-h-[114px] flex items-center relative ml-[-35px] md:ml-[-45px] z-0
+                              before:content-[''] before:absolute before:top-1/2 before:-left-3 md:before:-left-4 before:-translate-y-1/2 before:w-0 before:h-0 before:border-t-[12px] md:before:border-t-[16px] before:border-t-transparent before:border-b-[12px] md:before:border-b-[16px] before:border-b-transparent before:border-r-[16px] md:before:border-r-[20px] before:border-r-white">
+                <p className="text-sm md:text-[17px] text-[#2E357F] font-extrabold leading-tight text-left">
+                  Bạn là <span className="text-[#FF6B00] font-black">Affiliate giáo dục</span>, <br />muốn thêm đối tác
+                </p>
+              </div>
             </div>
 
           </div>
@@ -181,27 +193,32 @@ export default function BrandAmbassadorPage() {
       <LearningPathSection />
 
       {/* 4. 4 BƯỚC ĐƠN GIẢN SECTION */}
-      <section className="py-16 bg-white">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-6 lg:px-24">
           <h2 className="mb-16 text-center text-2xl md:text-[34px] font-black uppercase leading-tight text-[#2E357F]">
             4 BƯỚC ĐƠN GIẢN CÓ THÊM THU NHẬP LÊN ĐẾN <br className="hidden md:inline" />
             <span className="text-[#FF6B00]">30 TRIỆU/THÁNG</span> CÙNG VIETSURE ENGLISH
           </h2>
 
-          <div className="max-w-4xl mx-auto flex flex-col gap-6">
+          <div className="max-w-6xl mx-auto flex flex-col gap-6">
             {steps.map((step) => {
               const isLeft = step.position === "left";
               return (
                 <div
                   key={step.id}
-                  className={`flex items-center w-full min-h-[96px] rounded-2xl border-2 border-[#3F489A]/20 bg-[#F5FAFF] px-8 py-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-[#3F489A]/60 ${
-                    isLeft ? "flex-row justify-start" : "flex-row-reverse justify-between"
+                  className={`flex items-center w-full min-h-[96px] rounded-2xl bg-[#F5FAFF] px-8 md:px-16 py-5 shadow-sm transition-all duration-300 hover:shadow-md ${
+                    isLeft ? "flex-row" : "flex-row-reverse"
                   }`}
                 >
-                  <span className="text-3xl md:text-4xl font-black text-[#FF6B00] shrink-0 mx-4">
+                  {/* Step Number */}
+                  <span className={`text-4xl md:text-5xl font-black text-[#FF6B00] shrink-0 select-none ${
+                    isLeft ? "mr-8 md:mr-12" : "ml-8 md:ml-12"
+                  }`}>
                     {step.id}
                   </span>
-                  <p className="text-sm md:text-base font-extrabold text-[#2E357F] leading-snug flex-1">
+
+                  {/* Step Text */}
+                  <p className="text-sm md:text-base font-extrabold text-[#2E357F] leading-snug flex-1 text-center px-4 md:px-8">
                     {step.text}
                   </p>
                 </div>
@@ -212,115 +229,147 @@ export default function BrandAmbassadorPage() {
       </section>
 
       {/* 5. CHÍNH SÁCH VÀ QUYỀN LỢI SECTION */}
-      <section className="py-16 bg-[#F3F9FF]">
+      <section className="py-20 bg-[#F3F9FF]">
         <div className="container mx-auto px-6 lg:px-24">
           <h2 className="mb-16 text-center text-2xl lg:text-3xl font-black uppercase text-[#2E357F]">
             CHÍNH SÁCH VÀ QUYỀN LỢI KHI TRỞ THÀNH <br className="hidden md:inline" />
             CTV CỦA VIETSURE ENGLISH
           </h2>
 
-          <div className="grid gap-8 grid-cols-1">
+          <div className="flex flex-col gap-10">
             
             {/* Card 1 */}
-            <div className="bg-white rounded-[32px] p-8 shadow-sm border border-slate-100 flex flex-col md:flex-row items-center gap-8 max-w-4xl mx-auto w-full">
-              <div className="flex-1">
-                <h3 className="mb-4 text-xl font-black text-[#2E357F] uppercase">
+            <div className="bg-white rounded-[40px] p-8 md:p-12 shadow-[0_10px_35px_rgba(46,53,127,0.06)] flex flex-col md:flex-row items-center gap-8 md:gap-12 max-w-6xl mx-auto w-full">
+              <div className="flex-1 w-full text-left">
+                <h3 className="mb-6 text-xl md:text-2xl font-black text-[#2E357F] leading-tight">
                   Hoa hồng & Thưởng hấp dẫn tháng
                 </h3>
-                <ul className="space-y-3 text-sm md:text-[15px] font-semibold text-slate-600">
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#FF6B00] font-black">•</span>
-                    <span>
-                      Hoa hồng ghi danh lần đầu: <span className="font-extrabold text-[#FF6B00]">10% giá trị tổng đơn hàng phụ huynh đăng ký</span>
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#FF6B00] font-black">•</span>
-                    <span>
-                      Hoa hồng ghi danh lại: <span className="font-extrabold text-[#FF6B00]">3% giá trị đơn hàng</span>
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#FF6B00] font-black">•</span>
-                    <span>
-                      Tổng doanh thu &gt;500 triệu/tháng: thưởng <span className="font-extrabold text-[#FF6B00]">25,000,000 VNĐ/tháng</span>
-                    </span>
-                  </li>
-                  <li className="text-xs text-slate-400 italic pt-2">
-                    Ví dụ: Phụ huynh đóng học phí 10.000.000 VNĐ ⇒ CTV nhận: 10.000.000 x 10% = 1.000.000 VNĐ (phụ huynh đầu tiên).
-                    Đạt doanh thu &gt;500 triệu/tháng ⇒ thưởng thêm 10.000.000 VNĐ/tháng.
-                  </li>
-                </ul>
+                <div className="space-y-3.5 text-sm md:text-[16px] font-bold text-[#2E357F]/80">
+                  {/* Bullets 1 & 2 */}
+                  <div className="space-y-2">
+                    <p className="flex items-start gap-2">
+                      <span className="text-[#2E357F] shrink-0">•</span>
+                      <span>
+                        Hoa hồng ghi danh lần đầu: <span className="text-[#FF3B30] font-black">10% giá trị tổng đơn hàng</span> Phụ huynh đăng ký
+                      </span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-[#2E357F] shrink-0">•</span>
+                      <span>
+                        Hoa hồng ghi danh lại: 3% giá trị đơn hàng
+                      </span>
+                    </p>
+                  </div>
+                  
+                  {/* VD Section */}
+                  <div className="text-slate-500 space-y-1 font-semibold text-sm md:text-[15px] leading-snug pl-4">
+                    <p>
+                      VD: Phụ huynh đóng khóa học 10.000.000 VNĐ thì CTV sẽ nhận theo công thức:
+                    </p>
+                    <p>
+                      10.000.000 VNĐ → CTV nhận <span className="text-[#FF3B30] font-bold">x15%</span>
+                    </p>
+                    <p className="text-[#FF3B30] font-bold">
+                      10,000,000 x 15% = 1,500,000 VNĐ / Phụ huynh đầu tiên
+                    </p>
+                  </div>
+
+                  {/* Bullet 3 Group */}
+                  <div className="space-y-1">
+                    <p className="flex items-start gap-2">
+                      <span className="text-[#2E357F] shrink-0">•</span>
+                      <span>
+                        <span className="font-extrabold text-[#2E357F]">Từ Phụ huynh thứ 2</span> sẽ là <span className="text-[#FF3B30] font-black">x3%</span>
+                      </span>
+                    </p>
+                    <p className="text-[#FF3B30] font-bold pl-4">
+                      10,000,000 x 3% = 300,000 VNĐ / Phụ huynh
+                    </p>
+                  </div>
+
+                  {/* Bullet 4 Group */}
+                  <div className="space-y-1">
+                    <p className="flex items-start gap-2">
+                      <span className="text-[#2E357F] shrink-0">•</span>
+                      <span>
+                        Nhận kèm thưởng hàng tháng <span className="text-[#FF3B30] font-black">8.000.000đ</span> nếu tổng doanh thu Phụ huynh
+                      </span>
+                    </p>
+                    <p className="text-[#FF3B30] font-bold pl-4">
+                      &gt; 500 triệu tháng
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="w-[180px] h-[120px] relative overflow-hidden rounded-2xl shrink-0">
+              <div className="w-full md:w-[380px] h-[240px] md:h-[260px] relative overflow-hidden rounded-[32px] shrink-0 shadow-sm select-none">
                 <Image
-                  src="/images/policy-1.png"
-                  alt="policy 1"
-                  width={180}
-                  height={120}
-                  className="w-full h-full object-contain"
+                  src="/images/Layer 13.png"
+                  alt="Layer 13"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 380px"
                 />
               </div>
             </div>
 
             {/* Card 2 */}
-            <div className="bg-white rounded-[32px] p-8 shadow-sm border border-slate-100 flex flex-col md:flex-row-reverse items-center gap-8 max-w-4xl mx-auto w-full">
-              <div className="flex-1">
-                <h3 className="mb-4 text-xl font-black text-[#2E357F] uppercase">
+            <div className="bg-white rounded-[40px] p-8 md:p-12 shadow-[0_10px_35px_rgba(46,53,127,0.06)] flex flex-col md:flex-row-reverse items-center gap-8 md:gap-12 max-w-6xl mx-auto w-full">
+              <div className="flex-1 w-full text-left">
+                <h3 className="mb-6 text-xl md:text-2xl font-black text-[#2E357F] leading-tight">
                   Theo dõi minh bạch, thanh toán đúng cam kết
                 </h3>
-                <ul className="space-y-3 text-sm md:text-[15px] font-semibold text-slate-600">
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#3BAEFF] font-black">•</span>
-                    <span>Hợp đồng trực tuyến cam kết rõ ràng</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#3BAEFF] font-black">•</span>
+                <div className="space-y-2.5 text-sm md:text-[16px] font-bold text-[#2E357F]/80">
+                  <p className="flex items-start gap-2">
+                    <span className="text-[#2E357F] shrink-0">•</span>
+                    <span>Hợp đồng trực tuyến cam kết</span>
+                  </p>
+                  <p className="flex items-start gap-2">
+                    <span className="text-[#2E357F] shrink-0">•</span>
                     <span>
-                      Thanh toán mỗi tháng từ ngày 1 - 5 của tháng tiếp theo (đối soát doanh thu thực tế)
+                      Thanh toán mỗi tháng vào <span className="text-[#FF3B30] font-black">1-5 của tháng tiếp theo</span> (thời gian để Trung tâm đối chiếu doanh thu thực tế và kết toán doanh thu đúng của tháng đó)
                     </span>
-                  </li>
-                </ul>
+                  </p>
+                </div>
               </div>
-              <div className="w-[180px] h-[120px] relative overflow-hidden rounded-2xl shrink-0">
+              <div className="w-full md:w-[380px] h-[240px] md:h-[260px] relative overflow-hidden rounded-[32px] shrink-0 shadow-sm select-none">
                 <Image
-                  src="/images/policy-2.png"
-                  alt="policy 2"
-                  width={180}
-                  height={120}
-                  className="w-full h-full object-contain"
+                  src="/images/Layer 14.png"
+                  alt="Layer 14"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 380px"
                 />
               </div>
             </div>
 
             {/* Card 3 */}
-            <div className="bg-white rounded-[32px] p-8 shadow-sm border border-slate-100 flex flex-col md:flex-row items-center gap-8 max-w-4xl mx-auto w-full">
-              <div className="flex-1">
-                <h3 className="mb-4 text-xl font-black text-[#2E357F] uppercase">
-                  CTV giới thiệu bằng niềm tin, Vietsure english bảo chứng chất lượng
+            <div className="bg-white rounded-[40px] p-8 md:p-12 shadow-[0_10px_35px_rgba(46,53,127,0.06)] flex flex-col md:flex-row items-center gap-8 md:gap-12 max-w-6xl mx-auto w-full">
+              <div className="flex-1 w-full text-left">
+                <h3 className="mb-6 text-xl md:text-2xl font-black text-[#2E357F] leading-tight">
+                  CTV giới thiệu bằng niềm tin, Vietsure English bảo chứng chất lượng
                 </h3>
-                <ul className="space-y-3 text-sm md:text-[15px] font-semibold text-slate-600">
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#3F489A] font-black">•</span>
-                    <span>CTV yên tâm giới thiệu bằng uy tín, không lo ảnh hưởng quan hệ cá nhân</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#3F489A] font-black">•</span>
-                    <span>Chất lượng khóa học và trải nghiệm học tập được Vietsure cam kết</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#3F489A] font-black">•</span>
-                    <span>Xây dựng nguồn thu nhập bền vững từ niềm tin lâu dài</span>
-                  </li>
-                </ul>
+                <div className="space-y-2.5 text-sm md:text-[16px] font-bold text-[#2E357F]/80">
+                  <p className="flex items-start gap-2">
+                    <span className="text-[#2E357F] shrink-0">•</span>
+                    <span>CTV yên tâm giới thiệu bằng uy tín, không lo ảnh hưởng mối quan hệ</span>
+                  </p>
+                  <p className="flex items-start gap-2">
+                    <span className="text-[#2E357F] shrink-0">•</span>
+                    <span>Chất lượng khóa học và trải nghiệm học tập được Vietsure cam kết uy tín</span>
+                  </p>
+                  <p className="flex items-start gap-2">
+                    <span className="text-[#2E357F] shrink-0">•</span>
+                    <span>Giúp CTV xây dựng nguồn giới thiệu bền vững từ sự tin tưởng lâu dài</span>
+                  </p>
+                </div>
               </div>
-              <div className="w-[180px] h-[120px] relative overflow-hidden rounded-2xl shrink-0">
+              <div className="w-full md:w-[380px] h-[240px] md:h-[260px] relative overflow-hidden rounded-[32px] shrink-0 shadow-sm select-none">
                 <Image
-                  src="/images/policy-3.png"
-                  alt="policy 3"
-                  width={180}
-                  height={120}
-                  className="w-full h-full object-contain"
+                  src="/images/Layer 16.png"
+                  alt="Layer 16"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 380px"
                 />
               </div>
             </div>

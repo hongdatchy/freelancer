@@ -34,12 +34,6 @@
     "trending": {
       "type": "boolean"
     },
-    "categories": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::category.category",
-      "mappedBy": "posts"
-    },
     "posts": {
       "type": "relation",
       "relation": "oneToMany",

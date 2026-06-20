@@ -32,6 +32,8 @@ export interface CourseDTO {
   publishedAt?: string;
   locale?: string;
   isStudentLecture?: boolean;
+  ages?: string;
+  level?: 'Level 0' | 'Level 1+2' | 'Starters' | 'Level 3+4' | 'Movers' | 'Level 5+6' | 'Flyers';
 }
 
 export interface LectureDTO {

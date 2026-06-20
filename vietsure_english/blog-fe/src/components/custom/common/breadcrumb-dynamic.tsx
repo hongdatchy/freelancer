@@ -9,17 +9,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { useBreadcrumb } from "@/context/useBreadcrumb";
+import { useBreadcrumb, MenuState } from "@/context/useBreadcrumb";
 import { usePathname } from "next/navigation";
 
 type Props = {
-  menuState: {
-    itemTitle?: string;
-    itemHref?: string;
-    subItemTitle?: string;
-    subItemHref?: string;
-    level?: 'item' | 'subItem';
-  } | null;
+  menuState: MenuState;
 };
 
 export function BreadcrumbDynamic({ menuState }: Props) {
@@ -40,6 +34,10 @@ export function BreadcrumbDynamic({ menuState }: Props) {
     if (!menuState?.itemTitle) {
       if (pathname.startsWith('/teachers')) {
         result.push({ title: 'Giáo viên', href: '/teachers' });
+      } else if (pathname.startsWith('/elearning')) {
+        result.push({ title: 'Elearning', href: '/elearning' });
+      } else if (pathname.startsWith('/teacher-training')) {
+        result.push({ title: 'Training giáo viên', href: '/teacher-training' });
       }
     }
 

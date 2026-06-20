@@ -4,14 +4,11 @@ import { utcToString } from "@/lib/utils";
 
 export default function DateAndCategories({ responsePostDTO }: { responsePostDTO: ResponsePostDTO }) {
   return (
-    <>
-      <span className="text-[#27ba77] mr-2">{Icons.calendar()}</span>
-      <span className="font-normal text-[13px] leading-[18px] text-[#525252] uppercase mr-6">
+    <div className="flex items-center text-[#888888]">
+      <span className="mr-1.5 flex items-center">{Icons.clock()}</span>
+      <span className="font-semibold text-[13px] leading-[18px] uppercase">
         {utcToString(responsePostDTO.publishedAt)}
       </span>
-      <span className="category-in-post-review relative mr-2 font-bold font-sans text-[13px] leading-[18px] text-[#27BA77] uppercase">
-        {responsePostDTO?.categories?.length ? responsePostDTO.categories[0].name : ''}
-      </span>
-    </>
+    </div>
   );
 }

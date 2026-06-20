@@ -436,38 +436,6 @@ export interface ApiBannerBlogBannerBlog extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
-  collectionName: 'categories';
-  info: {
-    description: '';
-    displayName: 'Category';
-    pluralName: 'categories';
-    singularName: 'category';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::category.category'
-    > &
-      Schema.Attribute.Private;
-    name: Schema.Attribute.String;
-    posts: Schema.Attribute.Relation<'manyToMany', 'api::post.post'>;
-    publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
-    Tag: Schema.Attribute.String;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
   collectionName: 'courses';
   info: {
@@ -479,6 +447,7 @@ export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    ages: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -487,6 +456,17 @@ export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<true>;
     lectures: Schema.Attribute.Relation<'oneToMany', 'api::lecture.lecture'>;
+    level: Schema.Attribute.Enumeration<
+      [
+        'Level 0',
+        'Level 1+2',
+        'Starters',
+        'Level 3+4',
+        'Movers',
+        'Level 5+6',
+        'Flyers',
+      ]
+    >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -653,10 +633,6 @@ export interface ApiPostPost extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    categories: Schema.Attribute.Relation<
-      'manyToMany',
-      'api::category.category'
-    >;
     content: Schema.Attribute.RichText;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -699,37 +675,6 @@ export interface ApiRegionRegion extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     name: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiSlideshowSlideshow extends Struct.CollectionTypeSchema {
-  collectionName: 'slideshows';
-  info: {
-    description: '';
-    displayName: 'Slideshow';
-    pluralName: 'slideshows';
-    singularName: 'slideshow';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    image: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::slideshow.slideshow'
-    > &
-      Schema.Attribute.Private;
-    order: Schema.Attribute.Integer;
-    publishedAt: Schema.Attribute.DateTime;
-    title: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1330,7 +1275,6 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::addition-admin-user-info.addition-admin-user-info': ApiAdditionAdminUserInfoAdditionAdminUserInfo;
       'api::banner-blog.banner-blog': ApiBannerBlogBannerBlog;
-      'api::category.category': ApiCategoryCategory;
       'api::course.course': ApiCourseCourse;
       'api::ctv-registration.ctv-registration': ApiCtvRegistrationCtvRegistration;
       'api::lecture.lecture': ApiLectureLecture;
@@ -1338,7 +1282,6 @@ declare module '@strapi/strapi' {
       'api::popup.popup': ApiPopupPopup;
       'api::post.post': ApiPostPost;
       'api::region.region': ApiRegionRegion;
-      'api::slideshow.slideshow': ApiSlideshowSlideshow;
       'api::teacher-schedule.teacher-schedule': ApiTeacherScheduleTeacherSchedule;
       'api::trial-registration.trial-registration': ApiTrialRegistrationTrialRegistration;
       'plugin::content-releases.release': PluginContentReleasesRelease;

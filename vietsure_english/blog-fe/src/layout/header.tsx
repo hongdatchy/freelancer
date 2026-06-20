@@ -11,20 +11,13 @@ import UserInfo from '@/components/custom/common/user-info';
 import { BreadcrumbDynamic } from '@/components/custom/common/breadcrumb-dynamic';
 import useUserLoginStore from '@/state-manager/user-login-store';
 import BtnTrial from '@/components/custom/common/btn-trial';
-
-type MenuState = {
-  itemTitle?: string;
-  itemHref?: string;
-  subItemTitle?: string;
-  subItemHref?: string;
-  level?: 'item' | 'subItem';
-};
+import { useBreadcrumb, MenuState } from '@/context/useBreadcrumb';
 
 export default function Header() {
   const pathname = usePathname();
   const { user } = useUserLoginStore();
 
-  const [menuState, setMenuState] = useState<MenuState | null>(null);
+  const { menuState, setMenuState } = useBreadcrumb();
   const [isScrolled, setIsScrolled] = useState(false);
 
   const handleMenuChange = (data: MenuState) => {
@@ -57,8 +50,8 @@ export default function Header() {
 
   return (
     <header
-      className={`w-full bg-white border-b border-gray-100 transition-all duration-300 z-50 ${
-        isScrolled ? 'fixed left-0 top-0 shadow-sm' : 'relative'
+      className={`w-full bg-white border-b border-gray-100 transition-all duration-300 z-50 sticky top-0 ${
+        isScrolled ? 'shadow-sm' : ''
       }`}
     >
       <div className="mx-auto flex flex-col w-full max-w-none px-6 md:px-10 lg:px-12 py-4">

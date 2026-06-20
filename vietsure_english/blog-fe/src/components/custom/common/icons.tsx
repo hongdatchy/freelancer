@@ -27,6 +27,24 @@ export const Icons = {
       <path d="M16 18h.01" />
     </svg>
   ),
+  clock: (props?: IconProps) => (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="lucide lucide-clock"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  ),
   arrowRight: (props?: IconProps) => (
     <svg
       {...props}

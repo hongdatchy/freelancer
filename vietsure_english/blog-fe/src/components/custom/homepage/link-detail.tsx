@@ -1,6 +1,4 @@
-'use client';
 import { ResponsePostDTO } from '@/dto/PostDTO';
-import usePostStore from '@/state-manager/post-store';
 import Link from 'next/link';
 
 export default function LinkDetail({
@@ -12,9 +10,8 @@ export default function LinkDetail({
   className?: string;
   children: React.ReactNode;
 }) {
-  const { setPost } = usePostStore();
   return (
-    <Link href={`/search-post/detail-post/${responsePostDTO.slug}`} className={className} onClick={() => setPost(responsePostDTO)}>
+    <Link href={`/search-post/detail-post/${responsePostDTO.slug}`} className={className}>
       {children}
     </Link>
   );

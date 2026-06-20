@@ -31,7 +31,7 @@ export default function HorizontalPost({ post }: { post: ResponsePostDTO }) {
           {post.title}
         </LinkDetail>
         
-        <p className="text-[#3F489A]/85 font-semibold text-xs md:text-sm leading-relaxed mt-4 line-clamp-3">
+        <p className="text-[#3F489A]/85 font-semibold text-sm md:text-base leading-relaxed mt-4 line-clamp-5">
           {post.description}
         </p>
       </div>

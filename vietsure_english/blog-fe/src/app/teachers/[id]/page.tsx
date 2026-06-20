@@ -27,13 +27,9 @@ export default async function TeacherDetailPage(props: {
       {/* Schedule RIGHT BELOW */}
       <TeacherScheduleView teacherId={Number(teacher.id)} />
 
-      <section
-        style={{
-          background:
-            "linear-gradient(270deg, rgba(239, 29, 106, 0.47), rgba(172, 71, 78, 0.1))",
-        }}>
+      <div>
         <TrialSection />
-      </section>
+      </div>
     </div>
   );
 }

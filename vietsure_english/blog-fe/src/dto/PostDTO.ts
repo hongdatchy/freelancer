@@ -24,7 +24,7 @@ export interface ResponsePostDTO {
   thumbnail: {
     url: string;
   };
-  categories: Array<{
+  categories?: Array<{
     name: string;
   }>;
   posts: Array<ResponsePostDTO>;

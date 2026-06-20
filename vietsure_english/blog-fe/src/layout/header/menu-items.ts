@@ -5,12 +5,12 @@ export const getMenuItemsByTran = (user: User | null): MenuItem[] => {
     return [
       {
         title: "Elearning",
-        href: "/elearning/?isStudentLecture=true",
+        href: "/elearning",
         subItems: [],
       },
       {
         title: "Trainning giáo viên",
-        href: "/elearning/?isStudentLecture=false",
+        href: "/teacher-training",
         subItems: [],
       },
       {
