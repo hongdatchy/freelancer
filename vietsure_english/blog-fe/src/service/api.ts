@@ -1,4 +1,7 @@
-const BASE_URL = process.env.NEXT_PUBLIC_BE_HOST;
+const isServer = typeof window === 'undefined';
+const BASE_URL = isServer
+  ? (process.env.NEXT_PUBLIC_BE_HOST_SERVER || process.env.NEXT_PUBLIC_BE_HOST)
+  : process.env.NEXT_PUBLIC_BE_HOST;
 const BE_TOKEN_ADMIN = process.env.NEXT_PUBLIC_BE_TOKEN_ADMIN;
 // GET
 export const getData = async (endpoint: string, token = BE_TOKEN_ADMIN) => {

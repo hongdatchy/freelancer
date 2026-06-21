@@ -10,7 +10,7 @@ services:
     volumes:
       - postgres_data_2:/var/lib/postgresql/data
     networks:
-      - strapi-network
+      - vietsure-network
 
   # Strapi Backend
   strapi:
@@ -36,10 +36,11 @@ services:
     depends_on:
       - db2
     networks:
-      - strapi-network
+      - vietsure-network
 
 networks:
-  strapi-network:
+  vietsure-network:
+    name: vietsure-network
     driver: bridge
 
 volumes:

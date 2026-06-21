@@ -7,3 +7,10 @@ services:
     ports:
       - "3000:3000"
     restart: unless-stopped
+    networks:
+      - vietsure-network
+
+networks:
+  vietsure-network:
+    name: vietsure-network
+    external: true
