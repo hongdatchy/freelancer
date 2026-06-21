@@ -32,6 +32,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+      - /app/dist
     depends_on:
       - db2
     networks:
