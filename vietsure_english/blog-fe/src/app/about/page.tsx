@@ -141,14 +141,14 @@ export default function About() {
                 height: 220,
               }}
             >
-              <img src="/images/arrow1.png" alt="" className="absolute pointer-events-none animate-float-up"
-                style={{ width: 190, height: 190, top: -190, left: -0, objectFit: "contain" }} />
-              <img src="/images/arrow2.png" alt="" className="absolute pointer-events-none animate-float-down"
-                style={{ width: 190, height: 190, top: -170, right: -0, objectFit: "contain" }} />
-              <img src="/images/arrow3.png" alt="" className="absolute pointer-events-none animate-float-up"
-                style={{ width: 150, height: 150, bottom: -120, left: -60, objectFit: "contain" }} />
-              <img src="/images/arrow4.png" alt="" className="absolute pointer-events-none animate-float-down"
-                style={{ width: 190, height: 190, bottom: -170, right: -0, objectFit: "contain" }} />
+              <Image src="/images/arrow1.png" alt="" width={190} height={190} className="absolute pointer-events-none animate-float-up object-contain"
+                style={{ top: -190, left: -0 }} />
+              <Image src="/images/arrow2.png" alt="" width={190} height={190} className="absolute pointer-events-none animate-float-down object-contain"
+                style={{ top: -170, right: -0 }} />
+              <Image src="/images/arrow3.png" alt="" width={150} height={150} className="absolute pointer-events-none animate-float-up object-contain"
+                style={{ bottom: -120, left: -60 }} />
+              <Image src="/images/arrow4.png" alt="" width={190} height={190} className="absolute pointer-events-none animate-float-down object-contain"
+                style={{ bottom: -170, right: -0 }} />
 
               <div className="flex items-center justify-center h-full">
                 <Image src="/images/Vietsure English_Logo-15.png" alt="logo" width={290} height={290} className="select-none pointer-events-none object-contain" />

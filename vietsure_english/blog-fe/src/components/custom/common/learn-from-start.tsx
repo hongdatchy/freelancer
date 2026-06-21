@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function LearnFromStart() {
     return (
         <>
@@ -20,9 +22,10 @@ export default function LearnFromStart() {
                     <div className="grid grid-cols-4 gap-4 w-full mb-10">
 
                         {/* ảnh lớn bên trái */}
-                        <div className="col-span-2 row-span-2 overflow-hidden rounded-2xl shadow-sm aspect-square">
-                            <img
+                        <div className="col-span-2 row-span-2 overflow-hidden rounded-2xl shadow-sm aspect-square relative">
+                            <Image
                                 src="/images/learn_from_start1.png"
+                                fill
                                 className="w-full h-full object-cover scale-105 transition-transform duration-500 hover:scale-110"
                                 alt="Học viên Vietsure English"
                             />
@@ -31,33 +34,37 @@ export default function LearnFromStart() {
                         {/* cột phải */}
                         <div className="grid grid-cols-2 gap-4 col-span-2 row-span-2">
 
-                            <div className="overflow-hidden rounded-2xl shadow-sm aspect-square">
-                                <img
+                            <div className="overflow-hidden rounded-2xl shadow-sm aspect-square relative">
+                                <Image
                                     src="/images/learn_from_start2.png"
+                                    fill
                                     className="w-full h-full object-cover scale-105 transition-transform duration-500 hover:scale-110"
                                     alt="Học viên học trực tuyến"
                                 />
                             </div>
 
-                            <div className="overflow-hidden rounded-2xl shadow-sm aspect-square">
-                                <img
+                            <div className="overflow-hidden rounded-2xl shadow-sm aspect-square relative">
+                                <Image
                                     src="/images/learn_from_start3.png"
+                                    fill
                                     className="w-full h-full object-cover scale-105 transition-transform duration-500 hover:scale-110"
                                     alt="Trẻ học tiếng Anh online"
                                 />
                             </div>
 
-                            <div className="overflow-hidden rounded-2xl shadow-sm aspect-square">
-                                <img
+                            <div className="overflow-hidden rounded-2xl shadow-sm aspect-square relative">
+                                <Image
                                     src="/images/learn_from_start4.png"
+                                    fill
                                     className="w-full h-full object-cover scale-105 transition-transform duration-500 hover:scale-110"
                                     alt="Lớp học tương tác"
                                 />
                             </div>
 
-                            <div className="overflow-hidden rounded-2xl shadow-sm aspect-square">
-                                <img
+                            <div className="overflow-hidden rounded-2xl shadow-sm aspect-square relative">
+                                <Image
                                     src="/images/learn_from_start5.png"
+                                    fill
                                     className="w-full h-full object-cover scale-105 transition-transform duration-500 hover:scale-110"
                                     alt="Học sinh vui vẻ học tập"
                                 />

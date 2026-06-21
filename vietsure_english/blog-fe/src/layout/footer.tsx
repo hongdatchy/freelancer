@@ -201,11 +201,13 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src="https://images.dmca.com/Badges/dmca_protected_sml_120j.png?ID=e685908c-9b2d-4137-a267-1c1636e19ab9"
                     alt="DMCA.com Protection Status"
+                    width={120}
+                    height={34}
                     className="h-[34px] w-auto rounded"
+                    unoptimized
                   />
                 </a>
               </div>

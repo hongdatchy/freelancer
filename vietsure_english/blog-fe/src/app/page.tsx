@@ -142,9 +142,11 @@ export default async function Home() {
             <div className="bg-white rounded-[32px] p-8 md:p-10 shadow-[0_15px_40px_rgba(59,130,246,0.12)] border border-slate-100 flex flex-col justify-between relative">
               {/* Cambridge Stamp (Overlapping top-right corner of card 2) */}
               <div className="absolute top-[-45px] right-[-15px] md:right-[-25px] z-10 w-[110px] md:w-[140px] lg:w-[155px] rotate-[15deg]">
-                <img
+                <Image
                   src="/images/cambridge-commitment.png"
                   alt="Cambridge Commitment Stamp"
+                  width={155}
+                  height={155}
                   className="w-full h-auto filter contrast-[2.2] brightness-[0.5] saturate-[1.5]"
                 />
               </div>

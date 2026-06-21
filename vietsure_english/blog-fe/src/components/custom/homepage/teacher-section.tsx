@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/carousel"
 import { postData } from "@/service/api"
 import { TeacherDTO } from "@/dto/TeacherDTO"
+import Image from "next/image"
 
 export default function TeacherSection() {
     const [teachers, setTeachers] = useState<TeacherDTO[]>([])
@@ -66,9 +67,10 @@ export default function TeacherSection() {
 
                                                     {/* AVATAR */}
                                                     <div className="absolute inset-[8px] rounded-full overflow-hidden z-10">
-                                                        <img
+                                                        <Image
                                                             src={avatarUrl}
                                                             alt={t.fullName}
+                                                            fill
                                                             className="w-full h-full object-cover"
                                                         />
                                                     </div>

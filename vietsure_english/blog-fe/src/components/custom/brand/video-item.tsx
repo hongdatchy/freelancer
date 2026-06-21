@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 export function VideoItem({
     title,
@@ -40,9 +41,10 @@ export function VideoItem({
                             onClick={() => setOpen(true)}
                             className="absolute inset-0 group"
                         >
-                            <img
+                            <Image
                                 src={thumbnail}
-                                alt={title}
+                                alt={title || "Video thumbnail"}
+                                fill
                                 className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                             {/* Play overlay button */}
@@ -90,9 +92,10 @@ export function VideoItem({
                         onClick={() => setOpen(true)}
                         className="absolute inset-0 group"
                     >
-                        <img
+                        <Image
                             src={thumbnail}
-                            alt={title}
+                            alt={title || "Video thumbnail"}
+                            fill
                             className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         {/* Play overlay button */}

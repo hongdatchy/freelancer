@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { VideoItem } from "./video-item";
+import Image from "next/image";
 
 export default function HotProgram() {
     const [activeTab, setActiveTab] = useState(0);
@@ -94,42 +95,42 @@ export default function HotProgram() {
                             {/* features */}
                             <div className="mt-6 grid gap-3 lg:grid-cols-2">
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-1.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-1.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         1 giáo viên kèm 1 học sinh giúp tăng tương tác tối đa
                                     </p>
                                 </div>
 
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-2.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-2.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         Chỉnh sửa lỗi phát âm và phản xạ ngay trong buổi học
                                     </p>
                                 </div>
 
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-3.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-3.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         Giáo trình chuẩn Cambridge phù hợp trẻ từ 4 - 12 tuổi
                                     </p>
                                 </div>
 
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-4.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-4.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         Miễn phí kiểm tra trình độ và tư vấn lộ trình học
                                     </p>
                                 </div>
 
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-5.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-5.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         Chi phí hợp lý chỉ từ 70.000đ / buổi học
                                     </p>
                                 </div>
 
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-6.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-6.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         Tiến bộ nhanh cả 4 kỹ năng nghe - nói - đọc - viết
                                     </p>
@@ -138,10 +139,12 @@ export default function HotProgram() {
 
                             {/* bottom image (GIỮ NGUYÊN) */}
                             <div className="mt-6 bg-[#e9fff4] p-6 lg:p-10">
-                                <img
+                                <Image
                                     src="/images/img-1.png"
                                     alt="teacher"
-                                    className="mx-auto w-full max-w-[1000px]"
+                                    width={1000}
+                                    height={500}
+                                    className="mx-auto w-full max-w-[1000px] h-auto object-contain"
                                 />
                             </div>
                         </div>
@@ -248,52 +251,54 @@ export default function HotProgram() {
 
                             {/* image */}
                             <div className="text-center">
-                                <img
+                                <Image
                                     src="/images/math-ads.png"
                                     alt="Toán 1 kèm 1"
-                                    className="mx-auto w-full"
+                                    width={1000}
+                                    height={500}
+                                    className="mx-auto w-full h-auto object-contain"
                                 />
                             </div>
 
                             {/* features */}
                             <div className="mt-6 grid gap-3 lg:grid-cols-2">
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-1.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-1.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         Phương pháp học cá nhân hóa: Mỗi học viên được học với 1 gia sư giỏi, tập trung vào các lỗ hổng kiến thức, giúp học viên tiến bộ nhanh và tự tin hơn trong môn Toán
                                     </p>
                                 </div>
 
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-3.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-3.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         Giáo trình học chuẩn theo Bộ Giáo Dục: Học viên được học bám sát chương trình SGK, đảm bảo kiến thức nền tảng vững chắc và ôn tập hiệu quả cho các kỳ thi
                                     </p>
                                 </div>
 
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-5.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-5.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         Đội ngũ giáo viên dày dặn kinh nghiệm sư phạm, 100% có bằng cấp, chứng chỉ
                                     </p>
                                 </div>
 
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-4.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-4.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         Lộ trình cá nhân hóa: sửa đổi theo khả năng, tiến bộ nhanh chóng
                                     </p>
                                 </div>
 
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-6.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-6.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         Mô hình đào tạo học online hàng đầu: Kyna tích hợp công nghệ AI và trò chơi tương tác giúp học viên hào hứng, dễ dàng tiếp thu kiến thức
                                     </p>
                                 </div>
 
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-2.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-2.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         Giáo vụ theo sát: đảm bảo quyền lợi, báo cáo tình hình học tập hằng ngày giúp bố mẹ dễ dàng theo dõi
                                     </p>
@@ -316,29 +321,37 @@ export default function HotProgram() {
 
                                     {/* LEFT - BIG IMAGE */}
                                     <div>
-                                        <img
+                                        <Image
                                             src="/images/img-ai-1.png"
                                             alt="img ai"
-                                            className="w-full h-auto rounded-xl"
+                                            width={500}
+                                            height={350}
+                                            className="w-full h-auto rounded-xl object-cover"
                                         />
                                     </div>
 
                                     {/* RIGHT - STACK 3 IMAGES */}
                                     <div className="flex flex-col gap-2 lg:gap-4">
-                                        <img
+                                        <Image
                                             src="/images/img-ai-2.png"
                                             alt="img ai"
-                                            className="w-full h-auto rounded-xl"
+                                            width={250}
+                                            height={110}
+                                            className="w-full h-auto rounded-xl object-cover"
                                         />
-                                        <img
+                                        <Image
                                             src="/images/img-ai-3.png"
                                             alt="img ai"
-                                            className="w-full h-auto rounded-xl"
+                                            width={250}
+                                            height={110}
+                                            className="w-full h-auto rounded-xl object-cover"
                                         />
-                                        <img
+                                        <Image
                                             src="/images/img-ai-4.png"
                                             alt="img ai"
-                                            className="w-full h-auto rounded-xl"
+                                            width={250}
+                                            height={110}
+                                            className="w-full h-auto rounded-xl object-cover"
                                         />
                                     </div>
 
@@ -348,42 +361,42 @@ export default function HotProgram() {
                             {/* features */}
                             <div className="mt-6 grid gap-3 lg:grid-cols-2">
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-1.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-1.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         Học từ vựng, cấu trúc ở hơn 500 chủ đề, từ dễ đến khó
                                     </p>
                                 </div>
 
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-3.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-3.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         Thực hành giao tiếp cùng hội thoại nhập vai theo các chủ đề khác nhau
                                     </p>
                                 </div>
 
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-5.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-5.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         Học qua hình ảnh cùng GIA SƯ AI
                                     </p>
                                 </div>
 
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-4.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-4.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         Luyện phát âm chi tiết với gia sư AI - chấm lỗi từng âm
                                     </p>
                                 </div>
 
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-6.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-6.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         AI chỉ rõ lỗi sai từ vựng, ngữ pháp và cá nhân hoá theo từng học viên
                                     </p>
                                 </div>
 
                                 <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm">
-                                    <img src="/images/icon-2.png" className="h-10 w-10 shrink-0" />
+                                    <Image src="/images/icon-2.png" alt="icon" width={40} height={40} className="h-10 w-10 shrink-0" />
                                     <p className="text-sm leading-relaxed text-[#45474d]">
                                         Gia sư AI tương tác như người thật
                                     </p>

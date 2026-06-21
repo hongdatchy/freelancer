@@ -1,4 +1,4 @@
-"use client";
+import Image from "next/image";
 
 const ratingCards = [
     {
@@ -71,10 +71,11 @@ export default function GgMapRatingSection() {
                                     className={`bg-white rounded-[24px] p-5 shadow-md border border-slate-100 flex gap-4 transition-all duration-300 hover:rotate-0 hover:translate-x-0 hover:translate-y-0 ${offsetClass} max-w-[420px] w-full`}
                                 >
                                     {/* Avatar */}
-                                    <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-slate-100">
-                                        <img 
+                                    <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-slate-100 relative">
+                                        <Image 
                                             src={item.avatar} 
                                             alt={item.name} 
+                                            fill
                                             className="w-full h-full object-cover" 
                                         />
                                     </div>
