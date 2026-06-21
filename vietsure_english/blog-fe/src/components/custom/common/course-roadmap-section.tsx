@@ -17,7 +17,7 @@ export default function CourseRoadmapSection() {
       {/* Roadmap Diagram Image - FULL WIDTH */}
       <div className="w-full my-12 select-none pointer-events-none">
         <Image
-          src="/images/CTR HOC.png"
+          src="/images/ctr-hoc.png"
           alt="Chương trình học tiếng Anh online chất lượng cao dành cho các bé"
           width={1920}
           height={1200}

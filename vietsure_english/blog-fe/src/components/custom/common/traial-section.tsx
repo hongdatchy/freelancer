@@ -83,7 +83,7 @@ export default function TrialSection({ isPopup = false }: { isPopup?: boolean })
                         
                         <div className="relative w-full flex justify-center items-end mt-4">
                             <Image 
-                                src="/images/Phan khich, nang dong.png" 
+                                src="/images/phan-khich-nang-dong.png" 
                                 alt="Mascot Vietsure English Waving" 
                                 width={isPopup ? 160 : 310} 
                                 height={isPopup ? 160 : 310} 

@@ -76,7 +76,7 @@ export default function HeroSection({
         <Image 
           alt="" 
           className="w-full h-auto" 
-          src="/images/Hao hung, san sang.png"
+          src="/images/hao-hung-san-sang.png"
           width={400}
           height={300}
         />

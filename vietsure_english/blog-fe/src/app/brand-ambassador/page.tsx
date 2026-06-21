@@ -303,7 +303,7 @@ export default function BrandAmbassadorPage() {
               </div>
               <div className="w-full md:w-[380px] h-[240px] md:h-[260px] relative overflow-hidden rounded-[32px] shrink-0 shadow-sm select-none">
                 <Image
-                  src="/images/Layer 13.png"
+                  src="/images/layer-13.png"
                   alt="Layer 13"
                   fill
                   className="object-cover"
@@ -333,7 +333,7 @@ export default function BrandAmbassadorPage() {
               </div>
               <div className="w-full md:w-[380px] h-[240px] md:h-[260px] relative overflow-hidden rounded-[32px] shrink-0 shadow-sm select-none">
                 <Image
-                  src="/images/Layer 14.png"
+                  src="/images/layer-14.png"
                   alt="Layer 14"
                   fill
                   className="object-cover"
@@ -365,7 +365,7 @@ export default function BrandAmbassadorPage() {
               </div>
               <div className="w-full md:w-[380px] h-[240px] md:h-[260px] relative overflow-hidden rounded-[32px] shrink-0 shadow-sm select-none">
                 <Image
-                  src="/images/Layer 16.png"
+                  src="/images/layer-16.png"
                   alt="Layer 16"
                   fill
                   className="object-cover"

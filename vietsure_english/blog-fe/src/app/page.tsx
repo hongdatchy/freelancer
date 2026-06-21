@@ -40,7 +40,7 @@ export default async function Home() {
             {/* Ảnh bên trái */}
             <div className="w-full md:w-1/2 flex justify-center">
               <Image 
-                src="/images/Tap trung, quyet liet.png" 
+                src="/images/tap-trung-quyet-liet.png" 
                 alt="Lý do chọn VietSure" 
                 width={700} 
                 height={700} 

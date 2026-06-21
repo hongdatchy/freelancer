@@ -199,7 +199,7 @@ export default function About() {
             {/* Left Mascot */}
             <div className="flex justify-center">
               <Image 
-                src="/images/Kieu hanh, man nguyen.png" 
+                src="/images/kieu-hanh-man-nguyen.png" 
                 alt="Mascot Left" 
                 width={700} 
                 height={700} 
@@ -216,7 +216,7 @@ export default function About() {
             {/* Right Mascot */}
             <div className="flex justify-center">
               <Image 
-                src="/images/Hao hung, san sang.png" 
+                src="/images/hao-hung-san-sang.png" 
                 alt="Mascot Right" 
                 width={700} 
                 height={700} 

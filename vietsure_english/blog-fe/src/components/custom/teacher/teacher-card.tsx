@@ -1,5 +1,6 @@
 import { TeacherDTO } from '@/dto/TeacherDTO';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function TeacherCard({ teacher }: { teacher: TeacherDTO }) {
     const avatarUrl = teacher.avatarHomePage?.url
@@ -30,9 +31,10 @@ export default function TeacherCard({ teacher }: { teacher: TeacherDTO }) {
 
                     {/* AVATAR */}
                     <div className="absolute inset-[8px] rounded-full overflow-hidden z-10">
-                        <img
+                        <Image
                             src={avatarUrl}
                             alt={teacher.fullName}
+                            fill
                             className="w-full h-full object-cover"
                         />
                     </div>

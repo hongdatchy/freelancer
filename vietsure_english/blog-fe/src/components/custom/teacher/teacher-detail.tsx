@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { TeacherDTO } from '@/dto/TeacherDTO';
 import { useBreadcrumb } from '@/context/useBreadcrumb';
+import Image from 'next/image';
 
 export function TeacherDetailClient({
   teacher,
@@ -114,9 +115,10 @@ export function TeacherDetailClient({
 
                     {/* AVATAR */}
                     <div className="absolute inset-[8px] rounded-full overflow-hidden z-10">
-                        <img
+                        <Image
                             src={avatarUrl}
                             alt={teacher.fullName}
+                            fill
                             className="w-full h-full object-cover"
                         />
                     </div>
@@ -186,9 +188,11 @@ export function TeacherDetailClient({
 
           {/* Mascot Column (Right) */}
           <div className="hidden lg:block w-[240px] flex-shrink-0 relative select-none pointer-events-none self-end mb-[-20px] -mt-12 translate-y-[-24px]">
-            <img
-              src="/images/Hao hung, san sang.png"
+            <Image
+              src="/images/hao-hung-san-sang.png"
               alt="Mascot Penguin Vietsure English"
+              width={240}
+              height={300}
               className="w-full h-auto object-contain animate-float-up"
             />
           </div>
