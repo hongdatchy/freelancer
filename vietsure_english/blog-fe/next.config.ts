@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 
+
 if (typeof Promise.withResolvers === 'undefined') {
   (Promise as any).withResolvers = function() {
     let resolve;
