@@ -21,7 +21,7 @@ const Homepage = () => {
         }}
       >
         <img
-          src="/Vietsure English_Logo-15.png"
+          src="/uploads/Vietsure%20English_Logo-15.png"
           alt="Banner"
           style={{
             width: "100%",
