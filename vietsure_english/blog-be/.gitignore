@@ -129,7 +129,3 @@ dist
 build
 .strapi-updater.json
 .strapi-cloud.json
-
-# Ensure public/ and all its files/folders (including uploads) are tracked and pushed
-!public/
-!public/**/*
