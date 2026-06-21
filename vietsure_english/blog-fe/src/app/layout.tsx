@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Nunito } from 'next/font/google';
+import { Nunito, Be_Vietnam_Pro } from 'next/font/google';
 import './globals.css';
 import Header from '@/layout/header';
 import Footer from '@/layout/footer';
@@ -23,6 +23,12 @@ const nunito = Nunito({
   variable: '--font-nunito',
 });
 
+const beVietnamPro = Be_Vietnam_Pro({
+  subsets: ['vietnamese', 'latin'],
+  weight: ['400', '600', '700', '800'],
+  variable: '--font-be-vietnam-pro',
+});
+
 export const metadata: Metadata = {
   title: 'Vietsure English - Tiếng Anh phản xạ online chuẩn Quốc tế',
   description: 'Vietsure English - Tiếng Anh phản xạ online chuẩn Quốc tế',
@@ -35,10 +41,15 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${nunito.className} antialiased`}>
+      <body className={`${nunito.className} ${beVietnamPro.variable} antialiased`}>
         <BreadcrumbProvider>
           <Header />
           {children}
+          {/* Material Symbols support */}
+          <link 
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" 
+            rel="stylesheet" 
+          />
           <Footer />
         </BreadcrumbProvider>
       </body>

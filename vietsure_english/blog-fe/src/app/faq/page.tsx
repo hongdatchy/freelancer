@@ -4,15 +4,7 @@ import { Mail, Phone, Facebook } from 'lucide-react';
 export default function FAQ() {
   return (
     <>
-      {/* Import Be Vietnam Pro and Material Symbols */}
-      <link 
-        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800&display=swap" 
-        rel="stylesheet" 
-      />
-      <link 
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" 
-        rel="stylesheet" 
-      />
+      {/* Import Be Vietnam Pro and Material Symbols loaded via layout */}
 
       <style dangerouslySetInnerHTML={{__html: `
         .faq-page-body {

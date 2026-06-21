@@ -5,6 +5,10 @@
 body {
 }
 
+:root {
+  --font-be-vietnam-pro: 'Be Vietnam Pro', sans-serif;
+}
+
 
 .category-in-post-review::before {
   content: "";

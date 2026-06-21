@@ -3,11 +3,7 @@ import TrialSection from "@/components/custom/common/traial-section";
 export default function TermsOfService() {
   return (
     <>
-      {/* Import Be Vietnam Pro */}
-      <link 
-        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800&display=swap" 
-        rel="stylesheet" 
-      />
+      {/* Fonts loaded via layout */}
 
       <style dangerouslySetInnerHTML={{__html: `
         .terms-page-body {
