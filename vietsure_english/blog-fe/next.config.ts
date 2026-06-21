@@ -40,6 +40,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'cloudcamera.online',
+      },
+      {
+        protocol: 'https',
         hostname: 'api.phamtuan.net',
       },
       {
