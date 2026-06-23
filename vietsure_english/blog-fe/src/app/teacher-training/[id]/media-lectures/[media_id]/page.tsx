@@ -57,7 +57,7 @@ export default async function LearningPage(props: {
 
         {media.type === 'video' && fileUrl && (
           <div className="w-full h-[500px] bg-black rounded-lg overflow-hidden">
-            <video src={fileUrl} controls className="w-full h-full" />
+            <video src={fileUrl} controls controlsList="nodownload" className="w-full h-full" />
           </div>
         )}
 
@@ -81,11 +81,14 @@ export default async function LearningPage(props: {
         )}
 
         {media.type === 'ppt' && fileUrl && (
-          <div className="w-full h-[600px]">
+          <div className="w-full h-[600px] relative">
             <iframe
               src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`}
               className="w-full h-full border rounded"
             />
+            {/* Overlay to hide the "Print" and "Download" buttons on the bottom bar of Office Viewer.
+                The bar is ~30px high, Fullscreen is on the far right (~40px wide). */}
+            <div className="absolute bottom-0 right-10 w-[70px] h-[30px] bg-[#3b3b3b] z-10" title="Disabled" />
           </div>
         )}
 

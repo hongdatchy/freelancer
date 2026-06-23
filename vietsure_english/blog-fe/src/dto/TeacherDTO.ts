@@ -32,15 +32,6 @@ export interface TeacherDTO {
     };
   };
 
-  avatarHomePage: {
-    url: string;
-    formats?: {
-      thumbnail?: { url: string };
-      small?: { url: string };
-      medium?: { url: string };
-      large?: { url: string };
-    };
-  };
 
   educations: Array<{
     id: number;

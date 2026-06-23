@@ -31,10 +31,10 @@ export default function TeacherSection() {
             <div className="max-w-6xl mx-auto relative">
                 {/* TITLE */}
                 <div className="text-center mb-16">
-                    <p className="text-[#3F489A] text-lg font-bold uppercase tracking-wider">
+                    <p className="section-subtitle">
                         Giáo viên
                     </p>
-                    <h2 className="text-2xl md:text-3xl lg:text-[36px] font-black text-[#2E357F] uppercase mt-2 tracking-wide">
+                    <h2 className="section-title mt-2">
                         ĐỘI NGŨ GIÁO VIÊN CHẤT LƯỢNG VÀ TÂM HUYẾT
                     </h2>
                 </div>
@@ -43,8 +43,8 @@ export default function TeacherSection() {
                 <Carousel className="w-full px-4 sm:px-12 relative">
                     <CarouselContent className="-ml-4">
                         {teachers.map((t, index) => {
-                            const avatarUrl = t.avatarHomePage?.url
-                                ? process.env.NEXT_PUBLIC_BE_HOST + t.avatarHomePage.url
+                            const avatarUrl = t.avatar?.url
+                                ? process.env.NEXT_PUBLIC_BE_HOST + t.avatar.url
                                 : '/images/default-avatar.png'
 
                             return (

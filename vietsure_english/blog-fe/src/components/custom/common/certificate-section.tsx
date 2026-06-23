@@ -3,7 +3,7 @@ import Image from "next/image";
 export default function CertificateSection() {
   return (
     <section className="px-6 py-20 bg-gradient-to-b from-white to-sky-50/20 overflow-hidden" data-purpose="certificate-section">
-      <div className="w-full max-w-none px-6 md:px-16 lg:px-28 flex flex-col sm:flex-row items-center gap-10 sm:gap-0 relative">
+      <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 flex flex-col sm:flex-row items-center gap-10 sm:gap-0 relative">
         
         {/* Left Column: Text Content */}
         <div className="w-full sm:w-[70%] lg:w-[78%] z-10">
@@ -26,6 +26,7 @@ export default function CertificateSection() {
               width={500}
               height={380}
               className="w-full h-auto object-contain"
+              unoptimized
             />
           </div>
         </div>

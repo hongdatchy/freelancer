@@ -51,7 +51,7 @@ export function BreadcrumbDynamic({ menuState }: Props) {
   // if (pathname === '/' || pathname === '/elearning') return null;
 
   return (
-    <div className="w-full max-w-none flex justify-start px-6 md:px-10 lg:px-12 pb-4">
+    <div className="mx-auto w-full max-w-[1440px] flex justify-start px-6 md:px-10 lg:px-12 pb-4">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

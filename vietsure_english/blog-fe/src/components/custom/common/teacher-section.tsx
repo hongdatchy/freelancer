@@ -9,6 +9,7 @@ import {
     CarouselItem,
     CarouselNext,
     CarouselPrevious,
+    type CarouselApi,
 } from "@/components/ui/carousel"
 import { postData } from "@/service/api"
 import { TeacherDTO } from "@/dto/TeacherDTO"
@@ -17,6 +18,7 @@ import Image from "next/image"
 
 export default function TeacherSection() {
     const [teachers, setTeachers] = useState<TeacherDTO[]>([])
+    const [api, setApi] = useState<CarouselApi>()
 
     useEffect(() => {
         postData(`api/users/search?pagination[page]=0&pagination[pageSize]=100`, {})
@@ -25,11 +27,21 @@ export default function TeacherSection() {
             })
     }, [])
 
+    useEffect(() => {
+        if (!api) return
+
+        const interval = setInterval(() => {
+            api.scrollNext()
+        }, 3000)
+
+        return () => clearInterval(interval)
+    }, [api])
+
     return (
         <section
             className="px-6 py-20 bg-gradient-to-b from-[#EBF5FF] to-white"
         >
-            <div className="w-full max-w-none px-6 md:px-16 lg:px-28 relative">
+            <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 relative">
                 {/* TITLE */}
                 <div className="text-center mb-16">
                     <p className="section-subtitle">
@@ -41,11 +53,16 @@ export default function TeacherSection() {
                 </div>
 
                 {/* CAROUSEL */}
-                <Carousel className="w-full px-4 sm:px-12 relative">
+                <Carousel 
+                    setApi={setApi} 
+                    opts={{ loop: true, align: "start" }} 
+                    className="w-full px-4 sm:px-12 relative"
+                >
                     <CarouselContent className="-ml-4">
                         {teachers.map((t, index) => {
-                            const avatarUrl = t.avatarHomePage?.url
-                                ? process.env.NEXT_PUBLIC_BE_HOST + t.avatarHomePage.url
+                            const avatarPath = t.avatar?.formats?.medium?.url || t.avatar?.formats?.small?.url || t.avatar?.url;
+                            const avatarUrl = avatarPath
+                                ? process.env.NEXT_PUBLIC_BE_HOST + avatarPath
                                 : '/images/default-avatar.png'
 
                             // Get IELTS or first score
@@ -68,7 +85,7 @@ export default function TeacherSection() {
                                 >
                                     <Link href={`/teachers/${t.id}`} className="block p-2 h-full">
                                         <Card className="h-full rounded-[32px] border-2 border-sky-100 shadow-[0_12px_30px_rgba(59,130,246,0.06)] bg-white relative hover:scale-[1.02] transition-transform duration-300">
-                                            <CardContent className="px-5 pb-8 pt-0 flex flex-col items-center h-full">
+                                            <CardContent className="px-6 pb-8 pt-0 flex flex-col items-center h-full">
 
                                                 {/* AVATAR + TEXT CONG */}
                                                 <div className="relative w-32 h-32 -mt-16 mb-6 flex-shrink-0">
@@ -124,28 +141,33 @@ export default function TeacherSection() {
                                                     {namePrefix}{t.fullName}
                                                 </h3>
 
-                                                {/* 2 BADGE BLOCKS SIDE BY SIDE */}
-                                                <div className="flex gap-2.5 w-full mt-auto border-t border-slate-100 pt-4">
-                                                    {/* Score Box */}
-                                                    <div className="flex-1 bg-[#3F489A] rounded-2xl p-2.5 flex flex-col items-center justify-center text-center shadow-[4px_4px_0px_0px_rgba(56,189,248,0.6)] h-[74px]">
-                                                        <p className="text-yellow-300 font-extrabold text-[13px] md:text-sm leading-none">
-                                                            {scoreVal} {scoreType}
-                                                        </p>
-                                                        <p className="text-white text-[9px] md:text-[10px] font-semibold mt-1 opacity-95">
-                                                            Overall
-                                                        </p>
-                                                    </div>
-
-                                                    {/* Experience Box */}
-                                                    <div className="flex-1 bg-[#3F489A] rounded-2xl p-2.5 flex flex-col items-center justify-center text-center shadow-[4px_4px_0px_0px_rgba(56,189,248,0.6)] h-[74px]">
-                                                        <p className="text-yellow-300 font-extrabold text-[13px] md:text-sm leading-none">
-                                                            {yearsExp}
-                                                        </p>
-                                                        <p className="text-white text-[9px] md:text-[10px] font-semibold mt-1 opacity-95 leading-tight">
-                                                            Năm k.nghiệm giảng dạy
-                                                        </p>
-                                                    </div>
-                                                </div>
+                                                {/* BULLET POINTS */}
+                                                <ul className="w-full space-y-4 text-left pl-3 pr-1 mt-auto">
+                                                    {t.educations?.[0]?.title && (
+                                                        <li className="flex items-start gap-2.5">
+                                                            <span className="mt-1.5 flex-shrink-0 w-2.5 h-2.5 rounded-full bg-[#FF6B00]" />
+                                                            <span className="text-[#2E357F] font-bold text-xs md:text-sm leading-snug">
+                                                                {t.educations[0].title}
+                                                            </span>
+                                                        </li>
+                                                    )}
+                                                    {scoreVal && (
+                                                        <li className="flex items-start gap-2.5">
+                                                            <span className="mt-1.5 flex-shrink-0 w-2.5 h-2.5 rounded-full bg-[#FF6B00]" />
+                                                            <span className="text-[#2E357F] font-bold text-xs md:text-sm leading-snug">
+                                                                Chứng chỉ {scoreType} {scoreVal}
+                                                            </span>
+                                                        </li>
+                                                    )}
+                                                    {yearsExp && (
+                                                        <li className="flex items-start gap-2.5">
+                                                            <span className="mt-1.5 flex-shrink-0 w-2.5 h-2.5 rounded-full bg-[#FF6B00]" />
+                                                            <span className="text-[#2E357F] font-bold text-xs md:text-sm leading-snug">
+                                                                {yearsExp} năm kinh nghiệm giảng dạy tiếng Anh
+                                                            </span>
+                                                        </li>
+                                                    )}
+                                                </ul>
 
                                             </CardContent>
                                         </Card>

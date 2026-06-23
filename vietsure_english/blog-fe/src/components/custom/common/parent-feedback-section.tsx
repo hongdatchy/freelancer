@@ -1,11 +1,13 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  type CarouselApi,
 } from "@/components/ui/carousel";
 import { VideoItem } from "@/components/custom/brand/video-item";
 
@@ -31,25 +33,48 @@ const feedbacks = [
     thumbnail: "/images/feed-back.webp",
     youtube: "KfYFVtMZVNo",
   },
+  {
+    id: 4,
+    title: "Bé Ivan Lê",
+    subtitle: "Phụ huynh",
+    thumbnail: "/images/feed-back.webp",
+    youtube: "nYR0qsoz2Kw",
+  },
 ];
 
 export default function ParentFeedbackSection() {
+  const [api, setApi] = useState<CarouselApi>();
+
+  useEffect(() => {
+    if (!api) return;
+
+    const interval = setInterval(() => {
+      api.scrollNext();
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [api]);
+
   return (
     <section className="px-6 py-20 bg-gradient-to-b from-[#EBF5FF] to-white overflow-hidden" data-purpose="parent-feedback-section">
-      <div className="w-full max-w-none px-6 md:px-16 lg:px-28 relative">
+      <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 relative">
         
         {/* Header */}
         <div className="text-center mx-auto mb-16 max-w-none">
           <h2 className="section-title">
             PHỤ HUYNH NÓI VỀ VIETSURE ENGLISH
           </h2>
-          <p className="text-[#3F489A] font-semibold text-base md:text-lg lg:text-[19px] leading-relaxed mt-4 opacity-75 max-w-6xl mx-auto">
+          <p className="section-desc mt-4 max-w-6xl mx-auto text-center opacity-75">
             Được hàng trăm phụ huynh tin tưởng và lựa chọn, Vietsure English mang đến chương trình học tiếng Anh <br className="hidden xl:inline" /> trực tuyến hiệu quả, giúp trẻ tiến bộ mỗi ngày
           </p>
         </div>
 
         {/* Carousel container */}
-        <Carousel className="w-full px-4 sm:px-12 relative">
+        <Carousel 
+          setApi={setApi} 
+          opts={{ loop: true, align: "start" }} 
+          className="w-full px-4 sm:px-12 relative"
+        >
           <CarouselContent className="-ml-4">
             {feedbacks.map((feedback, index) => (
               <CarouselItem

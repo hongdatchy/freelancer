@@ -1,7 +1,7 @@
 export default function DifferencesSection() {
   return (
     <section className="px-6 py-20 bg-gradient-to-b from-white to-sky-50/20 overflow-hidden">
-      <div className="w-full max-w-none px-6 md:px-16 lg:px-28">
+      <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
         
         {/* Header */}
         <div className="text-center max-w-none mx-auto mb-16">
@@ -19,7 +19,7 @@ export default function DifferencesSection() {
               <h3 className="text-base md:text-lg font-extrabold text-[#2E357F] mb-3">
                 Phương pháp giảng dạy<br />hiện đại CLIL
               </h3>
-              <p className="text-[#2E357F] text-xs md:text-sm leading-relaxed">
+              <p className="section-desc">
                 Tích hợp STEM (môn Toán & Khoa học) vào chương trình giúp học viên có nền tảng kiến thức phong phú và thực tiễn.
               </p>
             </div>
@@ -29,7 +29,7 @@ export default function DifferencesSection() {
               <h3 className="text-base md:text-lg font-extrabold text-[#2E357F] mb-3">
                 Bộ kỹ năng chuẩn Cambridge
               </h3>
-              <p className="text-[#2E357F] text-xs md:text-sm leading-relaxed">
+              <p className="section-desc">
                 Đào tạo 6 kỹ năng sống thiết yếu chuẩn Cambridge Life Competencies Framework cho trẻ em quốc tế.
               </p>
             </div>
@@ -41,7 +41,7 @@ export default function DifferencesSection() {
               <h3 className="text-base md:text-lg font-extrabold text-[#2E357F] mb-4">
                 Giáo trình độc quyền<br />chuẩn Cambridge
               </h3>
-              <p className="text-[#2E357F] text-xs md:text-sm leading-relaxed max-w-[320px]">
+              <p className="section-desc max-w-[320px]">
                 Phát triển toàn diện từ vựng & ngữ pháp từng cấp độ qua bài giảng sinh động để giúp học viên tự tin 4 kỹ năng (Nghe - nói - đọc - viết) chinh phục các kỳ thi Quốc tế.
               </p>
             </div>
@@ -54,7 +54,7 @@ export default function DifferencesSection() {
               <h3 className="text-base md:text-lg font-extrabold text-[#2E357F] mb-3">
                 Học tập theo mô<br />hình "Edutainment"
               </h3>
-              <p className="text-[#2E357F] text-xs md:text-sm leading-relaxed">
+              <p className="section-desc">
                 Kết hợp giáo dục và giải trí hiện đại, sinh động thông qua game, đọc truyện, ca hát và series phim ngắn về hành trình của Penguin, khơi gợi sáng tạo và niềm yêu thích học tiếng Anh cho trẻ.
               </p>
             </div>
@@ -64,7 +64,7 @@ export default function DifferencesSection() {
               <h3 className="text-base md:text-lg font-extrabold text-[#2E357F] mb-3">
                 Rèn luyện tư duy công dân<br />toàn cầu, đậm bản sắc Việt Nam
               </h3>
-              <p className="text-[#2E357F] text-xs md:text-sm leading-relaxed">
+              <p className="section-desc">
                 Tích hợp thêm các giá trị tốt đẹp của người Việt Nam
               </p>
             </div>

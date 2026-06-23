@@ -69,7 +69,6 @@ export default factories.createCoreController('plugin::users-permissions.user', 
         filters,
         populate: {
           avatar: true,
-          avatarHomePage: true,
           educations: true,
           score: true,
           region: true,

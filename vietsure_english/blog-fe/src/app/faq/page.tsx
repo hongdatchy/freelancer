@@ -8,7 +8,6 @@ export default function FAQ() {
 
       <style dangerouslySetInnerHTML={{__html: `
         .faq-page-body {
-          font-family: 'Be Vietnam Pro', sans-serif;
           background-color: #f7f9ff;
           color: #24389c;
         }
@@ -43,7 +42,7 @@ export default function FAQ() {
           
           {/* Title Section */}
           <div className="text-center mb-8">
-            <h1 className="text-[40px] leading-[1.2] font-extrabold text-[#24389c] mb-2 tracking-tight">
+            <h1 className="section-title">
               CÂU HỎI THƯỜNG GẶP
             </h1>
           </div>

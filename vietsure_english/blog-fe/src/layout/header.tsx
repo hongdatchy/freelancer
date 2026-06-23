@@ -54,7 +54,7 @@ export default function Header() {
         isScrolled ? 'shadow-sm' : ''
       }`}
     >
-      <div className="mx-auto flex flex-col w-full max-w-none px-6 md:px-10 lg:px-12 py-4">
+      <div className="mx-auto flex flex-col w-full max-w-[1440px] px-6 md:px-10 lg:px-12 py-4">
         {/* Row 1: Logo & Buttons */}
         <div className="flex w-full items-center justify-between">
           <Logo />

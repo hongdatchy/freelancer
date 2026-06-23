@@ -170,8 +170,7 @@ export function TeacherScheduleView({ teacherId }: Props) {
   return (
     <div className="mt-16 w-full p-6 md:p-8 bg-white rounded-[24px] shadow-[0_15px_40px_rgba(59,130,246,0.05)]">
       
-      {/* Title */}
-      <h2 className="text-2xl md:text-3xl font-black text-[#2E357F] uppercase tracking-wider text-center mb-10">
+      <h2 className="section-title text-center mb-10">
         AVAILABILITY TIME
       </h2>
 

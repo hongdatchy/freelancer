@@ -19,8 +19,8 @@ export function TeacherDetailClient({
     return () => clear();
   }, [teacher]);
 
-  const avatarUrl = teacher.avatarHomePage?.url
-    ? process.env.NEXT_PUBLIC_BE_HOST + teacher.avatarHomePage.url
+  const avatarUrl = teacher.avatar?.url
+    ? process.env.NEXT_PUBLIC_BE_HOST + teacher.avatar.url
     : (avatar ? process.env.NEXT_PUBLIC_BE_HOST + avatar : '/images/default-avatar.png');
 
   // Get IELTS or first score

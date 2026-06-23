@@ -38,15 +38,15 @@ export default async function Teachers(props: {
 
   return (
     <div className="md:col-span-3 w-full bg-white">
-      <section className="px-6 py-20 bg-gradient-to-b from-[#EBF5FF] to-white overflow-hidden">
-        <div className="max-w-6xl mx-auto">
+      <section className="px-6 py-5 bg-gradient-to-b from-[#EBF5FF] to-white overflow-hidden">
+        <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
           
           {/* Header */}
-          <div className="text-center mx-auto mb-16 max-w-4xl">
-            <h1 className="text-2xl md:text-3xl lg:text-[38px] font-black text-[#2E357F] uppercase tracking-wide">
+          <div className="text-center mx-auto mb-4 max-w-4xl">
+            <h1 className="section-title">
               GIÁO VIÊN VIETSURE ENGLISH
             </h1>
-            <p className="text-[#3F489A] font-extrabold text-base md:text-[19px] uppercase mt-2 tracking-wide">
+            <p className="section-subtitle mt-2">
               CHUẨN QUỐC TẾ, TÀI NĂNG & NHIỆT HUYẾT
             </p>
           </div>
@@ -101,7 +101,7 @@ export default async function Teachers(props: {
                   {/* Nội dung */}
                   <div className="pb-6 flex-1">
                     <h3 className="font-black text-[#2E357F] text-base md:text-[17px] mb-1">{item.title}</h3>
-                    <p className="text-[#3F489A]/85 font-semibold text-xs md:text-sm leading-relaxed">{item.desc}</p>
+                    <p className="section-desc">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -112,9 +112,9 @@ export default async function Teachers(props: {
       </section>
 
       <section className="px-6 py-14 bg-[#EBF5FF]">
-        <div className="max-w-6xl mx-auto">
+        <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
           <div className="text-center mx-auto mb-12">
-            <h2 className="text-2xl md:text-3xl lg:text-[36px] font-black text-[#2E357F] uppercase tracking-wide">
+            <h2 className="section-title">
               +300 GIÁO VIÊN CHẤT LƯỢNG ĐỒNG HÀNH
             </h2>
           </div>

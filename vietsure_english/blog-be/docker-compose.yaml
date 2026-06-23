@@ -11,32 +11,34 @@ services:
       - postgres_data_2:/var/lib/postgresql/data
     networks:
       - vietsure-network
+    ports:
+      - "5432:5432"
 
   # Strapi Backend
-  strapi:
-    container_name: strapi-app
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      DATABASE_CLIENT: postgres
-      DATABASE_HOST: db2
-      DATABASE_PORT: 5432
-      DATABASE_NAME: vietsure-english
-      DATABASE_USERNAME: postgres
-      DATABASE_PASSWORD: hongdat10
-    ports:
-      - "127.0.0.1:1337:1337"
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/dist
-    depends_on:
-      - db2
-    networks:
-      - vietsure-network
+  # strapi:
+  #   container_name: strapi-app
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   restart: unless-stopped
+  #   env_file: .env
+  #   environment:
+  #     DATABASE_CLIENT: postgres
+  #     DATABASE_HOST: db2
+  #     DATABASE_PORT: 5432
+  #     DATABASE_NAME: vietsure-english
+  #     DATABASE_USERNAME: postgres
+  #     DATABASE_PASSWORD: hongdat10
+  #   ports:
+  #     - "127.0.0.1:1337:1337"
+  #   volumes:
+  #     - .:/app
+  #     - /app/node_modules
+  #     - /app/dist
+  #   depends_on:
+  #     - db2
+  #   networks:
+  #     - vietsure-network
 
 networks:
   vietsure-network:

@@ -114,16 +114,6 @@
       "relation": "oneToOne",
       "target": "api::region.region"
     },
-    "avatarHomePage": {
-      "type": "media",
-      "multiple": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
-    },
     "experiences": {
       "type": "integer"
     },

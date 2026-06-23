@@ -1208,9 +1208,6 @@ export interface PluginUsersPermissionsUser
   attributes: {
     achievements: Schema.Attribute.Component<'teacher.experience', true>;
     avatar: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    avatarHomePage: Schema.Attribute.Media<
-      'images' | 'files' | 'videos' | 'audios'
-    >;
     blocked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     confirmationToken: Schema.Attribute.String & Schema.Attribute.Private;
     confirmed: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 
-export default function TrialSection({ isPopup = false }: { isPopup?: boolean }) {
+export default function TrialSection({ isPopup = false, onSuccess }: { isPopup?: boolean; onSuccess?: () => void }) {
     const [formData, setFormData] = useState({
         parentName: '',
         phone: '',
@@ -48,7 +48,10 @@ export default function TrialSection({ isPopup = false }: { isPopup?: boolean })
                 address: '',
                 childAge: ''
             });
-            setTimeout(() => setSuccess(false), 5000);
+            setTimeout(() => {
+                setSuccess(false);
+                onSuccess?.();
+            }, 2500);
         } catch (err) {
             console.error(err);
             setErrors({ submit: 'Có lỗi xảy ra, vui lòng thử lại!' });
@@ -59,7 +62,7 @@ export default function TrialSection({ isPopup = false }: { isPopup?: boolean })
 
     return (
         <section id="trial-section" className={isPopup ? "px-2 py-4 w-full" : "px-4 py-16"}>
-            <div className="w-full max-w-none px-6 md:px-16 lg:px-28 flex flex-col items-center">
+            <div className={`w-full flex flex-col items-center ${isPopup ? 'px-0 max-w-none' : 'mx-auto max-w-[1440px] px-6 md:px-10 lg:px-12'}`}>
                 {/* Tiêu đề phía trên Form */}
                 {!isPopup && (
                     <div className="text-center mb-8">
@@ -85,8 +88,8 @@ export default function TrialSection({ isPopup = false }: { isPopup?: boolean })
                             <Image 
                                 src="/images/phan-khich-nang-dong.png" 
                                 alt="Mascot Vietsure English Waving" 
-                                width={isPopup ? 160 : 310} 
-                                height={isPopup ? 160 : 310} 
+                                width={isPopup ? 260 : 310} 
+                                height={isPopup ? 260 : 310} 
                                 className="object-contain translate-y-1 md:translate-y-2 select-none"
                             />
                         </div>

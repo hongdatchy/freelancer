@@ -6,28 +6,28 @@ export default function Contact() {
 
       {/* Main Content Info & Map */}
       <section className="py-20 px-6 bg-[#3F489A]">
-        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-12 items-center justify-between">
+        <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 flex flex-col lg:flex-row gap-12 items-center justify-between">
           
           {/* Left Column: Contact Info */}
           <div className="flex-1 text-white flex flex-col justify-center">
-            <h1 className="text-2xl md:text-[32px] lg:text-[38px] font-black text-[#FF6B00] mb-6 uppercase tracking-wider leading-tight lg:whitespace-nowrap">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-5xl xl:text-6xl font-black text-[#FF6B00] leading-tight uppercase mb-6">
               LIÊN HỆ VỚI VIETSURE ENGLISH
             </h1>
-            <div className="space-y-4 text-sm md:text-base leading-relaxed">
-              <p className="font-extrabold text-[17px] tracking-wide">Thông tin liên hệ:</p>
+            <div className="space-y-4">
+              <p className="section-desc !text-white font-extrabold">Thông tin liên hệ:</p>
               <p className="font-black text-xl text-white tracking-wide">Công ty TNHH Việt Sure Education</p>
-              <ul className="space-y-3 font-semibold text-slate-100/95">
+              <ul className="space-y-3">
                 <li className="flex items-start gap-1.5">
-                  <span className="shrink-0">-</span>
-                  <span>Trụ sở: A12, Khu nhà ở Hoàng Hùng 5, đường Nguyễn Thị Khắp, khu phố Chiêu Liêu, Phường Tân Đông Hiệp, TP. HCM</span>
+                  <span className="section-desc !text-white shrink-0">-</span>
+                  <span className="section-desc !text-white">Trụ sở: A12, Khu nhà ở Hoàng Hùng 5, đường Nguyễn Thị Khắp, khu phố Chiêu Liêu, Phường Tân Đông Hiệp, TP. HCM</span>
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <span className="shrink-0">-</span>
-                  <span>Số điện thoại: 0357 171 381</span>
+                  <span className="section-desc !text-white shrink-0">-</span>
+                  <span className="section-desc !text-white">Số điện thoại: 0357 171 381</span>
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <span className="shrink-0">-</span>
-                  <span>Email: vietsureenglish@gmail.com</span>
+                  <span className="section-desc !text-white shrink-0">-</span>
+                  <span className="section-desc !text-white">Email: vietsureenglish@gmail.com</span>
                 </li>
               </ul>
             </div>

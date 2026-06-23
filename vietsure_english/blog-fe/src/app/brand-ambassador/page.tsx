@@ -33,9 +33,9 @@ export default function BrandAmbassadorPage() {
     <div className="bg-[#F3F9FF]">
       
       {/* 1. HERO BANNER SECTION */}
-      <section className="relative bg-gradient-to-b from-[#E2F0FF] to-white py-16 overflow-hidden">
+      <section className="relative bg-gradient-to-b from-[#E2F0FF] to-white pb-16 overflow-hidden">
         <div className="container mx-auto px-6 lg:px-24 relative z-10">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
+          <div className="grid items-center lg:gap-12 lg:grid-cols-2">
             
             {/* Left side: Banner composite image */}
             <div className="flex justify-center lg:justify-start order-2 lg:order-1 w-full">
@@ -53,11 +53,11 @@ export default function BrandAmbassadorPage() {
 
             {/* Right side: Introduction content */}
             <div className="flex flex-col items-center lg:items-end text-center lg:text-right order-1 lg:order-2 w-full">
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-[34px] sm:whitespace-nowrap font-black leading-tight tracking-wide text-[#2E357F] uppercase mb-3">
+              <h1 className="section-title mb-3">
                 GIỚI THIỆU KHÓA HỌC <span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span>
               </h1>
               
-              <h2 className="text-base md:text-lg lg:text-[20px] font-black text-[#3F489A] mb-8 uppercase tracking-wide">
+              <h2 className="section-subtitle mb-8">
                 VỪA TẠO GIÁ TRỊ, VỪA NHẬN THƯỞNG TIỀN TRIỆU
               </h2>
 
@@ -101,7 +101,7 @@ export default function BrandAmbassadorPage() {
       <section className="bg-[#3F489A] py-20 text-white relative">
         <div className="container mx-auto px-6 lg:px-24">
           <div className="text-center max-w-xl mx-auto mb-16">
-            <h2 className="text-2xl md:text-3xl font-black uppercase text-[#FFC700] tracking-widest">
+            <h2 className="section-title !text-[#FFC700]">
               Đối tượng tham gia
             </h2>
             <div className="w-24 h-[1.5px] bg-white/60 mx-auto mt-4 rounded-full"></div>
@@ -195,9 +195,8 @@ export default function BrandAmbassadorPage() {
       {/* 4. 4 BƯỚC ĐƠN GIẢN SECTION */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6 lg:px-24">
-          <h2 className="mb-16 text-center text-2xl md:text-[34px] font-black uppercase leading-tight text-[#2E357F]">
-            4 BƯỚC ĐƠN GIẢN CÓ THÊM THU NHẬP LÊN ĐẾN <br className="hidden md:inline" />
-            <span className="text-[#FF6B00]">30 TRIỆU/THÁNG</span> CÙNG VIETSURE ENGLISH
+          <h2 className="section-title text-center mb-16">
+            4 BƯỚC ĐƠN GIẢN CÓ THÊM THU NHẬP LÊN ĐẾN <span className="text-[#FF6B00]">30 TRIỆU/THÁNG</span> CÙNG VIETSURE ENGLISH
           </h2>
 
           <div className="max-w-6xl mx-auto flex flex-col gap-6">
@@ -230,10 +229,9 @@ export default function BrandAmbassadorPage() {
 
       {/* 5. CHÍNH SÁCH VÀ QUYỀN LỢI SECTION */}
       <section className="py-20 bg-[#F3F9FF]">
-        <div className="container mx-auto px-6 lg:px-24">
-          <h2 className="mb-16 text-center text-2xl lg:text-3xl font-black uppercase text-[#2E357F]">
-            CHÍNH SÁCH VÀ QUYỀN LỢI KHI TRỞ THÀNH <br className="hidden md:inline" />
-            CTV CỦA VIETSURE ENGLISH
+        <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
+          <h2 className="section-title text-center mb-16">
+            CHÍNH SÁCH VÀ QUYỀN LỢI KHI TRỞ THÀNH CTV CỦA VIETSURE ENGLISH
           </h2>
 
           <div className="flex flex-col gap-10">

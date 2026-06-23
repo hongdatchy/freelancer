@@ -11,8 +11,8 @@ export default function About() {
     <div className="bg-white text-gray-800 font-sans">
       
       {/* BEGIN: HeroIntroduction */}
-      <section className="py-16 px-4 md:px-20 bg-gradient-to-b from-[#1e3a8a] to-blue-900 text-white overflow-hidden" data-purpose="hero-intro">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12">
+      <section className="py-16 bg-gradient-to-b from-[#1e3a8a] to-blue-900 text-white overflow-hidden" data-purpose="hero-intro">
+        <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 flex flex-col md:flex-row items-center gap-12">
           {/* Video Placeholder Side */}
           <div className="w-full md:w-1/2 relative">
             <div className="aspect-video rounded-3xl overflow-hidden shadow-2xl border-4 border-white/20 relative w-full">
@@ -27,11 +27,11 @@ export default function About() {
           </div>
           {/* Text Side */}
           <div className="w-full md:w-1/2 text-center md:text-left flex flex-col justify-center">
-            <h1 className="text-4xl md:text-5xl font-black text-[#fbb03b] mb-6 tracking-wide">GIỚI THIỆU</h1>
-            <p className="text-lg leading-relaxed mb-4">
+            <h1 className="section-title !text-[#fbb03b] mb-6">GIỚI THIỆU</h1>
+            <p className="section-desc !text-white mb-4">
               Vietsure English là nền tảng dạy tiếng Anh online hàng đầu Việt Nam được xây dựng từ nhiều năm kinh nghiệm giảng dạy tiếng Anh online cho trẻ em Việt Nam sinh ra ở nước ngoài học song ngữ Anh - Việt để duy trì tiếng mẹ đẻ. 
             </p>
-            <p className="text-lg leading-relaxed">
+            <p className="section-desc !text-white">
               Cam kết đem đến các khóa học chất lượng cao, cá nhân hóa, đồng hành sát sao cùng học viên và phụ huynh.
             </p>
           </div>
@@ -41,12 +41,14 @@ export default function About() {
 
       {/* BEGIN: BrandStats */}
       <section className="pt-24 pb-12 bg-white" data-purpose="stats-section">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-[#1e3a8a] text-center mb-8 uppercase tracking-wide">
+        <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
+          <h2 className="section-title text-center mb-8">
             Phủ sóng thương hiệu trên toàn quốc
           </h2>
-          <BrandStats />
-          <p className="text-center text-[#1e3a8a]/80 text-lg font-normal tracking-wider mt-6">
+          <div className="w-full max-w-[1100px] mx-auto px-6 lg:px-0">
+            <BrandStats />
+          </div>
+          <p className="text-center section-desc mt-6">
             Vietsure đã phủ sóng thương hiệu hơn 5 quốc gia trên toàn thế giới.
           </p>
         </div>
@@ -55,7 +57,7 @@ export default function About() {
 
       {/* BEGIN: GlobalMap */}
       <section className="bg-white overflow-hidden" data-purpose="world-map">
-        <div className="w-full">
+        <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
           <div className="relative flex justify-center">
             <Image 
               src="/images/MapChart_Map2.png" 
@@ -71,9 +73,9 @@ export default function About() {
 
       {/* BEGIN: VisionMission */}
       <section className="py-16 bg-white" data-purpose="vision-mission">
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-black text-[#1e3a8a] mb-8 uppercase">Tầm nhìn & Sứ mệnh</h2>
-          <p className="text-lg md:text-xl text-[#1e3a8a]/80 leading-relaxed font-normal">
+        <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 text-center">
+          <h2 className="section-title mb-8">Tầm nhìn & Sứ mệnh</h2>
+          <p className="section-desc">
             Từ kinh nghiệm giảng dạy trong môi trường Quốc tế, chúng tôi không dạy trẻ học tiếng Anh mà còn giúp trẻ sử dụng tiếng Anh như một ngôn ngữ thứ hai. Đồng thời, Vietsure English chú trọng rèn luyện tính cách và giá trị sống, giúp học viên hình thành nhân cách tích cực, biết tôn trọng, sẻ chia và trở thành những công dân tốt trong tương lai.
           </p>
         </div>
@@ -85,8 +87,8 @@ export default function About() {
         className="px-6 py-14 relative overflow-hidden bg-[#f0f9ff]"
         data-purpose="logo-meaning"
       >
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-black text-[#1e3a8a] text-center mb-16 uppercase">Ý nghĩa logo Vietsure English</h2>
+        <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
+          <h2 className="section-title text-center mb-16">Ý nghĩa logo Vietsure English</h2>
 
           {/* ===== DESKTOP (lg+): layout absolute ===== */}
           <div className="relative w-full hidden lg:block" style={{ height: "620px" }}>
@@ -96,8 +98,8 @@ export default function About() {
               className="absolute text-center left-[20px] xl:left-[80px]"
               style={{ top: 20, width: 280 }}
             >
-              <span className="text-[#0ea5e9] font-extrabold text-base block mb-1">Ngôi sao tượng trưng cho:</span>
-              <span className="text-[#1e3a8a] font-semibold text-sm leading-relaxed block">Mục tiêu và định hướng rõ ràng trong hành trình học tập. Sự tỏa sáng và thành công của học viên sau quá trình rèn luyện. Khát vọng vươn xa ra thế giới, đúng với tinh thần của một trung tâm đào tạo tiếng Anh chuẩn quốc tế.</span>
+              <span className="text-[#3F489A] font-bold text-[15px] md:text-[17px] block mb-1">Ngôi sao tượng trưng cho:</span>
+              <span className="section-desc block text-center">Mục tiêu và định hướng rõ ràng trong hành trình học tập. Sự tỏa sáng và thành công của học viên sau quá trình rèn luyện. Khát vọng vươn xa ra thế giới, đúng với tinh thần của một trung tâm đào tạo tiếng Anh chuẩn quốc tế.</span>
             </div>
 
             {/* TOP RIGHT TEXT */}
@@ -105,8 +107,8 @@ export default function About() {
               className="absolute text-left right-[20px] xl:right-[80px]"
               style={{ top: 20, width: 280 }}
             >
-              <span className="text-[#0ea5e9] font-extrabold text-base block mb-1">Phông chữ được xây dựng theo:</span>
-              <span className="text-[#1e3a8a] font-semibold text-sm leading-relaxed block">Cấu trúc liền mạch, các ký tự bo tròn mềm mại nhưng vẫn vững chắc, tạo cảm giác kết nối - ổn định - bền vững. Sự liên kết giữa các chữ cái thể hiện quá trình học tập xuyên suốt, có hệ thống và được dẫn dắt rõ ràng.</span>
+              <span className="text-[#3F489A] font-bold text-[15px] md:text-[17px] block mb-1">Phông chữ được xây dựng theo:</span>
+              <span className="section-desc block text-left">Cấu trúc liền mạch, các ký tự bo tròn mềm mại nhưng vẫn vững chắc, tạo cảm giác kết nối - ổn định - bền vững. Sự liên kết giữa các chữ cái thể hiện quá trình học tập xuyên suốt, có hệ thống và được dẫn dắt rõ ràng.</span>
             </div>
 
             {/* BOTTOM LEFT TEXT */}
@@ -114,8 +116,8 @@ export default function About() {
               className="absolute text-center left-[0px] xl:left-[40px]"
               style={{ bottom: 20, width: 280 }}
             >
-              <span className="text-[#0ea5e9] font-extrabold text-base block mb-1">Hình tượng mascot chim cánh cụt:</span>
-              <span className="text-[#1e3a8a] font-semibold text-sm leading-relaxed block">Thân thiện, thông minh và tràn đầy năng lượng, đại diện cho tinh thần học tập tích cực, tự tin và không ngừng tiến bộ của học viên.</span>
+              <span className="text-[#3F489A] font-bold text-[15px] md:text-[17px] block mb-1">Hình tượng mascot chim cánh cụt:</span>
+              <span className="section-desc block text-center">Thân thiện, thông minh và tràn đầy năng lượng, đại diện cho tinh thần học tập tích cực, tự tin và không ngừng tiến bộ của học viên.</span>
             </div>
 
             {/* BOTTOM RIGHT TEXT */}
@@ -123,8 +125,8 @@ export default function About() {
               className="absolute text-left right-[20px] xl:right-[80px]"
               style={{ bottom: 20, width: 280 }}
             >
-              <span className="text-[#0ea5e9] font-extrabold text-base block mb-1">Về màu sắc:</span>
-              <span className="text-[#1e3a8a] font-semibold text-sm leading-relaxed block">
+              <span className="text-[#3F489A] font-bold text-[15px] md:text-[17px] block mb-1">Về màu sắc:</span>
+              <span className="section-desc block text-left">
                 - Xanh tím đậm tượng trưng cho uy tín, chiều sâu học thuật và sự cam kết chất lượng.<br />
                 - Xanh dương sáng đại diện cho tinh thần trẻ trung, năng động và khả năng hội nhập quốc tế.
               </span>
@@ -141,13 +143,13 @@ export default function About() {
                 height: 220,
               }}
             >
-              <Image src="/images/arrow1.png" alt="" width={190} height={190} className="absolute pointer-events-none animate-float-up object-contain"
+              <Image src="/images/arrow1.png" alt="" width={190} height={190} className="absolute pointer-events-none object-contain"
                 style={{ top: -190, left: -0 }} />
-              <Image src="/images/arrow2.png" alt="" width={190} height={190} className="absolute pointer-events-none animate-float-down object-contain"
+              <Image src="/images/arrow2.png" alt="" width={190} height={190} className="absolute pointer-events-none object-contain"
                 style={{ top: -170, right: -0 }} />
-              <Image src="/images/arrow3.png" alt="" width={150} height={150} className="absolute pointer-events-none animate-float-up object-contain"
+              <Image src="/images/arrow3.png" alt="" width={150} height={150} className="absolute pointer-events-none object-contain"
                 style={{ bottom: -120, left: -60 }} />
-              <Image src="/images/arrow4.png" alt="" width={190} height={190} className="absolute pointer-events-none animate-float-down object-contain"
+              <Image src="/images/arrow4.png" alt="" width={190} height={190} className="absolute pointer-events-none object-contain"
                 style={{ bottom: -170, right: -0 }} />
 
               <div className="flex items-center justify-center h-full">
@@ -167,20 +169,20 @@ export default function About() {
             {/* 4 text xếp dạng grid 2 cột trên tablet, 1 cột trên mobile */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full text-center md:text-left">
               <div>
-                <span className="text-[#0ea5e9] font-extrabold text-base block mb-1">Ngôi sao tượng trưng cho:</span>
-                <span className="text-[#1e3a8a] font-semibold text-sm leading-relaxed block">Mục tiêu và định hướng rõ ràng trong hành trình học tập. Sự tỏa sáng và thành công của học viên sau quá trình rèn luyện. Khát vọng vươn xa ra thế giới, đúng với tinh thần của một trung tâm đào tạo tiếng Anh chuẩn quốc tế.</span>
+                <span className="text-[#3F489A] font-bold text-[15px] md:text-[17px] block mb-1">Ngôi sao tượng trưng cho:</span>
+                <span className="section-desc block">Mục tiêu và định hướng rõ ràng trong hành trình học tập. Sự tỏa sáng và thành công của học viên sau quá trình rèn luyện. Khát vọng vươn xa ra thế giới, đúng với tinh thần của một trung tâm đào tạo tiếng Anh chuẩn quốc tế.</span>
               </div>
               <div>
-                <span className="text-[#0ea5e9] font-extrabold text-base block mb-1">Phông chữ được xây dựng theo:</span>
-                <span className="text-[#1e3a8a] font-semibold text-sm leading-relaxed block">Cấu trúc liền mạch, các ký tự bo tròn mềm mại nhưng vẫn vững chắc, tạo cảm giác kết nối - ổn định - bền vững. Sự liên kết giữa các chữ cái thể hiện quá trình học tập xuyên suốt, có hệ thống và được dẫn dắt rõ ràng.</span>
+                <span className="text-[#3F489A] font-bold text-[15px] md:text-[17px] block mb-1">Phông chữ được xây dựng theo:</span>
+                <span className="section-desc block">Cấu trúc liền mạch, các ký tự bo tròn mềm mại nhưng vẫn vững chắc, tạo cảm giác kết nối - ổn định - bền vững. Sự liên kết giữa các chữ cái thể hiện quá trình học tập xuyên suốt, có hệ thống và được dẫn dắt rõ ràng.</span>
               </div>
               <div>
-                <span className="text-[#0ea5e9] font-extrabold text-base block mb-1">Hình tượng mascot chim cánh cụt:</span>
-                <span className="text-[#1e3a8a] font-semibold text-sm leading-relaxed block">Thân thiện, thông minh và tràn đầy năng lượng, đại diện cho tinh thần học tập tích cực, tự tin và không ngừng tiến bộ của học viên.</span>
+                <span className="text-[#3F489A] font-bold text-[15px] md:text-[17px] block mb-1">Hình tượng mascot chim cánh cụt:</span>
+                <span className="section-desc block">Thân thiện, thông minh và tràn đầy năng lượng, đại diện cho tinh thần học tập tích cực, tự tin và không ngừng tiến bộ của học viên.</span>
               </div>
               <div>
-                <span className="text-[#0ea5e9] font-extrabold text-base block mb-1">Về màu sắc:</span>
-                <span className="text-[#1e3a8a] font-semibold text-sm leading-relaxed block">
+                <span className="text-[#3F489A] font-bold text-[15px] md:text-[17px] block mb-1">Về màu sắc:</span>
+                <span className="section-desc block">
                   - Xanh tím đậm tượng trưng cho uy tín, chiều sâu học thuật và sự cam kết chất lượng.<br />
                   - Xanh dương sáng đại diện cho tinh thần trẻ trung, năng động và khả năng hội nhập quốc tế.
                 </span>
@@ -194,7 +196,7 @@ export default function About() {
 
       {/* BEGIN: BrandMascot */}
       <section className="py-20 bg-gradient-to-b from-[#f0f9ff] to-white" data-purpose="brand-mascot">
-        <div className="w-full px-4 lg:px-12">
+        <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
             {/* Left Mascot */}
             <div className="flex justify-center">
@@ -208,8 +210,8 @@ export default function About() {
             </div>
             {/* Center Text */}
             <div className="text-center px-4">
-              <h2 className="text-3xl font-black text-[#1e3a8a] mb-8 uppercase">BIỂU TƯỢNG THƯƠNG HIỆU</h2>
-              <p className="text-xl md:text-2xl text-[#1e3a8a]/80 font-normal leading-relaxed">
+              <h2 className="section-title mb-8">BIỂU TƯỢNG THƯƠNG HIỆU</h2>
+              <p className="section-desc">
                 Hình ảnh chú chim cánh cụt là biểu tượng đại diện cho tinh thần học tập bền bỉ, thích nghi và phát triển trong mọi môi trường. Chú chim cánh cụt còn đại diện cho hành trình học tập tại Vietsure English - Học đúng môi trường để sử dụng tiếng Anh một cách tự nhiên.
               </p>
             </div>
@@ -230,8 +232,8 @@ export default function About() {
 
       {/* BEGIN: CharacterProfiles */}
       <section className="py-16 bg-[#f0f9ff]" data-purpose="characters">
-        <div className="w-full px-4 lg:px-12">
-          <h2 className="text-xl md:text-2xl lg:text-3xl font-black text-[#1e3a8a] text-center mb-16 uppercase tracking-wide whitespace-nowrap">
+        <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
+          <h2 className="section-title text-center mb-16">
             NHÂN VẬT TRONG SERIES PHIM NGẮN & CHƯƠNG TRÌNH HỌC TIẾNG ANH
           </h2>
           
@@ -256,7 +258,7 @@ export default function About() {
                   alt="NAM" 
                   width={180} 
                   height={240} 
-                  className="h-full w-auto object-contain object-top animate-float-up"
+                  className="h-full w-auto object-contain object-top"
                 />
               </div>
             </div>
@@ -280,7 +282,7 @@ export default function About() {
                   alt="KATE" 
                   width={180} 
                   height={240} 
-                  className="h-full w-auto object-contain object-top animate-float-up"
+                  className="h-full w-auto object-contain object-top"
                 />
               </div>
             </div>
@@ -293,7 +295,7 @@ export default function About() {
                   alt="PENGUIN" 
                   width={160} 
                   height={160} 
-                  className="w-full h-auto object-contain animate-float-up"
+                  className="w-full h-auto object-contain"
                 />
               </div>
               <div className="w-1/2 pl-4 text-right">
@@ -312,7 +314,7 @@ export default function About() {
                   alt="MARK" 
                   width={160} 
                   height={160} 
-                  className="w-[65%] lg:w-[60%] max-w-[140px] h-auto object-contain animate-float-up"
+                  className="w-[65%] lg:w-[60%] max-w-[140px] h-auto object-contain"
                 />
               </div>
               <div className="w-1/2 pl-4 text-right">
@@ -334,7 +336,7 @@ export default function About() {
                   alt="SUE" 
                   width={160} 
                   height={160} 
-                  className="w-[75%] lg:w-[70%] max-w-[160px] h-auto object-contain animate-float-up"
+                  className="w-[75%] lg:w-[70%] max-w-[160px] h-auto object-contain"
                 />
               </div>
               <div className="w-1/2 pl-4 text-right">
@@ -356,7 +358,7 @@ export default function About() {
                   alt="WINWIN" 
                   width={160} 
                   height={160} 
-                  className="w-full h-auto object-contain animate-float-up"
+                  className="w-full h-auto object-contain"
                 />
               </div>
               <div className="w-1/2 pl-4 text-right">
@@ -382,8 +384,12 @@ export default function About() {
       {/* END: CharacterProfiles */}
 
       {/* BEGIN: CoreValues */}
-      <section className="bg-white overflow-hidden w-full relative" data-purpose="core-values">
-        <div className="relative w-[130%] md:w-full max-w-none">
+      <section 
+        className="overflow-hidden w-full relative" 
+        style={{ background: 'linear-gradient(to bottom, #b9ddff 0%, #cbe6ff 40%, #cce6ff 50%, #cce6ff 100%)' }}
+        data-purpose="core-values"
+      >
+        <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 relative">
           <Image 
             src="/images/7.png" 
             alt="4 Giá trị cốt lõi" 
@@ -395,14 +401,14 @@ export default function About() {
 
           {/* Central Text: 4 GIÁ TRỊ CỐT LÕI */}
           <div className="absolute flex flex-col items-center justify-center text-white text-center"
-               style={{ top: '52%', left: '15.8%', transform: 'translate(-50%, -50%)', width: '25%' }}>
-            <span className="text-[3.2vw] md:text-[2rem] lg:text-[2.6rem] xl:text-[3.2rem] font-black leading-tight drop-shadow-md">4 GIÁ TRỊ</span>
-            <span className="text-[2.4vw] md:text-[1.5rem] lg:text-[2rem] xl:text-[2.4rem] font-black leading-tight mt-0.5 md:mt-1 drop-shadow-md">CỐT LÕI</span>
+               style={{ top: '52%', left: '17.8%', transform: 'translate(-50%, -50%)', width: '25%' }}>
+            <span className="text-[2.9vw] md:text-[1.8rem] lg:text-[2.3rem] xl:text-[2.8rem] font-black leading-tight drop-shadow-md">4 GIÁ TRỊ</span>
+            <span className="text-[2.2vw] md:text-[1.35rem] lg:text-[1.8rem] xl:text-[2.1rem] font-black leading-tight mt-0.5 md:mt-1 drop-shadow-md">CỐT LÕI</span>
           </div>
 
           {/* Value 1: CHUẨN QUỐC TẾ */}
           <div className="absolute"
-               style={{ top: '10%', left: '39%', width: '22%' }}>
+               style={{ top: '8%', left: '39%', width: '22%' }}>
             <h4 className="font-black text-[#1e3a8a] uppercase text-[1.8vw] md:text-[13px] lg:text-base xl:text-xl mb-0.5 md:mb-1">Chuẩn quốc tế</h4>
             <p className="text-[#1e3a8a]/80 text-[1.3vw] md:text-[10px] lg:text-xs xl:text-base leading-snug md:leading-relaxed font-semibold">
               Xây dựng từ môi trường giáo dục trẻ em quốc tế, giúp trẻ em Việt sử dụng tiếng Anh như trẻ em thế giới.

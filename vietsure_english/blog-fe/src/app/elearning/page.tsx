@@ -42,14 +42,14 @@ export default async function ElearningPage(props: {
   return (
     <div className="w-full bg-white min-h-screen">
       {/* Top Hero Section shared with Homepage */}
-      <HeroSection buttonText="Học thử miễn phí" buttonHref="/#trial-section" />
+      <HeroSection buttonText="Học thử miễn phí" buttonHref="/#trial-section" showButton={false} />
 
       {/* Main Courses Area */}
       <div className="w-full bg-[#F0FAF4] pb-20 pt-12 md:pt-16">
         
         {/* Main Heading & Test Button */}
         <div className="text-center max-w-4xl mx-auto mb-10 px-6">
-          <h2 className="text-[26px] md:text-[34px] font-black text-[#2E357F] uppercase tracking-wide leading-tight">
+          <h2 className="section-title">
             CÁC KHÓA HỌC TẠI VIETSURE ENGLISH
           </h2>
           <div className="mt-4">

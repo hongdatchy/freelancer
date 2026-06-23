@@ -7,7 +7,6 @@ export default function TermsOfService() {
 
       <style dangerouslySetInnerHTML={{__html: `
         .terms-page-body {
-          font-family: 'Be Vietnam Pro', sans-serif;
           background-color: #f7f9ff;
           color: #24389c;
         }
@@ -42,7 +41,7 @@ export default function TermsOfService() {
           
           {/* Title Section */}
           <div className="text-center mb-8">
-            <h1 className="text-[40px] leading-[1.2] font-extrabold text-[#24389c] mb-2 tracking-tight">
+            <h1 className="section-title">
               ĐIỀU KHOẢN SỬ DỤNG
             </h1>
           </div>

@@ -10,7 +10,7 @@ export default async function TeacherDetailPage(props: {
   const params = await props.params;
 
   const responseUser = await getData(
-    `api/users/${params.id}?populate[0]=avatar&populate[1]=educations&populate[2]=score&populate[3]=region&populate[4]=avatarHomePage&populate[5]=achievements`,
+    `api/users/${params.id}?populate[0]=avatar&populate[1]=educations&populate[2]=score&populate[3]=region&populate[4]=achievements`,
   );
 
   const teacher: TeacherDTO = responseUser;

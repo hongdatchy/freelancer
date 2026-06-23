@@ -27,7 +27,7 @@ export default function JobSuccessSection() {
             <div className="mx-auto max-w-6xl px-6">
                 {/* HEADER */}
                 <div className="text-center mb-10">
-                    <h2 className="text-2xl md:text-[32px] font-black text-[#2E357F] uppercase tracking-wider leading-tight">
+                    <h2 className="section-title">
                         Cảm nhận tốt từ phụ huynh về<br />
                         chương trình học tại Vietsure English
                     </h2>

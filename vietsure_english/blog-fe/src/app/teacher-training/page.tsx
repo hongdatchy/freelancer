@@ -47,7 +47,7 @@ export default async function TeacherTrainingPage(props: {
         
         {/* E-Learning Sub-header */}
         <div className="text-center mb-10">
-          <h3 className="text-[28px] md:text-[34px] font-black text-[#2E357F] tracking-[0.12em] uppercase">
+          <h3 className="section-title">
             TRAINING GIÁO VIÊN
           </h3>
         </div>

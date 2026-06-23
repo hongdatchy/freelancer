@@ -9,7 +9,7 @@ export default function BrandStats() {
   ];
 
   return (
-    <div className="w-full bg-white border-2 border-blue-200 rounded-[24px] py-7 px-8 md:px-16 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
+    <div className="w-full bg-white border-2 border-blue-200 rounded-[24px] py-4 px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
       {stats.map((stat, idx) => (
         <React.Fragment key={idx}>
           <div className="flex-1 text-center">

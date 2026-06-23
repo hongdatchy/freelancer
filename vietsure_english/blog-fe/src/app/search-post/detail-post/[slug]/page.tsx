@@ -155,7 +155,7 @@ export default function Detail({ params }: { params: Promise<{ slug: string }> }
         {/* LEFT CONTENT */}
         <div className="flex-1 min-w-0">
           {/* POST TITLE */}
-          <h1 className="text-2xl md:text-3xl lg:text-[36px] font-black text-[#2E357F] uppercase tracking-wide leading-snug mb-4">
+          <h1 className="section-title mb-4">
             {post.title}
           </h1>
 
@@ -242,7 +242,7 @@ export default function Detail({ params }: { params: Promise<{ slug: string }> }
       {/* RELATED POSTS SECTION (FULL WIDTH) */}
       {post.posts && post.posts.length > 0 && (
         <div className="mx-auto max-w-[1400px] mt-16 pt-12 border-t border-slate-100">
-          <h2 className="text-[26px] font-black text-[#2E357F] uppercase tracking-wide mb-8">
+          <h2 className="section-title mb-8">
             Bài viết liên quan
           </h2>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

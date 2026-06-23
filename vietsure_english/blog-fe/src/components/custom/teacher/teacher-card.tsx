@@ -3,11 +3,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export default function TeacherCard({ teacher }: { teacher: TeacherDTO }) {
-    const avatarUrl = teacher.avatarHomePage?.url
-        ? process.env.NEXT_PUBLIC_BE_HOST + teacher.avatarHomePage.url
-        : (teacher.avatar?.url
-            ? process.env.NEXT_PUBLIC_BE_HOST + teacher.avatar.url
-            : '/images/default-avatar.png');
+    const avatarPath = teacher.avatar?.formats?.medium?.url || teacher.avatar?.formats?.small?.url || teacher.avatar?.url;
+    const avatarUrl = avatarPath
+        ? process.env.NEXT_PUBLIC_BE_HOST + avatarPath
+        : '/images/default-avatar.png';
 
     // Get IELTS or first score
     const ieltsScoreObj = teacher.score?.find(s => s.type.toUpperCase() === 'IELTS');
@@ -52,7 +51,7 @@ export default function TeacherCard({ teacher }: { teacher: TeacherDTO }) {
                         </defs>
 
                         <text
-                            fill="white"
+                            fill="#2E357F"
                             fontSize="13.5"
                             fontWeight="900"
                             letterSpacing="4"

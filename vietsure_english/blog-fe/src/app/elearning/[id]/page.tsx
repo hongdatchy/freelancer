@@ -55,7 +55,7 @@ export default async function CourseDetailPage(props: {
 
           {/* Course Info */}
           <div className="mb-6">
-            <h1 className="text-[28px] sm:text-[34px] md:text-[38px] font-black text-[#2E357F] mb-4 uppercase tracking-wide leading-tight">
+            <h1 className="section-title mb-4">
               {course.name}
             </h1>
           </div>

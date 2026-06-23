@@ -58,7 +58,7 @@ export default async function SearchPost(props: {
         <div className="flex-1 min-w-0">
           {/* TITLE */}
           <div className="mb-10 text-left">
-            <h1 className="text-3xl md:text-[38px] font-black text-[#2E357F] uppercase tracking-wide">
+            <h1 className="section-title">
               TIN TỨC
             </h1>
           </div>
