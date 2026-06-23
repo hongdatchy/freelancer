@@ -5,10 +5,19 @@ import { useRef, useState, useEffect } from 'react';
 export default function PPTViewer({ fileUrl }: { fileUrl: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [iframeWidthClass, setIframeWidthClass] = useState('w-full');
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      const isFull = !!document.fullscreenElement;
+      setIsFullscreen(isFull);
+
+      // Trick: Force the iframe to resize so it recalculates internal click coordinates
+      // We change width slightly, then revert it back to w-full
+      setIframeWidthClass('w-[99.9%]');
+      setTimeout(() => {
+        setIframeWidthClass('w-full');
+      }, 100);
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -30,23 +39,23 @@ export default function PPTViewer({ fileUrl }: { fileUrl: string }) {
   return (
     <div
       ref={containerRef}
-      className={`w-full bg-[#3B3B3B] relative overflow-hidden rounded ${
+      className={`w-full bg-[#444444] relative overflow-hidden rounded ${
         isFullscreen ? 'h-screen' : 'h-[600px]'
       }`}
     >
       <iframe
         src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`}
-        className="w-full h-full border-0"
+        className={`${iframeWidthClass} h-full border-0 transition-all duration-75`}
         allowFullScreen
       />
 
       {/* Blocker & Custom Fullscreen Button 
-          Covers the entire right side of the bottom bar to hide Print, Menu, and Open in New Tab buttons 
-          Color #3B3B3B matches the standard Office Viewer dark gray bar */}
-      <div className="absolute bottom-0 right-0 w-[140px] h-[30px] bg-[#3B3B3B] z-10 flex items-center justify-end pr-3">
+          Matches the exact height of the Microsoft bottom bar (~28px).
+          Using #444444 to match the typical dark gray. */}
+      <div className="absolute bottom-0 right-0 w-[140px] h-[28px] bg-[#444444] z-10 flex items-center justify-end pr-3">
         <button
           onClick={toggleFullscreen}
-          className="text-gray-300 hover:text-white p-1 rounded hover:bg-white/10 transition-colors flex items-center justify-center cursor-pointer"
+          className="text-gray-300 hover:text-white p-1 rounded hover:bg-white/10 transition-colors flex items-center justify-center cursor-pointer h-full"
           title={isFullscreen ? 'Thu nhỏ' : 'Toàn màn hình'}
         >
           {isFullscreen ? (
