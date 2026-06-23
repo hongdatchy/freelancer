@@ -193,7 +193,7 @@ export function TeacherScheduleView({ teacherId }: Props) {
   }
 
   return (
-    <div className="mt-16 w-full p-6 md:p-8 bg-white rounded-[24px] shadow-[0_15px_40px_rgba(59,130,246,0.05)]">
+    <div className="w-full p-6 md:p-8 bg-white rounded-[24px] shadow-[0_15px_40px_rgba(59,130,246,0.05)]">
       
       <h2 className="section-title text-center mb-10">
         AVAILABILITY TIME
@@ -280,21 +280,9 @@ export function TeacherScheduleView({ teacherId }: Props) {
                           <div className={`w-full h-full rounded-[2px] flex items-center justify-center overflow-hidden`}>
                             {canEdit && (
                               isVSE ? (
-                                <input
-                                  name={`student_${dayInfo.dayKey}_${slot}`}
-                                  value={scheduleMap[key].student_name || ''}
-                                  onClick={(e) => e.stopPropagation()}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    setScheduleMap(prev => ({
-                                      ...prev,
-                                      [key]: { ...prev[key], student_name: val },
-                                    }));
-                                  }}
-                                  onBlur={() => handleStudentNameBlur(dayInfo.dayKey, slot)}
-                                  placeholder="Mã lớp"
-                                  className={`w-[80%] h-[75%] text-center text-[10px] bg-white/95 text-[#3F489A] font-bold rounded-[3px] px-1 py-0.5 border-none focus:outline-none focus:ring-1 focus:ring-[#FF6B00] shadow-sm`}
-                                />
+                                <div className={`w-[80%] h-[75%] flex items-center justify-center text-center text-[10px] bg-white/95 text-[#3F489A] font-bold rounded-[3px] px-1 py-0.5 shadow-sm overflow-hidden`}>
+                                  <span className="truncate">{scheduleMap[key].student_name || 'VSE'}</span>
+                                </div>
                               ) : (
                                 <div className="w-[80%] h-[75%] flex items-center justify-center text-white text-[10px] font-bold leading-tight">
                                   Trung tâm<br/>khác

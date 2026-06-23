@@ -62,7 +62,10 @@ export default function SchedulePage() {
     const [selectedUser, setSelectedUser] = useState<string>('');
     const [schedule, setSchedule] = useState<ScheduleMap>({});
     const [loading, setLoading] = useState(false);
-    const [isVietSureEnglish, setIsVietSureEnglish] = useState(true);
+    
+    const [selectedSlot, setSelectedSlot] = useState<{day: string, slot: string} | null>(null);
+    const [popupBookingType, setPopupBookingType] = useState<'VSE' | 'OTHER'>('VSE');
+    const [popupClassCode, setPopupClassCode] = useState('');
 
     useEffect(() => {
         fetch('/content-manager/collection-types/plugin::users-permissions.user?page=1&pageSize=100&sort=id:ASC', { headers: authHeaders() })
@@ -99,7 +102,7 @@ export default function SchedulePage() {
             });
     }, [selectedUser]);
 
-    const toggleSlot = async (day: string, slot: string) => {
+    const handleCellClick = async (day: string, slot: string) => {
         const key = `${day}_${slot}`;
 
         if (schedule[key]) {
@@ -113,38 +116,52 @@ export default function SchedulePage() {
                 return s;
             });
         } else {
-            const studentName = '';
-
-            const res = await fetch('/content-manager/collection-types/api::teacher-schedule.teacher-schedule/actions/publish?', {
-                method: 'POST',
-                headers: authHeaders(),
-                body: JSON.stringify({
-                    day,
-                    time_slot: slot,
-                    student_name: studentName,
-                    isVietSureEnglish,
-                    users_permissions_user: {
-                        connect: [{ id: Number(selectedUser), isTemporary: true }],
-                        disconnect: [],
-                    },
-                    createdAt: null,
-                    updatedAt: null,
-                    createdBy: null,
-                    updatedBy: null,
-                }),
-            });
-            const newItem = await res.json() as { data: { documentId: string } };
-
-            setSchedule(prev => ({
-                ...prev,
-                [key]: { id: newItem.data.documentId, student_name: studentName, isVietSureEnglish },
-            }));
+            setSelectedSlot({ day, slot });
+            setPopupBookingType('VSE');
+            setPopupClassCode('');
         }
+    };
+
+    const confirmBooking = async () => {
+        if (!selectedSlot) return;
+        const { day, slot } = selectedSlot;
+        const key = `${day}_${slot}`;
+        
+        const isVSE = popupBookingType === 'VSE';
+        const studentName = isVSE ? popupClassCode : '';
+
+        const res = await fetch('/content-manager/collection-types/api::teacher-schedule.teacher-schedule/actions/publish?', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({
+                day,
+                time_slot: slot,
+                student_name: studentName,
+                isVietSureEnglish: isVSE,
+                users_permissions_user: {
+                    connect: [{ id: Number(selectedUser), isTemporary: true }],
+                    disconnect: [],
+                },
+                createdAt: null,
+                updatedAt: null,
+                createdBy: null,
+                updatedBy: null,
+            }),
+        });
+        const newItem = await res.json() as { data: { documentId: string } };
+
+        setSchedule(prev => ({
+            ...prev,
+            [key]: { id: newItem.data.documentId, student_name: studentName, isVietSureEnglish: isVSE },
+        }));
+        
+        setSelectedSlot(null);
     };
 
     const getUserLabel = (u: User) => u.username || u.email;
 
     return (
+        <>
         <Box padding={8}>
             <Typography variant="alpha" style={{ marginBottom: 24, display: 'block', fontSize: '2rem' }}>
                 Thời khoá biểu của giáo viên
@@ -164,38 +181,7 @@ export default function SchedulePage() {
                 </SingleSelect>
             </Box>
 
-            {/* Toggle isVietSureEnglish */}
-            {/* <Box style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Toggle
-                    onLabel="VietSure English"
-                    offLabel="Trung tâm khác"
-                    checked={isVietSureEnglish}
-                    onChange={(e: any) => setIsVietSureEnglish(e.target.checked)}
-                />
-            </Box> */}
-
-            <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                    <div
-                        onClick={() => setIsVietSureEnglish(!isVietSureEnglish)}
-                        style={{
-                            width: 120,
-                            padding: '6px 12px',
-                            borderRadius: 6,
-                            background: isVietSureEnglish ? '#f50e40' : '#e8d5f5',
-                            color: '#fff',
-                            fontWeight: 600,
-                            fontSize: 13,
-                            textAlign: 'center',
-                            cursor: 'pointer',
-                            userSelect: 'none',
-                            transition: 'background 0.2s',
-                        }}
-                    >
-                        {isVietSureEnglish ? 'VietSure English' : 'Trung tâm khác'}
-                    </div>
-                </label>
-            </div>
+            {/* Removed Toggle */}
 
             {loading && <Loader>Đang tải lịch...</Loader>}
 
@@ -204,7 +190,9 @@ export default function SchedulePage() {
                     <table style={{ borderCollapse: 'collapse', width: '100%' }}>
                         <thead>
                             <tr>
-                                <th style={thStyle}>Giờ</th>
+                                <th style={{...thStyle, background: 'white', border: '1px solid #e0f2fe', color: '#3F489A', textAlign: 'left'}}>
+                                    <div style={{ fontWeight: 'bold', fontSize: 12 }}>ĐÃ CÓ LỊCH</div>
+                                </th>
                                 {DAYS.map(d => (
                                     <th key={d} style={thStyle}>{d}</th>
                                 ))}
@@ -213,7 +201,7 @@ export default function SchedulePage() {
                         <tbody>
                             {TIME_SLOTS.map(slot => (
                                 <tr key={slot}>
-                                    <td style={{ ...tdStyle, fontWeight: 600, background: '#ddf5e0' }}>
+                                    <td style={{ ...tdStyle, fontWeight: 700, background: 'white', color: '#3F489A', textAlign: 'left', paddingLeft: 12, border: '1px solid #e0f2fe' }}>
                                         {slot}
                                     </td>
                                     {DAYS.map(day => {
@@ -225,72 +213,66 @@ export default function SchedulePage() {
                                         return (
                                             <td
                                                 key={day}
-                                                onClick={() => toggleSlot(day, slot)}
+                                                onClick={() => handleCellClick(day, slot)}
                                                 style={{
                                                     ...tdStyle,
-                                                    background: active ? (isVSE ? '#f50e40' : '#e8d5f5') : '#bcecc3',
+                                                    height: 42,
+                                                    padding: 4,
+                                                    background: active ? '#3F489A' : '#F5F7FC',
                                                     cursor: 'pointer',
-                                                    color: active ? 'white' : '#999',
                                                     textAlign: 'center',
                                                     userSelect: 'none',
                                                     transition: 'background 0.15s',
                                                     verticalAlign: 'middle',
+                                                    border: '2px solid white', // creates spacing effect
                                                 }}
                                             >
-                                                {active && (
+                                                {active ? (
                                                     <div style={{
                                                         display: 'flex',
                                                         flexDirection: 'column',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
                                                         height: '100%',
+                                                        width: '100%'
                                                     }}>
-                                                        <div>✓</div>
-                                                        <div style={{ width: '100%' }}>
-                                                            <input
-                                                                name={`student_${day}_${slot}`}
-                                                                value={schedule[key].student_name || ''}
-                                                                onClick={(e) => e.stopPropagation()}
-                                                                onChange={(e) => {
-                                                                    const val = (e as any).target.value;
-                                                                    setSchedule(prev => ({
-                                                                        ...prev,
-                                                                        [key]: { ...prev[key], student_name: val }
-                                                                    }));
-                                                                }}
-                                                                onBlur={async () => {
-                                                                    await fetch(
-                                                                        `/content-manager/collection-types/api::teacher-schedule.teacher-schedule/${schedule[key].id}/actions/publish?`,
-                                                                        {
-                                                                            method: 'POST',
-                                                                            headers: authHeaders(),
-                                                                            body: JSON.stringify({
-                                                                                day,
-                                                                                time_slot: slot,
-                                                                                student_name: schedule[key].student_name,
-                                                                                isVietSureEnglish: schedule[key].isVietSureEnglish,
-                                                                                users_permissions_user: {
-                                                                                    connect: [],
-                                                                                    disconnect: [],
-                                                                                },
-                                                                                createdAt: null,
-                                                                                updatedAt: null,
-                                                                                createdBy: null,
-                                                                                updatedBy: null,
-                                                                                documentId: schedule[key].id,
-                                                                            }),
-                                                                        }
-                                                                    );
-                                                                }}
-                                                                style={{
-                                                                    width: '100%',
-                                                                    boxSizing: 'border-box',
-                                                                    fontSize: 12,
-                                                                    marginTop: 2,
-                                                                }}
-                                                            />
-                                                        </div>
+                                                        {isVSE ? (
+                                                            <div style={{
+                                                                width: '80%',
+                                                                height: '75%',
+                                                                boxSizing: 'border-box',
+                                                                fontSize: 10,
+                                                                padding: '2px 4px',
+                                                                borderRadius: 3,
+                                                                textAlign: 'center',
+                                                                color: '#3F489A',
+                                                                fontWeight: 'bold',
+                                                                background: 'rgba(255, 255, 255, 0.95)',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis',
+                                                                whiteSpace: 'nowrap'
+                                                            }}>
+                                                                {schedule[key].student_name || 'VSE'}
+                                                            </div>
+                                                        ) : (
+                                                            <div style={{
+                                                                width: '80%',
+                                                                height: '75%',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                color: 'white',
+                                                                fontSize: 10,
+                                                                fontWeight: 'bold',
+                                                                lineHeight: '1.2'
+                                                            }}>Trung tâm<br/>khác</div>
+                                                        )}
                                                     </div>
+                                                ) : (
+                                                    <span style={{ color: '#8E9AD5', fontWeight: 600, fontSize: 14 }}>x</span>
                                                 )}
                                             </td>
                                         );
@@ -302,23 +284,110 @@ export default function SchedulePage() {
                 </div>
             )}
         </Box>
+
+        {selectedSlot && (
+            <div style={{
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999,
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+                <div style={{
+                    background: 'white', padding: 24, borderRadius: 8, width: 400,
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
+                }}>
+                    <div style={{ marginBottom: 16, textAlign: 'center', fontWeight: 'bold', fontSize: 18, color: '#333' }}>
+                        Đăng ký lịch trống
+                    </div>
+                    <div style={{ marginBottom: 24, textAlign: 'center', color: '#666' }}>
+                        Lịch: {selectedSlot.slot} ({selectedSlot.day})
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
+                        <button
+                            onClick={() => setPopupBookingType('VSE')}
+                            style={{
+                                flex: 1, padding: '10px 0', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer',
+                                border: popupBookingType === 'VSE' ? '2px solid #f50e40' : '2px solid #ddd',
+                                background: popupBookingType === 'VSE' ? '#f50e40' : 'white',
+                                color: popupBookingType === 'VSE' ? 'white' : '#666'
+                            }}
+                        >
+                            VietSure English
+                        </button>
+                        <button
+                            onClick={() => setPopupBookingType('OTHER')}
+                            style={{
+                                flex: 1, padding: '10px 0', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer',
+                                border: popupBookingType === 'OTHER' ? '2px solid #e8d5f5' : '2px solid #ddd',
+                                background: popupBookingType === 'OTHER' ? '#e8d5f5' : 'white',
+                                color: popupBookingType === 'OTHER' ? '#666' : '#666'
+                            }}
+                        >
+                            Trung tâm khác
+                        </button>
+                    </div>
+
+                    {popupBookingType === 'VSE' && (
+                        <div style={{ marginBottom: 20 }}>
+                            <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold', fontSize: 14, color: '#333' }}>
+                                Mã lớp học <span style={{ color: 'red' }}>*</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={popupClassCode}
+                                onChange={(e) => setPopupClassCode(e.target.value)}
+                                placeholder="Nhập mã lớp..."
+                                autoFocus
+                                style={{
+                                    width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #ddd',
+                                    fontSize: 14, boxSizing: 'border-box'
+                                }}
+                            />
+                        </div>
+                    )}
+
+                    <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 30 }}>
+                        <button
+                            onClick={() => setSelectedSlot(null)}
+                            style={{
+                                padding: '8px 16px', borderRadius: 6, border: 'none', background: '#f0f0f0',
+                                cursor: 'pointer', fontWeight: 'bold', color: '#666'
+                            }}
+                        >
+                            Hủy
+                        </button>
+                        <button
+                            onClick={confirmBooking}
+                            style={{
+                                padding: '8px 16px', borderRadius: 6, border: 'none', background: '#f50e40',
+                                cursor: 'pointer', fontWeight: 'bold', color: 'white'
+                            }}
+                        >
+                            Xác nhận
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     );
 }
 
 // ---- Styles ----
 const thStyle: React.CSSProperties = {
     padding: '8px 16px',
-    border: '1px solid #ddd',
-    background: '#fcebf2',
+    border: '2px solid white',
+    background: '#3F489A',
     fontWeight: 'bold',
     whiteSpace: 'nowrap',
-    color: '#ee407d',
+    color: 'white',
+    textAlign: 'center',
+    borderRadius: 4,
 };
 
 const tdStyle: React.CSSProperties = {
-    padding: '6px 12px',
-    border: '1px solid #e0e0e0',
-    width: 200,
-    height: 36,
+    padding: '4px',
+    width: 100,
+    height: 42,
     color: '#333',
 };
