@@ -50,9 +50,10 @@ export default function PPTViewer({ fileUrl }: { fileUrl: string }) {
       />
 
       {/* Blocker & Custom Fullscreen Button 
-          Matches the exact height of the Microsoft bottom bar (~28px).
-          Using #444444 to match the typical dark gray. */}
-      <div className="absolute bottom-0 right-0 w-[140px] h-[28px] bg-[#444444] z-10 flex items-center justify-end pr-3">
+          Matches the exact height of the Microsoft bottom bar: 22px + 1px border-top = 23px.
+          Using #444444 to match the background and #555555 for the border-top.
+          Width 80px is enough to cover the right dock (Menu and Open in New Tab). */}
+      <div className="absolute bottom-0 right-0 w-[80px] h-[23px] bg-[#444444] border-t border-[#555555] z-10 flex items-center justify-center">
         <button
           onClick={toggleFullscreen}
           className="text-gray-300 hover:text-white p-1 rounded hover:bg-white/10 transition-colors flex items-center justify-center cursor-pointer h-full"
@@ -61,12 +62,12 @@ export default function PPTViewer({ fileUrl }: { fileUrl: string }) {
           {isFullscreen ? (
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             >
@@ -75,12 +76,12 @@ export default function PPTViewer({ fileUrl }: { fileUrl: string }) {
           ) : (
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             >
