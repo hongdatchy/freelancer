@@ -33,7 +33,7 @@ export default function HeroSection({
   }, []);
 
   return (
-    <section className="relative flex flex-col pt-4 md:pt-8 pb-16 overflow-hidden bg-white w-full">
+    <section className="relative flex flex-col pt-4 md:pt-8 pb-16 overflow-hidden bg-gradient-to-b from-white to-[#F0F7FF] w-full">
       {/* Custom background shapes to mimic the organic curves in the reference */}
       <div aria-hidden="true" className="absolute top-0 right-0 w-[40%] h-[40%] bg-[radial-gradient(circle_at_top_right,rgba(254,243,199,0.4)_0%,transparent_70%)] z-0 pointer-events-none"></div>
       <div aria-hidden="true" className="absolute bottom-0 right-0 w-[50%] h-[60%] bg-[radial-gradient(circle_at_bottom_right,rgba(239,246,255,0.6)_0%,transparent_70%)] z-0 pointer-events-none"></div>

@@ -4,7 +4,7 @@ export default function LearnFromStart() {
     return (
         <>
             <section
-                className="px-6 py-16 bg-gradient-to-b from-[#D4E8FC] to-white"
+                className="px-6 py-16 bg-gradient-to-b from-white to-[#F0F7FF]"
             >
                 <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 flex flex-col items-center">
                     <div className="text-center mx-auto mb-10 max-w-6xl">

@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function ValuesSection() {
   return (
-    <section className="px-6 pt-20 pb-20 2xl:pb-[240px] bg-gradient-to-b from-sky-50/20 to-white overflow-hidden">
+    <section className="px-6 pt-20 pb-20 2xl:pb-[240px] bg-gradient-to-b from-[#F0F7FF] to-white overflow-hidden">
       <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
         <h2 className="section-title text-center mb-12">
           GIÁ TRỊ PHỤ HUYNH THẬT SỰ NHẬN ĐƯỢC SAU MỖI KHÓA HỌC

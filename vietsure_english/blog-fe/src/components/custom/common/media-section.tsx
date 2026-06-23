@@ -13,7 +13,7 @@ export default function MediaSection() {
     const marqueeLogos = [...logos, ...logos, ...logos];
 
     return (
-        <section className="py-10 bg-gradient-to-b from-[#EBF5FF] to-white overflow-hidden">
+        <section className="py-10 bg-gradient-to-b from-white to-[#F0F7FF] overflow-hidden">
             <div className="w-full relative overflow-hidden">
                 <div className="animate-marquee gap-8 md:gap-16 py-4">
                     {marqueeLogos.map((logo, idx) => (

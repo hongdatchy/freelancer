@@ -3,6 +3,7 @@
 import { getData, postData, putData } from '@/service/api';
 import useUserLoginStore from '@/state-manager/user-login-store';
 import { useEffect, useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 
 // ---- Config ----
 const START_HOUR = 7;
@@ -25,13 +26,13 @@ const generateSlots = () => {
 const TIME_SLOTS = generateSlots();
 
 const DAYS_CONFIG = [
-  { dayKey: 'Thứ 3', labelDay: 'TUE', labelDate: '2' },
-  { dayKey: 'Thứ 4', labelDay: 'WED', labelDate: '3' },
-  { dayKey: 'Thứ 5', labelDay: 'THU', labelDate: '4' },
-  { dayKey: 'Thứ 6', labelDay: 'FRI', labelDate: '5' },
-  { dayKey: 'Thứ 7', labelDay: 'SAT', labelDate: '6' },
-  { dayKey: 'CN',    labelDay: 'SUN', labelDate: '7' },
-  { dayKey: 'Thứ 2', labelDay: 'MON', labelDate: '8' },
+  { dayKey: 'Thứ 2', labelDay: 'MON', labelDate: '2' },
+  { dayKey: 'Thứ 3', labelDay: 'TUE', labelDate: '3' },
+  { dayKey: 'Thứ 4', labelDay: 'WED', labelDate: '4' },
+  { dayKey: 'Thứ 5', labelDay: 'THU', labelDate: '5' },
+  { dayKey: 'Thứ 6', labelDay: 'FRI', labelDate: '6' },
+  { dayKey: 'Thứ 7', labelDay: 'SAT', labelDate: '7' },
+  { dayKey: 'CN',    labelDay: 'SUN', labelDate: 'CN' },
 ];
 
 // ---- Types ----
@@ -57,9 +58,12 @@ export function TeacherScheduleView({ teacherId }: Props) {
   const [resolvedTeacherId, setResolvedTeacherId] = useState<number | null>(null);
   const [scheduleMap, setScheduleMap] = useState<ScheduleMap>({});
   const [loading, setLoading] = useState(false);
-  const [isVietSureEnglish, setIsVietSureEnglish] = useState(true);
+  
+  const [selectedSlotForBooking, setSelectedSlotForBooking] = useState<{day: string, slot: string} | null>(null);
+  const [popupBookingType, setPopupBookingType] = useState<'VSE' | 'OTHER'>('VSE');
+  const [popupClassCode, setPopupClassCode] = useState('');
 
-  const canEdit = !!user;
+  const canEdit = !teacherId && !!user;
 
   useEffect(() => {
     if (teacherId) {
@@ -101,7 +105,7 @@ export function TeacherScheduleView({ teacherId }: Props) {
     fetchSchedule();
   }, [resolvedTeacherId]);
 
-  const toggleSlot = async (day: string, slot: string) => {
+  const handleCellClick = async (day: string, slot: string) => {
     if (!canEdit) return;
 
     const key = `${day}_${slot}`;
@@ -123,28 +127,49 @@ export function TeacherScheduleView({ teacherId }: Props) {
         console.error('Delete error:', err);
       }
     } else {
+      setSelectedSlotForBooking({ day, slot });
+      setPopupBookingType('VSE');
+      setPopupClassCode('');
+    }
+  };
+
+  const confirmBooking = async () => {
+    if (!selectedSlotForBooking || !canEdit) return;
+    
+    const { day, slot } = selectedSlotForBooking;
+    const key = `${day}_${slot}`;
+    const isVSE = popupBookingType === 'VSE';
+    const studentName = isVSE ? popupClassCode : '';
+
+    try {
       const res = await postData(`api/teacher-schedules`, {
         data: {
           day,
           time_slot: slot,
-          student_name: '',
-          isVietSureEnglish,
+          student_name: studentName,
+          isVietSureEnglish: isVSE,
           users_permissions_user: resolvedTeacherId,
         },
       });
 
       const newItem = res?.data;
-      setScheduleMap(prev => ({
-        ...prev,
-        [key]: {
-          id: newItem.documentId || String(newItem.id),
-          day,
-          time_slot: slot,
-          student_name: '',
-          isVietSureEnglish,
-        },
-      }));
+      if (newItem) {
+        setScheduleMap(prev => ({
+          ...prev,
+          [key]: {
+            id: newItem.documentId || String(newItem.id),
+            day,
+            time_slot: slot,
+            student_name: studentName,
+            isVietSureEnglish: isVSE,
+          },
+        }));
+      }
+    } catch (err) {
+      console.error('Create error:', err);
     }
+
+    setSelectedSlotForBooking(null);
   };
 
   const handleStudentNameBlur = async (day: string, slot: string) => {
@@ -174,19 +199,7 @@ export function TeacherScheduleView({ teacherId }: Props) {
         AVAILABILITY TIME
       </h2>
 
-      {/* Toggle - chỉ hiện khi có thể edit */}
-      {canEdit && (
-        <div className="mb-6 flex items-center gap-3">
-          <button
-            onClick={() => setIsVietSureEnglish(!isVietSureEnglish)}
-            className={`px-4 py-2 rounded-lg text-white font-bold text-sm tracking-wide shadow-md transition-all ${
-              isVietSureEnglish ? 'bg-[#FF6B00] hover:bg-orange-600' : 'bg-slate-400 hover:bg-slate-500'
-            }`}
-          >
-            {isVietSureEnglish ? 'VietSure English' : 'Trung tâm khác'}
-          </button>
-        </div>
-      )}
+      {/* Removed Toggle Button */}
 
       {/* Table Container */}
       <div className="overflow-x-auto w-full">
@@ -243,41 +256,50 @@ export function TeacherScheduleView({ teacherId }: Props) {
                 {DAYS_CONFIG.map(dayInfo => {
                   const key = `${dayInfo.dayKey}_${slot}`;
                   const item = scheduleMap[key];
-                  const active = !!item;
+                  const teacherHasClass = !!item;
                   const isVSE = item?.isVietSureEnglish;
+                  
+                  // Invert logic for student (if canEdit is false)
+                  const visualActive = canEdit ? teacherHasClass : !teacherHasClass;
 
                   return (
                     <td
                       key={dayInfo.dayKey}
-                      onClick={() => toggleSlot(dayInfo.dayKey, slot)}
-                      className={`h-[38px] align-middle text-center rounded transition-all select-none duration-150 p-0.5 ${
-                        canEdit ? 'cursor-pointer' : 'cursor-default'
+                      onClick={() => handleCellClick(dayInfo.dayKey, slot)}
+                      className={`h-[42px] align-middle text-center rounded transition-all select-none duration-150 p-1 ${
+                        canEdit ? 'cursor-pointer hover:ring-2 hover:ring-[#FF6B00]/50 hover:ring-inset' : 'cursor-default'
                       } ${
-                        active 
+                        visualActive 
                           ? 'bg-[#3F489A]' 
                           : 'bg-[#F5F7FC]'
                       }`}
                     >
-                      {active ? (
-                        <div className="flex flex-col items-center justify-center h-full">
-                          {/* Inner white text/block */}
-                          <div className="w-full h-full bg-[#3F489A] rounded-[2px] flex items-center justify-center">
+                      {visualActive ? (
+                        <div className="flex flex-col items-center justify-center h-full w-full">
+                          {/* Inner text/block */}
+                          <div className={`w-full h-full rounded-[2px] flex items-center justify-center overflow-hidden`}>
                             {canEdit && (
-                              <input
-                                name={`student_${dayInfo.dayKey}_${slot}`}
-                                value={scheduleMap[key].student_name || ''}
-                                onClick={(e) => e.stopPropagation()}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  setScheduleMap(prev => ({
-                                    ...prev,
-                                    [key]: { ...prev[key], student_name: val },
-                                  }));
-                                }}
-                                onBlur={() => handleStudentNameBlur(dayInfo.dayKey, slot)}
-                                placeholder="Tên học viên"
-                                className="w-full text-center text-[9px] bg-white/95 text-slate-800 rounded px-1 py-0.5 border-none focus:ring-1 focus:ring-[#FF6B00]"
-                              />
+                              isVSE ? (
+                                <input
+                                  name={`student_${dayInfo.dayKey}_${slot}`}
+                                  value={scheduleMap[key].student_name || ''}
+                                  onClick={(e) => e.stopPropagation()}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setScheduleMap(prev => ({
+                                      ...prev,
+                                      [key]: { ...prev[key], student_name: val },
+                                    }));
+                                  }}
+                                  onBlur={() => handleStudentNameBlur(dayInfo.dayKey, slot)}
+                                  placeholder="Mã lớp"
+                                  className={`w-[80%] h-[75%] text-center text-[10px] bg-white/95 text-[#3F489A] font-bold rounded-[3px] px-1 py-0.5 border-none focus:outline-none focus:ring-1 focus:ring-[#FF6B00] shadow-sm`}
+                                />
+                              ) : (
+                                <div className="w-[80%] h-[75%] flex items-center justify-center text-white text-[10px] font-bold leading-tight">
+                                  Trung tâm<br/>khác
+                                </div>
+                              )
                             )}
                           </div>
                         </div>
@@ -292,6 +314,71 @@ export function TeacherScheduleView({ teacherId }: Props) {
           </tbody>
         </table>
       </div>
+
+      <Dialog open={!!selectedSlotForBooking} onOpenChange={(open) => !open && setSelectedSlotForBooking(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-center text-[#2E357F] font-bold text-xl">Đăng ký lịch trống</DialogTitle>
+            <DialogDescription className="text-center mt-2">
+              Lịch: {selectedSlotForBooking?.slot} ({selectedSlotForBooking?.day})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-5 py-4">
+            <div className="flex items-center gap-4 justify-center">
+              <button
+                onClick={() => setPopupBookingType('VSE')}
+                className={`flex-1 py-2.5 rounded-lg text-sm font-bold border-2 transition-all ${
+                  popupBookingType === 'VSE' 
+                    ? 'border-[#3F489A] bg-[#3F489A] text-white shadow-md' 
+                    : 'border-slate-200 bg-white text-slate-500 hover:border-[#3F489A]/50'
+                }`}
+              >
+                VietSure English
+              </button>
+              <button
+                onClick={() => setPopupBookingType('OTHER')}
+                className={`flex-1 py-2.5 rounded-lg text-sm font-bold border-2 transition-all ${
+                  popupBookingType === 'OTHER' 
+                    ? 'border-[#8B5CF6] bg-[#8B5CF6] text-white shadow-md' 
+                    : 'border-slate-200 bg-white text-slate-500 hover:border-[#8B5CF6]/50'
+                }`}
+              >
+                Trung tâm khác
+              </button>
+            </div>
+
+            {popupBookingType === 'VSE' && (
+              <div className="mt-2">
+                <label className="text-sm font-bold text-[#2E357F] mb-2 block">
+                  Mã lớp học <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={popupClassCode}
+                  onChange={(e) => setPopupClassCode(e.target.value)}
+                  placeholder="Nhập mã lớp..."
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] transition-colors"
+                  autoFocus
+                />
+              </div>
+            )}
+          </div>
+          <DialogFooter className="sm:justify-between flex-row gap-3">
+            <button
+              onClick={() => setSelectedSlotForBooking(null)}
+              className="flex-1 px-4 py-2.5 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+            >
+              Hủy
+            </button>
+            <button
+              onClick={confirmBooking}
+              className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-[#FF6B00] hover:bg-[#e66000] shadow-md hover:shadow-lg rounded-xl transition-all"
+            >
+              Xác nhận
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
