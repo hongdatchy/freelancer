@@ -405,7 +405,7 @@ export default function HallOfFameSection() {
     return (
         <>
             <section className="relative overflow-hidden bg-gradient-to-b from-[#5C6BC0] via-[#A5B4FC] to-[#F0F9FF] py-16">
-                <div className="container relative z-10 mx-auto px-4">
+                <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 relative z-10">
                     {/* Header */}
                     <div className="mx-auto mb-10 max-w-4xl text-center">
                         <h2 className="text-2xl md:text-[32px] font-extrabold text-white uppercase tracking-wider leading-tight">

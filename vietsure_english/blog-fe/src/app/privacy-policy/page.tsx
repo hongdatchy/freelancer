@@ -37,7 +37,7 @@ export default function PrivacyPolicy() {
       <div className="privacy-page-body min-h-screen relative flex flex-col items-center py-20 px-6 overflow-hidden">
         <div className="bg-glow"></div>
         
-        <main className="w-full max-w-[1100px] relative z-10">
+        <main className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 relative z-10">
           
           {/* Title Section */}
           <div className="text-center mb-8">

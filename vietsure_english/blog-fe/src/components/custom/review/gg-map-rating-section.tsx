@@ -24,7 +24,7 @@ const ratingCards = [
 export default function GgMapRatingSection() {
     return (
         <section className="relative py-16 px-4" style={{ background: "#3F489A" }}>
-            <div className="mx-auto max-w-6xl">
+            <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
                 {/* Title */}
                 <h2 className="text-center text-2xl md:text-[32px] font-black text-white uppercase tracking-wider mb-16">
                     ĐÁNH GIÁ TỐT CỦA PHỤ HUYNH TRÊN GOOGLE MAPS

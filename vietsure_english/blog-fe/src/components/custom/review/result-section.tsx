@@ -90,7 +90,7 @@ export default function ResultSection() {
                 background: "#3F489A",
             }}
         >
-            <div className="mx-auto max-w-6xl px-6">
+            <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
                 <div className="grid items-center gap-12 lg:grid-cols-3">
                     {/* LEFT: Reviews */}
                     <div className="relative hidden min-h-[420px] lg:block lg:col-span-1">

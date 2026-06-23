@@ -64,8 +64,8 @@ export function BreadcrumbDynamic({ menuState }: Props) {
                 Home
               </BreadcrumbLink>
             )} */}
-            <BreadcrumbLink href="/" className="font-medium">
-              Home
+            <BreadcrumbLink href="/" className="font-medium text-[#2E357F]/70 hover:text-[#2E357F]">
+              Trang chủ
             </BreadcrumbLink>
           </BreadcrumbItem>
 
@@ -74,14 +74,14 @@ export function BreadcrumbDynamic({ menuState }: Props) {
 
             return (
               <React.Fragment key={index}>
-                <BreadcrumbSeparator />
+                <BreadcrumbSeparator className="text-[#2E357F]/50" />
                 <BreadcrumbItem>
                   {isLast ? (
-                    <BreadcrumbPage className="font-bold text-custom-blue">
+                    <BreadcrumbPage className="font-bold text-[#2E357F]">
                       {seg.title}
                     </BreadcrumbPage>
                   ) : (
-                    <BreadcrumbLink href={seg.href || '#'} className="font-medium">
+                    <BreadcrumbLink href={seg.href || '#'} className="font-medium text-[#2E357F]/70 hover:text-[#2E357F]">
                       {seg.title}
                     </BreadcrumbLink>
                   )}

@@ -199,30 +199,14 @@ export default function BrandAmbassadorPage() {
             4 BƯỚC ĐƠN GIẢN CÓ THÊM THU NHẬP LÊN ĐẾN <span className="text-[#FF6B00]">30 TRIỆU/THÁNG</span> CÙNG VIETSURE ENGLISH
           </h2>
 
-          <div className="max-w-6xl mx-auto flex flex-col gap-6">
-            {steps.map((step) => {
-              const isLeft = step.position === "left";
-              return (
-                <div
-                  key={step.id}
-                  className={`flex items-center w-full min-h-[96px] rounded-2xl bg-[#F5FAFF] px-8 md:px-16 py-5 shadow-sm transition-all duration-300 hover:shadow-md ${
-                    isLeft ? "flex-row" : "flex-row-reverse"
-                  }`}
-                >
-                  {/* Step Number */}
-                  <span className={`text-4xl md:text-5xl font-black text-[#FF6B00] shrink-0 select-none ${
-                    isLeft ? "mr-8 md:mr-12" : "ml-8 md:ml-12"
-                  }`}>
-                    {step.id}
-                  </span>
-
-                  {/* Step Text */}
-                  <p className="text-sm md:text-base font-extrabold text-[#2E357F] leading-snug flex-1 text-center px-4 md:px-8">
-                    {step.text}
-                  </p>
-                </div>
-              );
-            })}
+          <div className="max-w-4xl mx-auto flex justify-center w-full">
+            <Image
+              src="/images/4_buoc.png"
+              alt="4 BƯỚC ĐƠN GIẢN"
+              width={1000}
+              height={800}
+              className="w-full h-auto object-contain"
+            />
           </div>
         </div>
       </section>

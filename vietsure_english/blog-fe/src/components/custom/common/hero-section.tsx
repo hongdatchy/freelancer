@@ -33,7 +33,7 @@ export default function HeroSection({
   }, []);
 
   return (
-    <section className="relative min-h-[700px] lg:min-h-[850px] flex flex-col justify-center pt-6 pb-16 overflow-hidden bg-white w-full">
+    <section className="relative flex flex-col pt-4 md:pt-8 pb-16 overflow-hidden bg-white w-full">
       {/* Custom background shapes to mimic the organic curves in the reference */}
       <div aria-hidden="true" className="absolute top-0 right-0 w-[40%] h-[40%] bg-[radial-gradient(circle_at_top_right,rgba(254,243,199,0.4)_0%,transparent_70%)] z-0 pointer-events-none"></div>
       <div aria-hidden="true" className="absolute bottom-0 right-0 w-[50%] h-[60%] bg-[radial-gradient(circle_at_bottom_right,rgba(239,246,255,0.6)_0%,transparent_70%)] z-0 pointer-events-none"></div>
@@ -43,11 +43,14 @@ export default function HeroSection({
           
           {/* LeftContent - Visuals */}
           <div className="w-full lg:w-[45%] flex justify-start -ml-3 md:-ml-5 lg:-ml-6" data-purpose="hero-image-container">
-            <div className="relative w-full shadow-[0_0_40px_rgba(59,130,246,0.35)] rounded-r-[40px] overflow-hidden">
+            <div 
+              className="relative w-full shadow-[0_0_40px_rgba(59,130,246,0.35)] rounded-r-[40px] overflow-hidden"
+              style={{ aspectRatio: "800/540" }}
+            >
               {/* Main Hero Image */}
               <Image 
                 alt="VietSure English Online Class - Teacher and students with penguin mascot" 
-                className="w-full h-auto object-cover" 
+                className="w-full h-full object-cover" 
                 data-purpose="primary-hero-image" 
                 src="/images/Rectangle.png"
                 width={800}

@@ -31,23 +31,23 @@ export default function Course() {
         <div className="w-full flex flex-col gap-12 relative z-10">
           
           {/* Upper Content */}
-          <div className="flex flex-col 2xl:flex-row items-center justify-between gap-6">
+          <div className="flex flex-col xl:flex-row items-center justify-between gap-6">
             
             {/* Left Side: Title */}
-            <div className="w-full 2xl:w-[58%] flex flex-col justify-between relative select-none">
+            <div className="w-full xl:w-[58%] flex flex-col justify-between relative select-none">
               <h1 
-                className="text-2xl lg:text-[38px] tracking-wide text-white/95 uppercase mb-4 text-center 2xl:text-left"
+                className="text-2xl lg:text-[38px] tracking-wide text-white/95 uppercase mb-4 text-center xl:text-left"
                 style={{ lineHeight: '1.6', fontWeight: 100 }}
               >
                 KHÓA HỌC TIẾNG ANH ONLINE<br />
                 QUỐC TẾ <span className="text-[#FBBC05]" style={{ fontWeight: 100 }}>CHẤT LƯỢNG CAO</span>
               </h1>
               {/* Spacer on desktop to give height so background kids are fully visible */}
-              <div className="hidden 2xl:block h-[160px]" />
+              <div className="hidden xl:block h-[160px]" />
             </div>
 
             {/* Right Side: Description Card and Button */}
-            <div className="w-full 2xl:w-[40%] flex flex-col items-center 2xl:items-end justify-center">
+            <div className="w-full xl:w-[40%] flex flex-col items-center xl:items-end justify-center">
               <div className="w-full max-w-[560px] flex flex-col items-center">
                 
                 {/* Card */}

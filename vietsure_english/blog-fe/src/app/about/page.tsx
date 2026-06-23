@@ -90,8 +90,8 @@ export default function About() {
         <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
           <h2 className="section-title text-center mb-16">Ý nghĩa logo Vietsure English</h2>
 
-          {/* ===== DESKTOP (lg+): layout absolute ===== */}
-          <div className="relative w-full hidden lg:block" style={{ height: "620px" }}>
+          {/* ===== DESKTOP (xl+): layout absolute ===== */}
+          <div className="relative w-full hidden xl:block" style={{ height: "620px" }}>
 
             {/* TOP LEFT TEXT */}
             <div
@@ -158,8 +158,8 @@ export default function About() {
             </div>
           </div>
 
-          {/* ===== MOBILE/TABLET (dưới lg): layout flex column ===== */}
-          <div className="flex flex-col items-center gap-8 lg:hidden">
+          {/* ===== MOBILE/TABLET (dưới xl): layout flex column ===== */}
+          <div className="flex flex-col items-center gap-8 xl:hidden">
 
             {/* Logo giữa */}
             <div className="flex items-center justify-center">
