@@ -164,7 +164,7 @@ export default function SchedulePage() {
         <>
         <Box padding={8}>
             <Typography variant="alpha" style={{ marginBottom: 24, display: 'block', fontSize: '2rem' }}>
-                Thời khoá biểu của giáo viên VietSure English
+                Thời khoá biểu của giáo viên VietSure English !
             </Typography>
 
             <Box style={{ marginBottom: 24, maxWidth: 320 }}>
