@@ -15,33 +15,30 @@ export default function LearningPathSection() {
           <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold text-[#2E357F] mt-2">
             (CHUẨN CEFR & CAMBRIDGE)
           </h3>
-          <p className="section-desc mt-4 text-balance">
+          <p className="section-desc mt-4 max-w-7xl mx-auto text-center">
             Từ kinh nghiệm dạy online cho trẻ em Việt sinh ra tại nước ngoài chỉ biết tiếng Anh học tiếng mẹ đẻ. Vietsure tiếp tục xây dựng lộ trình học tiếng Anh cho trẻ em Việt Nam từ &quot;Nền tảng - Theo 1 lộ trình học liền mạch, cá nhân hóa - Dùng cả đời&quot; giúp trẻ tiến bộ, tự tin phản xạ tiếng Anh trong cuộc sống như trẻ em nước ngoài và chuẩn chương trình Cambridge.
           </p>
         </div>
 
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
-          
+
           {/* Left Content: Diagram Image with Overlaid Text */}
           <div className="w-full lg:w-[52%] flex justify-center">
             <div className="relative w-full max-w-[850px] aspect-[580/460]">
               {/* Background Diagram Image */}
-              <Image 
-                src="/images/learning-path-diagram.png" 
-                alt="Learning Path Diagram" 
-                width={580} 
-                height={460} 
+              <Image
+                src="/images/learning-path-diagram.png"
+                alt="Learning Path Diagram"
+                width={580}
+                height={460}
                 className="w-full h-full object-contain pointer-events-none select-none filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.15)]"
                 priority
               />
 
               {/* Overlaid text: LỘ TRÌNH HỌC */}
-              <div className="absolute left-[8%] md:left-[10%] top-[63%] -translate-y-1/2 w-[90px] md:w-[110px] text-center pointer-events-none select-none">
-                <span className="text-[#2E357F] font-black text-sm sm:text-base md:text-lg lg:text-xl leading-tight uppercase block">
-                  LỘ TRÌNH
-                </span>
-                <span className="text-[#2E357F] font-black text-sm sm:text-base md:text-lg lg:text-xl leading-tight uppercase block">
-                  HỌC
+              <div className="absolute left-[8%] md:left-[10%] top-[63%] -translate-y-1/2 w-max text-center pointer-events-none select-none">
+                <span className="text-[#2E357F] font-black text-[10px] sm:text-xs md:text-sm lg:text-base leading-tight uppercase whitespace-nowrap">
+                  LỘ TRÌNH HỌC
                 </span>
               </div>
 
@@ -71,7 +68,7 @@ export default function LearningPathSection() {
                   TIẾNG ANH THIẾU NIÊN
                 </h4>
                 <p className="text-[8px] sm:text-[10px] md:text-sm lg:text-[11px] xl:text-xs font-bold text-[#38bdf8]/80">
-                  (Từ 6 tuổi trở lên)
+                  (Từ 11 tuổi trở lên)
                 </p>
               </div>
 
@@ -91,18 +88,18 @@ export default function LearningPathSection() {
           {/* Right Content: Mascot and CTA */}
           <div className="w-full lg:w-[43%] flex flex-col items-center justify-center text-center">
             <div className="relative w-full max-w-[450px] select-none pointer-events-none mb-6">
-              <Image 
-                src="/images/character-penguin.png" 
-                alt="VietSure Penguin Mascot" 
-                width={450} 
-                height={450} 
+              <Image
+                src="/images/character-penguin.png"
+                alt="VietSure Penguin Mascot"
+                width={450}
+                height={450}
                 className="w-full h-auto object-contain animate-float-up"
               />
             </div>
-            
-            <a 
-              href="#trial-section" 
-              className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-black py-5 px-10 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md text-base md:text-xl uppercase tracking-wide"
+
+            <a
+              href="#trial-section"
+              className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-black py-5 px-10 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md text-base md:text-xl tracking-wide"
             >
               Học thử miễn phí
             </a>

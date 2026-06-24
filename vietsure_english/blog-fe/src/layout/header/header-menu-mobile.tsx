@@ -31,6 +31,7 @@ import { usePathname } from 'next/navigation';
 import { Icons } from '../../components/custom/common/icons';
 import { getMenuItemsByTran, MenuItem } from './menu-items';
 import { User } from '@/state-manager/user-login-store';
+import UserInfo from '@/components/custom/common/user-info';
 
 type Props = {
   onChange?: (data: {
@@ -193,6 +194,13 @@ export function HeaderMenuMobile({ onChange, user }: Props) {
               <a href="https://www.youtube.com/@vietsure" target="_blank" rel="noopener noreferrer" className="flex h-7 w-7 items-center justify-center rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors">
                 <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.107C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.388.511a3.003 3.003 0 0 0-2.11 2.107C0 8.051 0 12 0 12s0 3.949.502 5.837a3.003 3.003 0 0 0 2.11 2.107C4.495 20.455 12 20.455 12 20.455s7.505 0 9.388-.511a3.003 3.003 0 0 0 2.11-2.107C24 15.949 24 12 24 12s0-3.949-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
               </a>
+              <a href="https://zalo.me/0357171381" target="_blank" rel="noopener noreferrer" className="flex h-7 w-7 items-center justify-center rounded-full transition-colors">
+                <img src="/images/icons8-zalo-480.png" alt="Zalo" className="w-5 h-5 object-contain" />
+              </a>
+            </div>
+            
+            <div className="mt-1">
+              <UserInfo />
             </div>
             <p className="text-[10px] text-slate-400 mt-1">© 2026 Vietsure Education</p>
           </div>

@@ -36,7 +36,7 @@ export function TeacherDetailClient({
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12 relative">
           
           {/* Blue Container (Left + Card) */}
-          <div className="flex-1 bg-[#3F489A] rounded-[36px] p-8 md:p-12 flex flex-col md:flex-row gap-10 items-stretch relative shadow-[0_15px_40px_rgba(59,130,246,0.15)]">
+          <div className="flex-1 bg-[#3F489A] rounded-[36px] p-8 md:p-12 md:pt-20 flex flex-col md:flex-row gap-10 items-stretch relative shadow-[0_15px_40px_rgba(59,130,246,0.15)]">
             
             {/* Left Part: Text Info */}
             <div className="flex-[1.2] flex flex-col justify-center text-white space-y-6">

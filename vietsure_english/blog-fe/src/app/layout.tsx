@@ -4,6 +4,7 @@ import './globals.css';
 import Header from '@/layout/header';
 import Footer from '@/layout/footer';
 import { BreadcrumbProvider } from '@/context/useBreadcrumb';
+import FloatingContact from '@/components/custom/common/floating-contact';
 
 if (typeof Promise.withResolvers === 'undefined') {
   (Promise as any).withResolvers = function() {
@@ -49,6 +50,7 @@ export default async function RootLayout({
           <Header />
           {children}
           <Footer />
+          <FloatingContact />
         </BreadcrumbProvider>
       </body>
     </html>

@@ -42,11 +42,11 @@ export default async function ElearningPage(props: {
   return (
     <div className="w-full bg-white min-h-screen">
       {/* Top Hero Section shared with Homepage */}
-      <HeroSection buttonText="Học thử miễn phí" buttonHref="/#trial-section" showButton={false} />
+      <HeroSection  showButton={false} />
 
       {/* Main Courses Area */}
       <div className="w-full bg-[#F0FAF4] pb-20 pt-12 md:pt-16">
-        
+
         {/* Main Heading & Test Button */}
         <div className="text-center max-w-4xl mx-auto mb-10 px-6">
           <h2 className="section-title">
@@ -88,13 +88,11 @@ export default async function ElearningPage(props: {
                   key={lvl}
                   href={url}
                   scroll={false}
-                  className={`flex-1 min-w-[100px] text-center py-4 px-3 text-[14px] md:text-[15px] font-black transition-colors duration-200 ${
-                    active
+                  className={`flex-1 min-w-[100px] text-center py-4 px-3 text-[14px] md:text-[15px] font-black transition-colors duration-200 ${active
                       ? 'bg-[#3F489A] text-white'
                       : 'text-[#2E357F] hover:bg-[#3F489A]/5'
-                  } ${
-                    idx !== arr.length - 1 ? 'border-b md:border-b-0 md:border-r border-[#3F489A]/15' : ''
-                  }`}
+                    } ${idx !== arr.length - 1 ? 'border-b md:border-b-0 md:border-r border-[#3F489A]/15' : ''
+                    }`}
                 >
                   {lvl}
                 </Link>

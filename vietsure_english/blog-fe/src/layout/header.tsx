@@ -68,15 +68,18 @@ export default function Header() {
           <div className="hidden md:flex items-center space-x-6">
             
             {/* Social Icons */}
-            <div className="flex items-center space-x-4 text-gray-500">
-              <a href="#" target="_blank" rel="noreferrer" className="hover:text-blue-600 transition-colors">
+            <div className="flex items-center space-x-4">
+              <a href="https://www.facebook.com/vietsureenglish" target="_blank" rel="noreferrer" className="text-blue-600 hover:opacity-80 transition-opacity">
                 <Icons.facebook className="w-5 h-5" />
               </a>
-              <a href="#" target="_blank" rel="noreferrer" className="hover:text-red-600 transition-colors">
+              <a href="https://www.youtube.com/@vietsure" target="_blank" rel="noreferrer" className="text-red-600 hover:opacity-80 transition-opacity">
                 <Icons.youtube className="w-5 h-5" />
               </a>
-              <a href="#" target="_blank" rel="noreferrer" className="hover:text-blue-500 transition-colors">
-                <Icons.zalo className="w-5 h-5" />
+              <a href="https://www.tiktok.com" target="_blank" rel="noreferrer" className="text-black hover:opacity-80 transition-opacity">
+                <Icons.tiktok className="w-5 h-5" />
+              </a>
+              <a href="https://zalo.me/0357171381" target="_blank" rel="noreferrer" className="text-[#0068FF] hover:opacity-80 transition-opacity flex items-center">
+                <img src="/images/icons8-zalo-480.png" alt="Zalo" className="w-5 h-5 object-contain" />
               </a>
             </div>
 

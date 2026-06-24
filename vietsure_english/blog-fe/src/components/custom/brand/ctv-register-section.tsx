@@ -76,41 +76,42 @@ export default function CtvRegisterSection() {
                 </div>
 
                 {/* Card chứa Form */}
-                <div className="w-full bg-[#badeff] brand-light-border rounded-[36px] md:rounded-[48px] shadow-2xl p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                <div className="w-full bg-[#badeff] brand-light-border rounded-[36px] md:rounded-[48px] shadow-2xl p-6 lg:p-12 flex flex-col gap-8 lg:gap-10">
                     
-                    {/* Phần bên trái: Mascot & Khuyến mãi */}
-                    <div className="lg:col-span-5 pt-8 px-6 md:pt-10 md:px-8 pb-0 flex flex-col justify-between items-center relative overflow-hidden min-h-[380px] lg:min-h-full">
-                        <h3 className="text-[#1b2b85] font-black text-xl md:text-2xl lg:text-[24px] uppercase leading-snug tracking-wide text-center lg:text-left w-full max-w-none lg:max-w-[320px]">
-                            BẮT ĐẦU CƠ HỘI THU NHẬP LÊN ĐẾN 30 TRIỆU/THÁNG
+                    {/* Top Title inside Card */}
+                    <div className="w-full text-center">
+                        <h3 className="text-[#1b2b85] font-black text-xl md:text-[28px] lg:text-[32px] uppercase leading-snug tracking-wide">
+                            BẮT ĐẦU CƠ HỘI THU NHẬP LÊN ĐẾN <span className="text-[#FF6B00]">30 TRIỆU/THÁNG</span>
                         </h3>
-                        
-                        <div className="relative w-full flex justify-center items-end mt-4">
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+                        {/* Phần bên trái: Mascot */}
+                        <div className="flex justify-center items-end relative min-h-[300px] lg:min-h-[400px]">
                             <Image 
                                 src="/images/phan-khich-nang-dong.png" 
                                 alt="Mascot Vietsure English Waving" 
-                                width={310} 
-                                height={310} 
-                                className="object-contain translate-y-1 md:translate-y-2 select-none"
+                                width={480} 
+                                height={480} 
+                                className="object-contain translate-y-1 lg:translate-y-4 select-none"
                             />
                         </div>
-                    </div>
 
-                    {/* Phần bên phải: Các trường Form */}
-                    <form onSubmit={handleSubmit} className="lg:col-span-7 flex flex-col justify-center gap-5 p-2 md:p-6">
-                        {success && (
-                            <div className="px-4 py-3 bg-green-50 border border-green-300 text-green-700 rounded-2xl text-center text-sm font-medium">
-                                🎉 Đăng ký thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất nhé.
-                            </div>
-                        )}
+                        {/* Phần bên phải: Các trường Form */}
+                        <form onSubmit={handleSubmit} className="flex flex-col justify-center gap-5 w-full max-w-[500px] mx-auto lg:mx-0">
+                            {success && (
+                                <div className="px-4 py-3 bg-green-50 border border-green-300 text-green-700 rounded-2xl text-center text-sm font-medium">
+                                    🎉 Đăng ký thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất nhé.
+                                </div>
+                            )}
 
-                        {errors.submit && (
-                            <div className="px-4 py-3 bg-red-50 border border-red-300 text-red-600 rounded-2xl text-center text-sm font-medium">
-                                {errors.submit}
-                            </div>
-                        )}
+                            {errors.submit && (
+                                <div className="px-4 py-3 bg-red-50 border border-red-300 text-red-600 rounded-2xl text-center text-sm font-medium">
+                                    {errors.submit}
+                                </div>
+                            )}
 
-                        {/* Hàng 1: Họ và tên & Số điện thoại */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Field 1: Họ và tên */}
                             <div>
                                 <Input
                                     type="text"
@@ -125,6 +126,8 @@ export default function CtvRegisterSection() {
                                 />
                                 {errors.fullName && <p className="text-red-500 text-xs pl-4 mt-1">{errors.fullName}</p>}
                             </div>
+
+                            {/* Field 2: Số điện thoại / Zalo */}
                             <div>
                                 <Input
                                     type="tel"
@@ -139,7 +142,6 @@ export default function CtvRegisterSection() {
                                 />
                                 {errors.phone && <p className="text-red-500 text-xs pl-4 mt-1">{errors.phone}</p>}
                             </div>
-                        </div>
 
                         {/* Hàng 2: Email */}
                         <div>
@@ -168,6 +170,7 @@ export default function CtvRegisterSection() {
                             </Button>
                         </div>
                     </form>
+                    </div>
                 </div>
             </div>
         </section>

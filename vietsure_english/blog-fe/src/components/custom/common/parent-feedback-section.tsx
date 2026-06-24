@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRef } from "react";
+import Autoplay from "embla-carousel-autoplay";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-  type CarouselApi,
 } from "@/components/ui/carousel";
 import { VideoItem } from "@/components/custom/brand/video-item";
 
@@ -43,17 +43,9 @@ const feedbacks = [
 ];
 
 export default function ParentFeedbackSection() {
-  const [api, setApi] = useState<CarouselApi>();
-
-  useEffect(() => {
-    if (!api) return;
-
-    const interval = setInterval(() => {
-      api.scrollNext();
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [api]);
+  const plugin = useRef(
+    Autoplay({ delay: 3000, stopOnInteraction: true })
+  );
 
   return (
     <section className="px-6 py-20 bg-gradient-to-b from-[#F0F7FF] to-white overflow-hidden" data-purpose="parent-feedback-section">
@@ -71,12 +63,12 @@ export default function ParentFeedbackSection() {
 
         {/* Carousel container */}
         <Carousel 
-          setApi={setApi} 
+          plugins={[plugin.current]}
           opts={{ loop: true, align: "start" }} 
           className="w-full px-4 sm:px-12 relative"
         >
           <CarouselContent className="-ml-4">
-            {feedbacks.map((feedback, index) => (
+            {[...feedbacks, ...feedbacks].map((feedback, index) => (
               <CarouselItem
                 key={index}
                 className="pl-4 basis-full sm:basis-1/2 md:basis-1/3"

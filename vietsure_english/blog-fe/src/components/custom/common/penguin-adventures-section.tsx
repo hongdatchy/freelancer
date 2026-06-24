@@ -13,7 +13,7 @@ export default function PenguinAdventuresSection() {
           <h3 className="section-subtitle text-center text-[#FF6B00] !font-black !text-2xl md:!text-3xl lg:!text-4xl tracking-wider mt-2">
             &quot;PENGUIN ADVENTURES&quot;
           </h3>
-          <p className="section-desc mt-4 max-w-3xl mx-auto text-center">
+          <p className="section-desc mt-4 max-w-7xl mx-auto text-center">
             Penguin Adventures được thiết kế theo từng giai đoạn học gắn liền with những giá trị văn hóa người Việt Nam, giúp trẻ hứng thú học tập và chuyển từ &quot;học tiếng Anh&quot; sang &quot;sử dụng tiếng Anh&quot; một cách tự nhiên, chủ động.
           </p>
         </div>

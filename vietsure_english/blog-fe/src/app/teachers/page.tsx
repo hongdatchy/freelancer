@@ -40,7 +40,7 @@ export default async function Teachers(props: {
     <div className="md:col-span-3 w-full bg-white">
       <section className="px-6 py-5 bg-gradient-to-b from-[#EBF5FF] to-white overflow-hidden">
         <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
-          
+
           {/* Header */}
           <div className="text-center mx-auto mb-4 max-w-4xl">
             <h1 className="section-title">
@@ -74,11 +74,11 @@ export default async function Teachers(props: {
                 },
                 {
                   title: "Kinh nghiệm thực tế từ môi trường quốc tế",
-                  desc: "Đội ngũ giáo viên được đào tạo từ kinh nghiệm giảng dạy trẻ em Việt Nam tại nước ngoài – nơi tiếng Anh được sử dụng tự nhiên trong học tập và đời sống",
+                  desc: "Đội ngũ giáo viên được đào tạo từ kinh nghiệm giảng dạy trẻ em Việt Nam tại nước ngoài - nơi tiếng Anh được sử dụng tự nhiên trong học tập và đời sống",
                 },
                 {
                   title: "Theo sát từng học viên",
-                  desc: "Mỗi học viên được theo dõi tiến độ học tập rõ ràng để đảm bảo trẻ hiểu – phản xạ – sử dụng được, không học thụ động.",
+                  desc: "Mỗi học viên được theo dõi tiến độ học tập rõ ràng để đảm bảo trẻ hiểu - phản xạ - sử dụng được, không học thụ động.",
                 },
                 {
                   title: "Dày dặn kinh nghiệm",

@@ -12,7 +12,7 @@ type HeroSectionProps = {
 };
 
 // Các cụm chữ luân phiên hiển thị thay cho "CHẤT LƯỢNG CAO"
-const ROTATING_TITLES = ['CHẤT LƯỢNG CAO', 'TỰ TIN GIAO TIẾP', 'HIỆU QUẢ VƯỢT TRỘI'];
+const ROTATING_TITLES = ['CHẤT LƯỢNG CAO', 'TỰ TIN GIAO TIẾP', 'HIỆU QUẢ VƯỢT TRỘI', 'HỌC 1-1 VÀ 1-4'];
 
 export default function HeroSection({
   buttonText = 'TÌM HIỂU THÊM',

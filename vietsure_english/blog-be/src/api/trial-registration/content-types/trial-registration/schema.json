@@ -22,6 +22,9 @@
     },
     "childAge": {
       "type": "string"
+    },
+    "learningFormat": {
+      "type": "string"
     }
   }
 }

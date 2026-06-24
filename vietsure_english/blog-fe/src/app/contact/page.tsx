@@ -10,11 +10,11 @@ export default function Contact() {
           
           {/* Left Column: Contact Info */}
           <div className="flex-1 text-white flex flex-col justify-center">
-            <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-5xl xl:text-6xl font-black text-[#FF6B00] leading-tight uppercase mb-6">
+            <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-4xl xl:text-[42px] font-black text-[#FF6B00] leading-tight uppercase mb-6 whitespace-nowrap lg:whitespace-normal">
               LIÊN HỆ VỚI VIETSURE ENGLISH
             </h1>
             <div className="space-y-4">
-              <p className="section-desc !text-white font-extrabold">Thông tin liên hệ:</p>
+              <p className="section-desc !text-white">Thông tin liên hệ:</p>
               <p className="font-black text-xl text-white tracking-wide">Công ty TNHH Việt Sure Education</p>
               <ul className="space-y-3">
                 <li className="flex items-start gap-1.5">

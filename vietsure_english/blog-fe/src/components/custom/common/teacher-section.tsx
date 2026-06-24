@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
+import Autoplay from "embla-carousel-autoplay"
 import { Card, CardContent } from "@/components/ui/card"
 import {
     Carousel,
@@ -27,15 +28,9 @@ export default function TeacherSection() {
             })
     }, [])
 
-    useEffect(() => {
-        if (!api) return
-
-        const interval = setInterval(() => {
-            api.scrollNext()
-        }, 3000)
-
-        return () => clearInterval(interval)
-    }, [api])
+    const plugin = useRef(
+        Autoplay({ delay: 3000, stopOnInteraction: true })
+    );
 
     return (
         <section className="px-6 py-20 bg-gradient-to-b from-[#F0F7FF] to-white">
@@ -52,7 +47,7 @@ export default function TeacherSection() {
 
                 {/* CAROUSEL */}
                 <Carousel 
-                    setApi={setApi} 
+                    plugins={[plugin.current]}
                     opts={{ loop: true, align: "start" }} 
                     className="w-full px-4 sm:px-12 relative"
                 >

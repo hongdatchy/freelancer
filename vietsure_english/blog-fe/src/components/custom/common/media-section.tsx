@@ -13,9 +13,10 @@ export default function MediaSection() {
     const marqueeLogos = [...logos, ...logos, ...logos];
 
     return (
-        <section className="py-10 bg-gradient-to-b from-white to-[#F0F7FF] overflow-hidden">
-            <div className="w-full relative overflow-hidden">
-                <div className="animate-marquee gap-8 md:gap-16 py-4">
+        <section className="py-10 bg-gradient-to-b from-white to-[#F0F7FF]">
+            <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 relative">
+                <div className="w-full relative overflow-hidden rounded-lg">
+                    <div className="animate-marquee gap-8 md:gap-16 py-4 flex w-max">
                     {marqueeLogos.map((logo, idx) => (
                         <div 
                             key={idx} 
@@ -30,6 +31,7 @@ export default function MediaSection() {
                             />
                         </div>
                     ))}
+                </div>
                 </div>
             </div>
         </section>

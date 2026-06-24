@@ -40,11 +40,11 @@ export default async function TeacherTrainingPage(props: {
   return (
     <div className="w-full bg-white min-h-screen">
       {/* Top Hero Section shared with Homepage */}
-      <HeroSection buttonText="Học thử miễn phí" buttonHref="/#trial-section" />
+      <HeroSection showButton={false} />
 
       {/* Main Courses Area */}
       <div className="w-full bg-[#F0FAF4] pb-20 pt-12 md:pt-16">
-        
+
         {/* E-Learning Sub-header */}
         <div className="text-center mb-10">
           <h3 className="section-title">

@@ -4,11 +4,11 @@ export default function CourseRoadmapSection() {
   return (
     <section className="py-20 bg-white" data-purpose="course-roadmap">
       <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
-        
+
         {/* Header */}
         <div className="text-center w-full mb-10">
           <h2 className="section-title text-[#2E357F] font-black leading-tight">
-            CHƯƠNG TRÌNH HỌC TIẾNG ANH ONLINE CHẤT LƯỢNG CAO DÀNH CHO CÁC BÉ
+            CHƯƠNG TRÌNH HỌC TIẾNG ANH ONLINE <span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span> DÀNH CHO CÁC BÉ
           </h2>
           <h3 className="text-lg sm:text-xl md:text-[22px] font-bold text-[#3F489A] mt-3">
             (Lớp 1-1 & 1-4)

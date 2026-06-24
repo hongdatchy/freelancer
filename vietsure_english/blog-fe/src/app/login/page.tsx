@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import Image from 'next/image';
+import { useBreadcrumb } from '@/context/useBreadcrumb';
 
 const REMEMBER_KEY = 'vietsure_remember';
 
@@ -16,6 +17,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { setLogin } = useUserLoginStore();
+  const { setMenuState } = useBreadcrumb();
   const router = useRouter();
 
   // Load saved credentials on mount
@@ -59,6 +61,7 @@ export default function Login() {
       }
 
       setLogin(data.jwt, data.user);
+      setMenuState({ itemTitle: 'Elearning', itemHref: '/elearning', level: 'item' });
       router.push('/elearning');
     } catch (err: any) {
       setError(err.message || 'Đăng nhập không thành công');
@@ -68,7 +71,7 @@ export default function Login() {
   };
 
   return (
-    <div className="md:col-span-3 relative min-h-screen flex items-center justify-center overflow-hidden">
+    <div className="md:col-span-3 relative min-h-[55vh] flex items-center justify-center overflow-hidden">
 
       {/* Background: hero gradient colors */}
       <div className="absolute inset-0 bg-white z-0" />
@@ -87,24 +90,13 @@ export default function Login() {
         />
       </div>
 
-      {/* Logo top-left */}
-      <div className="absolute top-6 left-8 z-10 select-none pointer-events-none">
-        <Image
-          src="/images/Vietsure English_Logo-15.png"
-          alt="Vietsure English Logo"
-          width={140}
-          height={50}
-          className="object-contain"
-        />
-      </div>
-
       {/* Login Card */}
       <div className="relative z-10 w-full max-w-md mx-4">
         <div className="bg-white/80 backdrop-blur-md rounded-[32px] shadow-[0_20px_60px_rgba(46,53,127,0.15)] border border-blue-100 p-8 md:p-10">
 
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-2xl md:text-3xl font-black text-[#2E357F] uppercase tracking-wide">
+            <h1 className="text-xl md:text-2xl font-black text-[#2E357F] uppercase tracking-wide">
               Giáo viên đăng nhập
             </h1>
           </div>

@@ -2,7 +2,7 @@ export default function DifferencesSection() {
   return (
     <section className="px-6 py-20 bg-gradient-to-b from-[#F0F7FF] to-white overflow-hidden">
       <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
-        
+
         {/* Header */}
         <div className="text-center max-w-none mx-auto mb-16">
           <h2 className="section-title">
@@ -10,12 +10,12 @@ export default function DifferencesSection() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center w-full">
-          
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch w-full">
+
           {/* Left Column */}
           <div className="flex flex-col gap-8 h-full justify-center">
             {/* Card 1: CLIL */}
-            <div className="bg-white rounded-[32px] p-6 md:p-8 border-2 border-sky-400 shadow-[0_10px_30px_rgba(59,130,246,0.03)] text-center flex flex-col justify-center min-h-[190px]">
+            <div className="bg-white rounded-[32px] p-6 md:p-8 border-2 border-sky-400 shadow-[0_10px_30px_rgba(59,130,246,0.03)] text-center flex flex-col justify-center flex-1">
               <h3 className="text-base md:text-lg font-extrabold text-[#2E357F] mb-3">
                 Phương pháp giảng dạy<br />hiện đại CLIL
               </h3>
@@ -25,7 +25,7 @@ export default function DifferencesSection() {
             </div>
 
             {/* Card 2: Cambridge Skills */}
-            <div className="bg-white rounded-[32px] p-6 md:p-8 border-2 border-sky-400 shadow-[0_10px_30px_rgba(59,130,246,0.03)] text-center flex flex-col justify-center min-h-[190px]">
+            <div className="bg-white rounded-[32px] p-6 md:p-8 border-2 border-sky-400 shadow-[0_10px_30px_rgba(59,130,246,0.03)] text-center flex flex-col justify-center flex-1">
               <h3 className="text-base md:text-lg font-extrabold text-[#2E357F] mb-3">
                 Bộ kỹ năng chuẩn Cambridge
               </h3>
@@ -50,7 +50,7 @@ export default function DifferencesSection() {
           {/* Right Column */}
           <div className="flex flex-col gap-8 h-full justify-center">
             {/* Card 4: Edutainment */}
-            <div className="bg-white rounded-[32px] p-6 md:p-8 border-2 border-sky-400 shadow-[0_10px_30px_rgba(59,130,246,0.03)] text-center flex flex-col justify-center min-h-[190px]">
+            <div className="bg-white rounded-[32px] p-6 md:p-8 border-2 border-sky-400 shadow-[0_10px_30px_rgba(59,130,246,0.03)] text-center flex flex-col justify-center flex-1">
               <h3 className="text-base md:text-lg font-extrabold text-[#2E357F] mb-3">
                 Học tập theo mô<br />hình "Edutainment"
               </h3>
@@ -60,7 +60,7 @@ export default function DifferencesSection() {
             </div>
 
             {/* Card 5: Citizen */}
-            <div className="bg-white rounded-[32px] p-6 md:p-8 border-2 border-sky-400 shadow-[0_10px_30px_rgba(59,130,246,0.03)] text-center flex flex-col justify-center min-h-[190px]">
+            <div className="bg-white rounded-[32px] p-6 md:p-8 border-2 border-sky-400 shadow-[0_10px_30px_rgba(59,130,246,0.03)] text-center flex flex-col justify-center flex-1">
               <h3 className="text-base md:text-lg font-extrabold text-[#2E357F] mb-3">
                 Rèn luyện tư duy công dân<br />toàn cầu, đậm bản sắc Việt Nam
               </h3>
@@ -74,11 +74,11 @@ export default function DifferencesSection() {
 
         {/* Bottom Trial Button */}
         <div className="flex justify-center mt-16">
-          <a 
-            href="#trial-section" 
+          <a
+            href="#trial-section"
             className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-bold py-4 px-12 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-900/25 text-base uppercase tracking-wide"
           >
-            Học Thử Miễn Phí
+            Học thử miễn phí
           </a>
         </div>
 

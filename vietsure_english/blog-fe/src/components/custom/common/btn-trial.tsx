@@ -21,7 +21,7 @@ export default function BtnTrial() {
             className="px-9 h-12 bg-[#1e3a8a] text-white rounded-full hover:bg-blue-800 transition-all text-lg font-bold shadow-md hover:shadow-lg flex items-center justify-center"
             onClick={handleTrialClick}
         >
-            Học Thử Miễn Phí
+            Học thử miễn phí
         </button>
     );
 }

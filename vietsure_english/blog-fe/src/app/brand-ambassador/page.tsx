@@ -32,12 +32,12 @@ const steps = [
 export default function BrandAmbassadorPage() {
   return (
     <div className="bg-[#F3F9FF]">
-      
+
       {/* 1. HERO BANNER SECTION */}
       <section className="relative bg-gradient-to-b from-[#E2F0FF] to-white pb-16 overflow-hidden">
         <div className="container mx-auto px-6 lg:px-24 relative z-10">
           <div className="grid items-center lg:gap-12 lg:grid-cols-2">
-            
+
             {/* Left side: Banner composite image */}
             <div className="flex justify-center lg:justify-start order-2 lg:order-1 w-full">
               <div className="relative w-full max-w-[560px] select-none">
@@ -57,7 +57,7 @@ export default function BrandAmbassadorPage() {
               <h1 className="section-title mb-3">
                 GIỚI THIỆU KHÓA HỌC <span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span>
               </h1>
-              
+
               <h2 className="section-subtitle mb-8">
                 VỪA TẠO GIÁ TRỊ, VỪA NHẬN THƯỞNG TIỀN TRIỆU
               </h2>
@@ -109,7 +109,7 @@ export default function BrandAmbassadorPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 lg:gap-x-24 gap-y-10 max-w-6xl mx-auto">
-            
+
             {/* Item 1 */}
             <div className="flex items-center w-full max-w-[520px] mx-auto relative">
               <div className="relative w-[110px] h-[110px] md:w-[130px] md:h-[130px] rounded-full border-[5px] border-white shadow-lg overflow-hidden shrink-0 z-10 select-none">
@@ -220,7 +220,7 @@ export default function BrandAmbassadorPage() {
           </h2>
 
           <div className="flex flex-col gap-10">
-            
+
             {/* Card 1 */}
             <div className="bg-white rounded-[40px] p-8 md:p-12 shadow-[0_10px_35px_rgba(46,53,127,0.06)] flex flex-col md:flex-row items-center gap-8 md:gap-12 max-w-6xl mx-auto w-full">
               <div className="flex-1 w-full text-left">
@@ -243,7 +243,7 @@ export default function BrandAmbassadorPage() {
                       </span>
                     </p>
                   </div>
-                  
+
                   {/* VD Section */}
                   <div className="text-slate-500 space-y-1 font-semibold text-sm md:text-[15px] leading-snug pl-4">
                     <p>

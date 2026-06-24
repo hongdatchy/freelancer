@@ -9,7 +9,7 @@ import CommitmentsSection from '@/components/custom/common/commitments-section';
 export default function About() {
   return (
     <div className="bg-white text-gray-800 font-sans">
-      
+
       {/* BEGIN: HeroIntroduction */}
       <section className="py-16 bg-gradient-to-b from-[#1e3a8a] to-blue-900 text-white overflow-hidden" data-purpose="hero-intro">
         <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 flex flex-col md:flex-row items-center gap-12">
@@ -29,7 +29,7 @@ export default function About() {
           <div className="w-full md:w-1/2 text-center md:text-left flex flex-col justify-center">
             <h1 className="section-title !text-[#fbb03b] mb-6">GIỚI THIỆU</h1>
             <p className="section-desc !text-white mb-4">
-              Vietsure English là nền tảng dạy tiếng Anh online hàng đầu Việt Nam được xây dựng từ nhiều năm kinh nghiệm giảng dạy tiếng Anh online cho trẻ em Việt Nam sinh ra ở nước ngoài học song ngữ Anh - Việt để duy trì tiếng mẹ đẻ. 
+              Vietsure English là nền tảng dạy tiếng Anh online hàng đầu Việt Nam được xây dựng từ nhiều năm kinh nghiệm giảng dạy tiếng Anh online cho trẻ em Việt Nam sinh ra ở nước ngoài học song ngữ Anh - Việt để duy trì tiếng mẹ đẻ.
             </p>
             <p className="section-desc !text-white">
               Cam kết đem đến các khóa học chất lượng cao, cá nhân hóa, đồng hành sát sao cùng học viên và phụ huynh.
@@ -59,11 +59,11 @@ export default function About() {
       <section className="bg-white overflow-hidden" data-purpose="world-map">
         <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
           <div className="relative flex justify-center">
-            <Image 
-              src="/images/MapChart_Map2.png" 
-              alt="World Map" 
-              width={1200} 
-              height={1000} 
+            <Image
+              src="/images/MapChart_Map2.png"
+              alt="World Map"
+              width={1200}
+              height={1000}
               className="w-[90%] md:w-[85%] lg:w-[80%] max-w-6xl object-contain mx-auto"
             />
           </div>
@@ -95,11 +95,11 @@ export default function About() {
 
             {/* TOP LEFT TEXT */}
             <div
-              className="absolute text-center left-[20px] xl:left-[80px]"
+              className="absolute text-right left-[20px] xl:left-[80px]"
               style={{ top: 20, width: 280 }}
             >
               <span className="text-[#3F489A] font-bold text-[15px] md:text-[17px] block mb-1">Ngôi sao tượng trưng cho:</span>
-              <span className="section-desc block text-center">Mục tiêu và định hướng rõ ràng trong hành trình học tập. Sự tỏa sáng và thành công của học viên sau quá trình rèn luyện. Khát vọng vươn xa ra thế giới, đúng với tinh thần của một trung tâm đào tạo tiếng Anh chuẩn quốc tế.</span>
+              <span className="section-desc block text-right">Mục tiêu và định hướng rõ ràng trong hành trình học tập. Sự tỏa sáng và thành công của học viên sau quá trình rèn luyện. Khát vọng vươn xa ra thế giới, đúng với tinh thần của một trung tâm đào tạo tiếng Anh chuẩn quốc tế.</span>
             </div>
 
             {/* TOP RIGHT TEXT */}
@@ -113,11 +113,11 @@ export default function About() {
 
             {/* BOTTOM LEFT TEXT */}
             <div
-              className="absolute text-center left-[0px] xl:left-[40px]"
+              className="absolute text-right left-[0px] xl:left-[40px]"
               style={{ bottom: 20, width: 280 }}
             >
               <span className="text-[#3F489A] font-bold text-[15px] md:text-[17px] block mb-1">Hình tượng mascot chim cánh cụt:</span>
-              <span className="section-desc block text-center">Thân thiện, thông minh và tràn đầy năng lượng, đại diện cho tinh thần học tập tích cực, tự tin và không ngừng tiến bộ của học viên.</span>
+              <span className="section-desc block text-right">Thân thiện, thông minh và tràn đầy năng lượng, đại diện cho tinh thần học tập tích cực, tự tin và không ngừng tiến bộ của học viên.</span>
             </div>
 
             {/* BOTTOM RIGHT TEXT */}
@@ -143,14 +143,14 @@ export default function About() {
                 height: 220,
               }}
             >
-              <Image src="/images/arrow1.png" alt="" width={190} height={190} className="absolute pointer-events-none object-contain"
-                style={{ top: -190, left: -0 }} />
+              <Image src="/images/arrow1.png" alt="" width={190} height={170} className="absolute pointer-events-none object-contain"
+                style={{ top: -170, left: -10, width: 190, height: 170 }} />
               <Image src="/images/arrow2.png" alt="" width={190} height={190} className="absolute pointer-events-none object-contain"
-                style={{ top: -170, right: -0 }} />
+                style={{ top: -170, right: -0, width: 190, height: 190 }} />
               <Image src="/images/arrow3.png" alt="" width={150} height={150} className="absolute pointer-events-none object-contain"
-                style={{ bottom: -120, left: -60 }} />
+                style={{ bottom: -120, left: -60, width: 150, height: 150 }} />
               <Image src="/images/arrow4.png" alt="" width={190} height={190} className="absolute pointer-events-none object-contain"
-                style={{ bottom: -170, right: -0 }} />
+                style={{ bottom: -170, right: -0, width: 190, height: 190 }} />
 
               <div className="flex items-center justify-center h-full">
                 <Image src="/images/Vietsure English_Logo-15.png" alt="logo" width={290} height={290} className="select-none pointer-events-none object-contain" />
@@ -200,11 +200,11 @@ export default function About() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
             {/* Left Mascot */}
             <div className="flex justify-center">
-              <Image 
-                src="/images/kieu-hanh-man-nguyen.png" 
-                alt="Mascot Left" 
-                width={700} 
-                height={700} 
+              <Image
+                src="/images/kieu-hanh-man-nguyen.png"
+                alt="Mascot Left"
+                width={700}
+                height={700}
                 className="w-full max-w-[700px] h-auto object-contain select-none animate-float-up rounded-2xl"
               />
             </div>
@@ -217,11 +217,11 @@ export default function About() {
             </div>
             {/* Right Mascot */}
             <div className="flex justify-center">
-              <Image 
-                src="/images/hao-hung-san-sang.png" 
-                alt="Mascot Right" 
-                width={700} 
-                height={700} 
+              <Image
+                src="/images/hao-hung-san-sang.png"
+                alt="Mascot Right"
+                width={700}
+                height={700}
                 className="w-full max-w-[700px] h-auto object-contain select-none animate-float-down"
               />
             </div>
@@ -236,9 +236,9 @@ export default function About() {
           <h2 className="section-title text-center mb-16">
             NHÂN VẬT TRONG SERIES PHIM NGẮN & CHƯƠNG TRÌNH HỌC TIẾNG ANH
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            
+
             {/* Row 1: NAM */}
             <div className="bg-white rounded-[32px] p-8 border-2 border-sky-200 shadow-sm flex items-end relative overflow-hidden h-72 hover:shadow-md transition-shadow">
               <div className="w-1/2 z-10 text-left">
@@ -253,11 +253,11 @@ export default function About() {
                 </div>
               </div>
               <div className="absolute right-0 top-0 pt-4 w-[60%] h-[155%] flex items-start justify-end select-none">
-                <Image 
-                  src="/images/character-nam.png" 
-                  alt="NAM" 
-                  width={180} 
-                  height={240} 
+                <Image
+                  src="/images/character-nam.png"
+                  alt="NAM"
+                  width={180}
+                  height={240}
                   className="h-full w-auto object-contain object-top"
                 />
               </div>
@@ -277,11 +277,11 @@ export default function About() {
                 </div>
               </div>
               <div className="absolute right-0 top-0 pt-4 w-[60%] h-[155%] flex items-start justify-end select-none">
-                <Image 
-                  src="/images/character-kate.png" 
-                  alt="KATE" 
-                  width={180} 
-                  height={240} 
+                <Image
+                  src="/images/character-kate.png"
+                  alt="KATE"
+                  width={180}
+                  height={240}
                   className="h-full w-auto object-contain object-top"
                 />
               </div>
@@ -290,11 +290,11 @@ export default function About() {
             {/* Row 1: PENGUIN */}
             <div className="bg-white rounded-[32px] p-8 border-2 border-sky-200 shadow-sm flex items-center relative overflow-hidden h-72 hover:shadow-md transition-shadow">
               <div className="w-1/2 h-full flex items-center justify-center select-none pt-4">
-                <Image 
-                  src="/images/character-penguin.png" 
-                  alt="PENGUIN" 
-                  width={160} 
-                  height={160} 
+                <Image
+                  src="/images/character-penguin.png"
+                  alt="PENGUIN"
+                  width={160}
+                  height={160}
                   className="w-full h-auto object-contain"
                 />
               </div>
@@ -309,11 +309,11 @@ export default function About() {
             {/* Row 2: MARK */}
             <div className="bg-white rounded-[32px] p-8 border-2 border-sky-200 shadow-sm flex items-center relative overflow-hidden h-72 hover:shadow-md transition-shadow">
               <div className="w-1/2 h-full flex items-center justify-center select-none pt-4">
-                <Image 
-                  src="/images/character-mark.png" 
-                  alt="MARK" 
-                  width={160} 
-                  height={160} 
+                <Image
+                  src="/images/character-mark.png"
+                  alt="MARK"
+                  width={160}
+                  height={160}
                   className="w-[65%] lg:w-[60%] max-w-[140px] h-auto object-contain"
                 />
               </div>
@@ -331,11 +331,11 @@ export default function About() {
             {/* Row 2: SUE */}
             <div className="bg-white rounded-[32px] p-8 border-2 border-sky-200 shadow-sm flex items-center relative overflow-hidden h-72 hover:shadow-md transition-shadow">
               <div className="w-1/2 h-full flex items-center justify-center select-none pt-4">
-                <Image 
-                  src="/images/character-sue.png" 
-                  alt="SUE" 
-                  width={160} 
-                  height={160} 
+                <Image
+                  src="/images/character-sue.png"
+                  alt="SUE"
+                  width={160}
+                  height={160}
                   className="w-[75%] lg:w-[70%] max-w-[160px] h-auto object-contain"
                 />
               </div>
@@ -353,11 +353,11 @@ export default function About() {
             {/* Row 2: WINWIN */}
             <div className="bg-white rounded-[32px] p-8 border-2 border-sky-200 shadow-sm flex items-center relative overflow-hidden h-72 hover:shadow-md transition-shadow">
               <div className="w-1/2 h-full flex items-center justify-center select-none pt-4">
-                <Image 
-                  src="/images/character-winwin.png" 
-                  alt="WINWIN" 
-                  width={160} 
-                  height={160} 
+                <Image
+                  src="/images/character-winwin.png"
+                  alt="WINWIN"
+                  width={160}
+                  height={160}
                   className="w-full h-auto object-contain"
                 />
               </div>
@@ -372,11 +372,11 @@ export default function About() {
           </div>
 
           <div className="text-center">
-            <a 
-              href="#trial-section" 
+            <a
+              href="#trial-section"
               className="inline-block bg-[#1e3a8a] text-white font-bold py-3.5 px-12 rounded-full shadow-lg hover:bg-blue-700 transition-colors uppercase text-sm tracking-wider"
             >
-              Học Thử Miễn Phí
+              Học thử miễn phí
             </a>
           </div>
         </div>
@@ -384,64 +384,65 @@ export default function About() {
       {/* END: CharacterProfiles */}
 
       {/* BEGIN: CoreValues */}
-      <section 
-        className="overflow-hidden w-full relative" 
+      <section
+        className="overflow-hidden w-full relative"
         style={{ background: 'linear-gradient(to bottom, #b9ddff 0%, #cbe6ff 40%, #cce6ff 50%, #cce6ff 100%)' }}
         data-purpose="core-values"
       >
-        <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 relative">
-          <Image 
-            src="/images/7.png" 
-            alt="4 Giá trị cốt lõi" 
-            width={1920} 
-            height={1080} 
-            className="w-full h-auto object-contain pointer-events-none select-none"
-            priority
-          />
+        <div className="mx-auto w-full max-w-[1200px] px-6 md:px-10 lg:px-12 py-8 md:py-12">
+          <div className="relative w-full">
+            <Image
+              src="/images/7.png"
+              alt="4 Giá trị cốt lõi"
+              width={1920}
+              height={1080}
+              className="w-full h-auto object-contain pointer-events-none select-none"
+              priority
+            />
 
-          {/* Central Text: 4 GIÁ TRỊ CỐT LÕI */}
-          <div className="absolute flex flex-col items-center justify-center text-white text-center"
-               style={{ top: '52%', left: '17.8%', transform: 'translate(-50%, -50%)', width: '25%' }}>
-            <span className="text-[2.9vw] md:text-[1.8rem] lg:text-[2.3rem] xl:text-[2.8rem] font-black leading-tight drop-shadow-md">4 GIÁ TRỊ</span>
-            <span className="text-[2.2vw] md:text-[1.35rem] lg:text-[1.8rem] xl:text-[2.1rem] font-black leading-tight mt-0.5 md:mt-1 drop-shadow-md">CỐT LÕI</span>
+            {/* Central Text: 4 GIÁ TRỊ CỐT LÕI */}
+            <div className="absolute flex flex-col items-center justify-center text-white text-center"
+              style={{ top: '52%', left: '17.8%', transform: 'translate(-50%, -50%)', width: '25%' }}>
+              <span className="text-[2.9vw] md:text-[1.6rem] lg:text-[1.9rem] xl:text-[2.3rem] font-black leading-tight drop-shadow-md">4 GIÁ TRỊ</span>
+              <span className="text-[2.2vw] md:text-[1.2rem] lg:text-[1.5rem] xl:text-[1.8rem] font-black leading-tight mt-0.5 md:mt-1 drop-shadow-md">CỐT LÕI</span>
+            </div>
+
+            {/* Value 1: CHUẨN QUỐC TẾ */}
+            <div className="absolute"
+              style={{ top: '7%', left: '39%', width: '22%' }}>
+              <h4 className="font-black text-[#1e3a8a] uppercase text-[1.8vw] md:text-[12px] lg:text-[14px] xl:text-[17px] mb-0.5 md:mb-1">Chuẩn quốc tế</h4>
+              <p className="text-[#1e3a8a]/80 text-[1.3vw] md:text-[9.5px] lg:text-[11.5px] xl:text-[14px] leading-snug md:leading-relaxed font-semibold">
+                Xây dựng từ môi trường giáo dục trẻ em quốc tế, giúp trẻ em Việt sử dụng tiếng Anh như trẻ em thế giới.
+              </p>
+            </div>
+
+            {/* Value 2: CÁ NHÂN HÓA */}
+            <div className="absolute"
+              style={{ top: '35%', left: '50%', width: '22%' }}>
+              <h4 className="font-black text-[#1e3a8a] uppercase text-[1.8vw] md:text-[12px] lg:text-[14px] xl:text-[17px] mb-0.5 md:mb-1">Cá nhân hóa</h4>
+              <p className="text-[#1e3a8a]/80 text-[1.3vw] md:text-[9.5px] lg:text-[11.5px] xl:text-[14px] leading-snug md:leading-relaxed font-semibold">
+                Lộ trình phù hợp để trẻ tiến bộ bền vững và đúng khả năng.
+              </p>
+            </div>
+
+            {/* Value 3: ĐỒNG HÀNH */}
+            <div className="absolute"
+              style={{ top: '58%', left: '50%', width: '22%' }}>
+              <h4 className="font-black text-[#1e3a8a] uppercase text-[1.8vw] md:text-[12px] lg:text-[14px] xl:text-[17px] mb-0.5 md:mb-1">Đồng hành</h4>
+              <p className="text-[#1e3a8a]/80 text-[1.3vw] md:text-[9.5px] lg:text-[11.5px] xl:text-[14px] leading-snug md:leading-relaxed font-semibold">
+                Giúp phụ huynh hiểu và đồng hành cùng con.
+              </p>
+            </div>
+
+            {/* Value 4: MINH BẠCH */}
+            <div className="absolute"
+              style={{ top: '82%', left: '39%', width: '22%' }}>
+              <h4 className="font-black text-[#1e3a8a] uppercase text-[1.8vw] md:text-[12px] lg:text-[14px] xl:text-[17px] mb-0.5 md:mb-1">Minh bạch</h4>
+              <p className="text-[#1e3a8a]/80 text-[1.3vw] md:text-[9.5px] lg:text-[11.5px] xl:text-[14px] leading-snug md:leading-relaxed font-semibold">
+                Tiến bộ được theo dõi, đánh giá minh bạch và tạo ra giá trị thật.
+              </p>
+            </div>
           </div>
-
-          {/* Value 1: CHUẨN QUỐC TẾ */}
-          <div className="absolute"
-               style={{ top: '8%', left: '39%', width: '22%' }}>
-            <h4 className="font-black text-[#1e3a8a] uppercase text-[1.8vw] md:text-[13px] lg:text-base xl:text-xl mb-0.5 md:mb-1">Chuẩn quốc tế</h4>
-            <p className="text-[#1e3a8a]/80 text-[1.3vw] md:text-[10px] lg:text-xs xl:text-base leading-snug md:leading-relaxed font-semibold">
-              Xây dựng từ môi trường giáo dục trẻ em quốc tế, giúp trẻ em Việt sử dụng tiếng Anh như trẻ em thế giới.
-            </p>
-          </div>
-
-          {/* Value 2: CÁ NHÂN HÓA */}
-          <div className="absolute"
-               style={{ top: '36%', left: '50%', width: '22%' }}>
-            <h4 className="font-black text-[#1e3a8a] uppercase text-[1.8vw] md:text-[13px] lg:text-base xl:text-xl mb-0.5 md:mb-1">Cá nhân hóa</h4>
-            <p className="text-[#1e3a8a]/80 text-[1.3vw] md:text-[10px] lg:text-xs xl:text-base leading-snug md:leading-relaxed font-semibold">
-              Lộ trình phù hợp để trẻ tiến bộ bền vững và đúng khả năng.
-            </p>
-          </div>
-
-          {/* Value 3: ĐỒNG HÀNH */}
-          <div className="absolute"
-               style={{ top: '60%', left: '50%', width: '22%' }}>
-            <h4 className="font-black text-[#1e3a8a] uppercase text-[1.8vw] md:text-[13px] lg:text-base xl:text-xl mb-0.5 md:mb-1">Đồng hành</h4>
-            <p className="text-[#1e3a8a]/80 text-[1.3vw] md:text-[10px] lg:text-xs xl:text-base leading-snug md:leading-relaxed font-semibold">
-              Giúp phụ huynh hiểu và đồng hành cùng con.
-            </p>
-          </div>
-
-          {/* Value 4: MINH BẠCH */}
-          <div className="absolute"
-               style={{ top: '82%', left: '39%', width: '22%' }}>
-            <h4 className="font-black text-[#1e3a8a] uppercase text-[1.8vw] md:text-[13px] lg:text-base xl:text-xl mb-0.5 md:mb-1">Minh bạch</h4>
-            <p className="text-[#1e3a8a]/80 text-[1.3vw] md:text-[10px] lg:text-xs xl:text-base leading-snug md:leading-relaxed font-semibold">
-              Tiến bộ được theo dõi, đánh giá minh bạch và tạo ra giá trị thật.
-            </p>
-          </div>
-
         </div>
       </section>
       {/* END: CoreValues */}
