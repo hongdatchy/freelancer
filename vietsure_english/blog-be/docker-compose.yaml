@@ -32,10 +32,7 @@ services:
     ports:
       - "127.0.0.1:1337:1337"
     volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/dist
-      - /app/build
+      - ./public:/app/public
     depends_on:
       - db2
     networks:
