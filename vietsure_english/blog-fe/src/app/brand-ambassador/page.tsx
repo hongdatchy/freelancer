@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import TrialSection from "@/components/custom/common/traial-section";
 import LearningPathSection from "@/components/custom/common/learning-path-section";
+import CtvRegisterSection from "@/components/custom/brand/ctv-register-section";
 
 const steps = [
   {
@@ -362,7 +363,7 @@ export default function BrandAmbassadorPage() {
 
       {/* 6. REGISTRATION FORM */}
       <section className="bg-white">
-        <TrialSection />
+        <CtvRegisterSection />
       </section>
 
     </div>
