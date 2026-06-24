@@ -81,4 +81,47 @@ export const Icons = {
       <path d="m6 6 12 12" />
     </svg>
   ),
+  facebook: (props?: IconProps) => (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="lucide lucide-facebook"
+    >
+      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+    </svg>
+  ),
+  youtube: (props?: IconProps) => (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="lucide lucide-youtube"
+    >
+      <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z" />
+      <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="white" />
+    </svg>
+  ),
+  zalo: (props?: IconProps) => (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+    >
+      <path
+        d="M12 2C6.48 2 2 6.03 2 11c0 2.87 1.5 5.43 3.82 7.07L4.7 22l4.14-2.14c1.02.26 2.08.39 3.16.39 5.52 0 10-4.03 10-9S17.52 2 12 2z"
+        fill="currentColor"
+      />
+      <text x="12" y="15" fill="white" fontSize="10" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">Z</text>
+    </svg>
+  ),
 };

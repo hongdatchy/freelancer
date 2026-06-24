@@ -13,6 +13,8 @@ import useUserLoginStore from '@/state-manager/user-login-store';
 import BtnTrial from '@/components/custom/common/btn-trial';
 import { useBreadcrumb, MenuState } from '@/context/useBreadcrumb';
 
+import { Icons } from '@/components/custom/common/icons';
+
 export default function Header() {
   const pathname = usePathname();
   const { user } = useUserLoginStore();
@@ -40,9 +42,9 @@ export default function Header() {
       <Image
         src="/images/Vietsure English_Logo-15.png"
         alt="VietSure English Logo"
-        width={160}
-        height={44}
-        className="h-10 w-auto object-contain"
+        width={200}
+        height={60}
+        className="h-14 md:h-16 w-auto object-contain"
         priority
       />
     </Link>
@@ -54,15 +56,35 @@ export default function Header() {
         isScrolled ? 'shadow-sm' : ''
       }`}
     >
-      <div className="mx-auto flex flex-col w-full max-w-[1440px] px-6 md:px-10 lg:px-12 py-4">
-        {/* Row 1: Logo & Buttons */}
-        <div className="flex w-full items-center justify-between">
-          <Logo />
+      <div className="mx-auto flex w-full max-w-[1440px] px-6 md:px-10 lg:px-12 py-3 items-center justify-between">
+        
+        {/* Left: Logo */}
+        <Logo />
 
-          {/* Buttons & Login (desktop) */}
-          <div className="hidden md:flex items-center space-x-4">
-            <UserInfo />
-            <BtnTrial />
+        {/* Right: Actions & Menu */}
+        <div className="flex flex-col items-end gap-3">
+          
+          {/* Top Row: Social + Login + CTA */}
+          <div className="hidden md:flex items-center space-x-6">
+            
+            {/* Social Icons */}
+            <div className="flex items-center space-x-4 text-gray-500">
+              <a href="#" target="_blank" rel="noreferrer" className="hover:text-blue-600 transition-colors">
+                <Icons.facebook className="w-5 h-5" />
+              </a>
+              <a href="#" target="_blank" rel="noreferrer" className="hover:text-red-600 transition-colors">
+                <Icons.youtube className="w-5 h-5" />
+              </a>
+              <a href="#" target="_blank" rel="noreferrer" className="hover:text-blue-500 transition-colors">
+                <Icons.zalo className="w-5 h-5" />
+              </a>
+            </div>
+
+            {/* Login & CTA */}
+            <div className="flex items-center space-x-4">
+              <UserInfo />
+              <BtnTrial />
+            </div>
           </div>
 
           {/* Menu Mobile (mobile only) */}
@@ -71,14 +93,15 @@ export default function Header() {
               <HeaderMenuMobile onChange={handleMenuChange} user={user} />
             </div>
           )}
-        </div>
 
-        {/* Row 2: Navigation Menu (desktop only) */}
-        {(!user || pathname !== '/') && (
-          <div className="hidden md:flex items-center justify-center w-full mt-3">
-            <HeaderMenu onChange={handleMenuChange} user={user} />
-          </div>
-        )}
+          {/* Bottom Row: Navigation Menu (desktop only) */}
+          {(!user || pathname !== '/') && (
+            <div className="hidden md:flex items-center justify-end w-full">
+              <HeaderMenu onChange={handleMenuChange} user={user} />
+            </div>
+          )}
+
+        </div>
       </div>
 
       {pathname !== '/' && <BreadcrumbDynamic menuState={menuState} />}
