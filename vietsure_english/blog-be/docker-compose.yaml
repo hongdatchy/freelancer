@@ -35,6 +35,7 @@ services:
       - .:/app
       - /app/node_modules
       - /app/dist
+      - /app/build
     depends_on:
       - db2
     networks:
