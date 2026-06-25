@@ -86,7 +86,7 @@ export default async function Home() {
             <p className="section-subtitle">
               Phương pháp giảng dạy
             </p>
-            <h2 className="section-title mt-2 text-3xl md:text-4xl lg:text-[40px]">
+            <h2 className="section-title mt-2">
               MÔ HÌNH GIẢNG DẠY HIỆN ĐẠI, THỰC TẾ
             </h2>
           </div>

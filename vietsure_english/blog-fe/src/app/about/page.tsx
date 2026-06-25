@@ -8,7 +8,7 @@ import CommitmentsSection from '@/components/custom/common/commitments-section';
 
 export default function About() {
   return (
-    <div className="bg-white text-gray-800 font-sans">
+    <div className="bg-white text-gray-800 ">
 
       {/* BEGIN: HeroIntroduction */}
       <section className="py-16 bg-gradient-to-b from-[#1e3a8a] to-blue-900 text-white overflow-hidden" data-purpose="hero-intro">
@@ -72,7 +72,7 @@ export default function About() {
       {/* END: GlobalMap */}
 
       {/* BEGIN: VisionMission */}
-      <section className="py-16 bg-white" data-purpose="vision-mission">
+      <section className="py-16 bg-[#f7f9ff]" data-purpose="vision-mission">
         <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 text-center">
           <h2 className="section-title mb-8">Tầm nhìn & Sứ mệnh</h2>
           <p className="section-desc">
@@ -113,7 +113,7 @@ export default function About() {
 
             {/* BOTTOM LEFT TEXT */}
             <div
-              className="absolute text-right left-[0px] xl:left-[40px]"
+              className="absolute text-right left-[0px] xl:left-[80px]"
               style={{ bottom: 20, width: 280 }}
             >
               <span className="text-[#3F489A] font-bold text-[15px] md:text-[17px] block mb-1">Hình tượng mascot chim cánh cụt:</span>
@@ -289,21 +289,22 @@ export default function About() {
 
             {/* Row 1: PENGUIN */}
             <div className="bg-white rounded-[32px] p-8 border-2 border-sky-200 shadow-sm flex items-center relative overflow-hidden h-72 hover:shadow-md transition-shadow">
-              <div className="w-1/2 h-full flex items-center justify-center select-none pt-4">
-                <Image
-                  src="/images/character-penguin.png"
-                  alt="PENGUIN"
-                  width={160}
-                  height={160}
-                  className="w-full h-auto object-contain"
-                />
-              </div>
-              <div className="w-1/2 pl-4 text-right">
+              <div className="w-1/2 pl-4 text-left">
                 <h3 className="text-3xl font-black text-[#1e3a8a] mb-2">PENGUIN</h3>
                 <p className="text-[13px] text-blue-900 leading-relaxed font-semibold">
                   Mascot chim cánh cụt thân thiện, thông minh và tràn đầy năng lượng, đại diện cho tinh thần học tập tích cực, tự tin và không ngừng tiến bộ của học viên.
                 </p>
               </div>
+              <div className="w-1/2 h-full flex items-center justify-center select-none">
+                <Image
+                  src="/images/character-penguin.png"
+                  alt="PENGUIN"
+                  width={180}
+                  height={180}
+                  className="w-full h-auto object-contain"
+                />
+              </div>
+
             </div>
 
             {/* Row 2: MARK */}
@@ -386,10 +387,27 @@ export default function About() {
       {/* BEGIN: CoreValues */}
       <section
         className="overflow-hidden w-full relative"
-        style={{ background: 'linear-gradient(to bottom, #b9ddff 0%, #cbe6ff 40%, #cce6ff 50%, #cce6ff 100%)' }}
+        // style={{ background: 'linear-gradient(to bottom, #b9ddff 0%, #cbe6ff 40%, #cce6ff 50%, #cce6ff 100%)' }}
+        style={{
+          background: `
+            linear-gradient(to bottom,
+              #b9ddff 0%,
+              #cbe6ff 40%,
+              #cce6ff 50%,
+              #cce6ff 100%
+            ) left / 50% 100% no-repeat,
+
+            linear-gradient(to bottom,
+              #cce6ff 0%, 
+              #cce6ff 40%, 
+              #cce6ff 50%, 
+              #cce6ff 100%
+            ) right / 50% 100% no-repeat
+          `
+        }}
         data-purpose="core-values"
       >
-        <div className="mx-auto w-full max-w-[1200px] px-6 md:px-10 lg:px-12 py-8 md:py-12">
+        <div className="mx-auto w-full max-w-[1200px] px-6 md:px-10 lg:px-12">
           <div className="relative w-full">
             <Image
               src="/images/7.png"

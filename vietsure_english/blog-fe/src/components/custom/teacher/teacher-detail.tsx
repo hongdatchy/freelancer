@@ -187,11 +187,11 @@ export function TeacherDetailClient({
           </div>
 
           {/* Mascot Column (Right) */}
-          <div className="hidden lg:block w-[240px] flex-shrink-0 relative select-none pointer-events-none self-end mb-[-20px] -mt-12 translate-y-[-24px]">
+          <div className="hidden lg:block w-[340px] flex-shrink-0 relative select-none pointer-events-none">
             <Image
               src="/images/hao-hung-san-sang.png"
               alt="Mascot Penguin Vietsure English"
-              width={240}
+              width={340}
               height={300}
               className="w-full h-auto object-contain animate-float-up"
             />

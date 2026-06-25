@@ -31,7 +31,7 @@ export default function CommitmentsSection() {
           {commitments.map((item, idx) => (
             <div 
               key={idx} 
-              className="bg-white p-8 md:p-10 rounded-[32px] brand-light-border shadow-sm flex flex-col items-center justify-center text-center min-h-[220px] relative"
+              className="bg-white p-8 md:p-10 rounded-[32px] brand-light-border shadow-sm flex flex-col items-center justify-start text-center min-h-[220px] relative"
             >
               {item.hasStamp && (
                 <div className="absolute top-[-40px] right-[-20px] md:right-[-50px] z-20 w-[110px] md:w-[130px] rotate-[15deg]">

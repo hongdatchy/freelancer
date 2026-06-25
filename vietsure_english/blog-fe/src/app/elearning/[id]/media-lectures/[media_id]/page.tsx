@@ -2,6 +2,7 @@ import { LearningBreadcrumb } from '@/components/custom/elearning/learning-bread
 import StudyTimer from '@/components/custom/elearning/StudyTimer';
 import { getData } from '@/service/api';
 import PPTViewer from '@/components/custom/elearning/ppt-viewer';
+import PDFViewer from '@/components/custom/elearning/pdf-viewer';
 
 export default async function LearningPage(props: {
   params: Promise<{ id: string; media_id: string }>;
@@ -73,12 +74,7 @@ export default async function LearningPage(props: {
         )}
 
         {media.type === 'pdf' && fileUrl && (
-          <div className="w-full h-[600px]">
-            <iframe
-              src={fileUrl}
-              className="w-full h-full border rounded"
-            />
-          </div>
+          <PDFViewer fileUrl={fileUrl} />
         )}
 
         {media.type === 'ppt' && fileUrl && (

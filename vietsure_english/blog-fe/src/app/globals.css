@@ -109,8 +109,12 @@ svg {
     }
   }
 
-  .section-title {
+  /* .section-title {
     @apply text-[18px] sm:text-[22px] md:text-[28px] lg:text-[34px] xl:text-[40px] font-black text-[#2E357F] uppercase tracking-wide;
+    line-height: 1.35 !important;
+  } */
+  .section-title {
+    @apply text-[18px] sm:text-[1.5rem] md:text-[1.875rem] lg:text-[2.25rem] font-black text-[#2E357F] uppercase tracking-wide;
     line-height: 1.35 !important;
   }
 

@@ -53,7 +53,7 @@ export default function LearningPathSection() {
               </div>
 
               {/* Overlaid text: Card 2 */}
-              <div className="absolute left-[58%] top-[32%] w-[38%] text-left">
+              <div className="absolute left-[58%] top-[30%] w-[38%] text-left">
                 <h4 className="font-extrabold text-[#3b82f6] text-[9px] sm:text-xs md:text-base lg:text-sm xl:text-base uppercase leading-tight">
                   TIẾNG ANH THIẾU NHI
                 </h4>
@@ -63,7 +63,7 @@ export default function LearningPathSection() {
               </div>
 
               {/* Overlaid text: Card 3 */}
-              <div className="absolute left-[58%] top-[61%] w-[38%] text-left">
+              <div className="absolute left-[58%] top-[59.5%] w-[38%] text-left">
                 <h4 className="font-extrabold text-[#38bdf8] text-[9px] sm:text-xs md:text-base lg:text-sm xl:text-base uppercase leading-tight">
                   TIẾNG ANH THIẾU NIÊN
                 </h4>
@@ -73,7 +73,7 @@ export default function LearningPathSection() {
               </div>
 
               {/* Overlaid text: Card 4 */}
-              <div className="absolute left-[48%] top-[87%] w-[46%] text-left">
+              <div className="absolute left-[48%] top-[85%] w-[46%] text-left">
                 <h4 className="font-extrabold text-[#78a5db] text-[9px] sm:text-xs md:text-base lg:text-sm xl:text-base uppercase leading-tight">
                   IELTS
                 </h4>

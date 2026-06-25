@@ -6,7 +6,8 @@ export default function FAQ() {
     <>
       {/* Import Be Vietnam Pro and Material Symbols loaded via layout */}
 
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .faq-page-body {
           background-color: #f7f9ff;
           color: #24389c;
@@ -35,11 +36,11 @@ export default function FAQ() {
         }
       `}} />
 
-      <div className="faq-page-body min-h-screen relative flex flex-col items-center py-20 px-6 overflow-hidden">
+      <div className="faq-page-body  min-h-screen relative flex flex-col items-center py-20 px-6 overflow-hidden">
         <div className="bg-glow"></div>
-        
+
         <main className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 relative z-10 text-[#24389c]">
-          
+
           {/* Title Section */}
           <div className="text-center mb-8">
             <h1 className="section-title">
@@ -49,41 +50,41 @@ export default function FAQ() {
 
           {/* Document Container */}
           <article className="faq-container bg-white rounded-xl p-8 md:p-12 text-[#24389c] mb-8">
-            
+
             {/* Section: Payment Methods */}
             <section className="mb-8" id="payment-methods">
-              <h2 className="text-[24px] leading-[1.3] font-semibold text-[#24389c] mb-4">
+              <h2 className="text-[24px] md:text-[28px] font-black text-[#2E357F] mb-4">
                 Phương thức thanh toán
               </h2>
-              <div className="pl-6">
-                <p className="text-[16px] leading-[1.6] font-semibold mb-2 text-[#24389c]">
+              <div className="pl-6 section-desc !font-medium">
+                <p className="mb-2">
                   Phụ huynh có thể thanh toán học phí qua các hình thức:
                 </p>
-                <ul className="text-[16px] leading-[1.6] space-y-2 list-none pl-4 mb-6">
-                  <li className="list-item">Chuyển khoản ngân hàng: <strong>MB Bank</strong></li>
+                <ul className="space-y-2 list-none pl-4 mb-6">
+                  <li className="list-item">Chuyển khoản ngân hàng: <strong className="!font-bold">MB Bank</strong></li>
                   <li className="list-item">Thanh toán trả góp 0%</li>
                   <li className="list-item">Thanh toán tiền mặt</li>
                 </ul>
 
                 {/* Specific Method 1 */}
-                <div className="mb-6 p-5 bg-[#f0f7ff] rounded-2xl border border-blue-100/50 text-[#24389c]">
-                  <h3 className="font-bold text-[#24389c] mb-2 text-base">Phương thức 1: Chuyển khoản ngân hàng</h3>
-                  <p className="text-sm text-[#24389c] mb-3 italic">Quý phụ huynh và học viên có thể chuyển khoản theo thông tin ngân hàng sau:</p>
-                  <div className="space-y-1.5 font-semibold text-[#24389c] text-sm">
+                <div className="mb-6">
+                  <h3 className="!font-bold mb-2">Phương thức 1: Chuyển khoản ngân hàng</h3>
+                  <p className="mb-3 italic">Quý phụ huynh và học viên có thể chuyển khoản theo thông tin ngân hàng sau:</p>
+                  <div className="space-y-1.5 !font-bold">
                     <p>Ngân hàng Thương mại cổ phần Quân đội (MB Bank)</p>
-                    <p>• Chủ tài khoản: Công ty TNHH Việt Sure Education</p>
-                    <p>• Số tài khoản: 500593979</p>
-                    <p>• Chi nhánh: Nam Hồ Chí Minh</p>
-                    <p>• Nội dung chuyển khoản: Họ và tên + SĐT</p>
+                    <p className="!font-medium">• Chủ tài khoản: Công ty TNHH Việt Sure Education</p>
+                    <p className="!font-medium">• Số tài khoản: 500593979</p>
+                    <p className="!font-medium">• Chi nhánh: Nam Hồ Chí Minh</p>
+                    <p className="!font-medium">• Nội dung chuyển khoản: Họ và tên + SĐT</p>
                   </div>
                 </div>
 
                 {/* Specific Method 2 */}
-                <div className="p-5 bg-[#f0f7ff] rounded-2xl border border-blue-100/50 text-[#24389c]">
-                  <h3 className="font-bold text-[#24389c] mb-2 text-base">Phương thức 2: Thanh toán tiền mặt</h3>
-                  <p className="text-sm text-[#24389c] mb-3 italic">Quý phụ huynh và học viên có thể thanh toán tiền mặt theo thông tin sau:</p>
-                  <div className="text-sm text-[#24389c] space-y-1.5 font-medium">
-                    <p className="font-extrabold text-[#24389c]">CÔNG TY TNHH VIỆT SURE EDUCATION</p>
+                <div>
+                  <h3 className="!font-bold mb-2">Phương thức 2: Thanh toán tiền mặt</h3>
+                  <p className="mb-3 italic">Quý phụ huynh và học viên có thể thanh toán tiền mặt theo thông tin sau:</p>
+                  <div className="space-y-1.5">
+                    <p className="!font-bold">CÔNG TY TNHH VIỆT SURE EDUCATION</p>
                     <p>Trụ sở: A12, Khu nhà ở Hoàng Hùng 5, đường Nguyễn Thị Khắp, khu phố Chiêu Liêu, Phường Tân Đông Hiệp, TP. HCM</p>
                     <p>Số điện thoại: 0357 171 381</p>
                   </div>
@@ -93,36 +94,36 @@ export default function FAQ() {
 
             {/* Section: Refund Policy */}
             <section id="refund-policy" className="border-t border-gray-100 pt-8">
-              <h2 className="text-[24px] leading-[1.3] font-semibold text-[#24389c] mb-6">
+              <h2 className="text-[24px] md:text-[28px] font-black text-[#2E357F] mb-6">
                 Chính sách hoàn học phí
               </h2>
-              <div className="pl-6 space-y-6">
-                
+              <div className="pl-6 space-y-6 section-desc !font-medium">
+
                 {/* Item 1 */}
                 <div>
-                  <h4 className="font-bold text-[#24389c] mb-2 text-base">1. Quy định chung</h4>
-                  <p className="text-[16px] leading-[1.6] font-normal text-[#24389c]">
+                  <h4 className="!font-bold mb-2">1. Quy định chung</h4>
+                  <p>
                     Không hoàn lại học phí đã đóng đối với bất kỳ trường hợp nào chủ động xin dừng học, trừ các trường hợp đặc biệt như: bệnh nặng, tai nạn, tử vong không thể tiếp tục việc học.
                   </p>
                 </div>
 
                 {/* Item 2 */}
                 <div>
-                  <h4 className="font-bold text-[#24389c] mb-2 text-base">2. Mức hoàn trả học phí</h4>
-                  <p className="text-[16px] leading-[1.6] font-normal text-[#24389c]">
+                  <h4 className="!font-bold mb-2">2. Mức hoàn trả học phí</h4>
+                  <p>
                     Mức hoàn trả học phí = Tổng học phí khóa học đã đóng - Chi phí các buổi học đã học - phí giao hàng (nếu có) - quà tặng (nếu có) - phí chuyển khoản (nếu có)
                   </p>
                 </div>
 
                 {/* Item 3 */}
                 <div>
-                  <h4 className="font-bold text-[#24389c] mb-2 text-base">3. Phương thức hoàn học phí</h4>
-                  <p className="text-[16px] leading-[1.6] font-normal text-[#24389c] mb-4">
+                  <h4 className="!font-bold mb-2">3. Phương thức hoàn học phí</h4>
+                  <p className="mb-4">
                     Vietsure English sẽ chỉ dùng 1 phương thức chuyển khoản qua ngân hàng để hoàn trả học phí.
                   </p>
-                  <div className="bg-[#f0f7ff] p-5 rounded-2xl border border-blue-100/50 text-[#24389c]">
-                    <p className="text-sm font-semibold mb-2 text-[#24389c]">Để tiến hành thủ tục hoàn học phí, ba mẹ vui lòng để lại thông tin tài khoản như sau:</p>
-                    <ul className="text-sm text-[#24389c] space-y-1.5 font-medium pl-2">
+                  <div>
+                    <p className="mb-2">Để tiến hành thủ tục hoàn học phí, ba mẹ vui lòng để lại thông tin tài khoản như sau:</p>
+                    <ul className="space-y-1.5 pl-2">
                       <li>• Tên ngân hàng kèm chi nhánh</li>
                       <li>• Số tài khoản</li>
                       <li>• Chủ tài khoản</li>
@@ -132,8 +133,8 @@ export default function FAQ() {
 
                 {/* Item 3 repeat (Process) */}
                 <div>
-                  <h4 className="font-bold text-[#24389c] mb-2 text-base">3. Quy trình thực hiện</h4>
-                  <ul className="text-[16px] leading-[1.6] space-y-2 list-none pl-4">
+                  <h4 className="!font-bold mb-2">3. Quy trình thực hiện</h4>
+                  <ul className="space-y-2 list-none pl-4">
                     <li className="list-item">Thời gian xét duyệt: Tối đa 15 ngày kể từ ngày Trung tâm nhận được đơn xin rút học phí của học viên.</li>
                     <li className="list-item">Thời gian hoàn học phí: Tối đa 30 ngày kể từ ngày cả 2 bên xác nhận đồng ý hoàn trả học phí.</li>
                   </ul>
@@ -141,18 +142,18 @@ export default function FAQ() {
 
                 {/* Item 4 */}
                 <div>
-                  <h4 className="font-bold text-[#24389c] mb-2 text-base">4. Các điều kiện không được xét duyệt hoàn phí</h4>
-                  <ul className="text-[16px] leading-[1.6] space-y-2 list-none pl-4 mb-4">
+                  <h4 className="!font-bold mb-2">4. Các điều kiện không được xét duyệt hoàn phí</h4>
+                  <ul className="space-y-2 list-none pl-4 mb-4">
                     <li className="list-item">Học viên đã tham gia vào khóa học 1 phần hoặc toàn bộ khóa học.</li>
                     <li className="list-item">Phụ huynh/học viên không còn nhu cầu học do thay đổi kế hoạch cá nhân, lịch học, chưa tham khảo kỹ nội dung khóa học trước khi đăng ký, học viên không thích học nữa hoặc những lý do cá nhân khác.</li>
                     <li className="list-item">Phụ huynh muốn hoàn tiền để đăng ký khóa học khác cho con không phải ở Vietsure English.</li>
                     <li className="list-item">Một số lý do đến từ lỗi kỹ thuật từ phía học viên (đường truyền kém, thiết bị chưa đáp ứng được việc học online,...)</li>
                     <li className="list-item">Học viên vắng mặt, bỏ buổi học hoặc không hoàn thành khóa học.</li>
                   </ul>
-                  <p className="text-[16px] leading-[1.6] font-normal text-[#24389c] italic">
+                  <p className="italic mb-2">
                     Mặc dù Vietsure English chưa hỗ trợ hoàn học phí nhưng để đảm bảo quyền lợi cho Phụ huynh, chúng tôi đề xuất các phương án sau:
                   </p>
-                  <ul className="text-[16px] leading-[1.6] space-y-2 list-none pl-4 mt-2 font-semibold text-[#24389c]">
+                  <ul className="space-y-2 list-none pl-4 mt-2 !font-bold">
                     <li className="list-item">Bảo lưu khóa học theo quy định.</li>
                     <li className="list-item">Chuyển nhượng khóa học cho Phụ huynh khác, Vietsure English sẽ hỗ trợ thay đổi thông tin học viên và cập nhật với mức học phí còn lại của Phụ huynh.</li>
                     <li className="list-item">Điều chỉnh sang khóa học khác phù hợp hơn với bé vẫn tại Vietsure English.</li>
@@ -165,12 +166,12 @@ export default function FAQ() {
 
           {/* Contact Channels Section */}
           <article className="faq-container bg-white rounded-xl p-8 md:p-12 text-[#24389c]">
-            <h2 className="text-[24px] leading-[1.3] font-semibold text-[#24389c] mb-6">
+            <h2 className="text-[24px] md:text-[28px] font-black text-[#2E357F] mb-6">
               Các kênh liên lạc
             </h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pl-2">
-              
+
               {/* Email */}
               <div className="flex items-center space-x-4">
                 <div className="bg-[#24389c] p-2.5 rounded-xl text-white">

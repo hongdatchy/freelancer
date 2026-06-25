@@ -151,7 +151,7 @@ export default function Detail({ params }: { params: Promise<{ slug: string }> }
   return (
     <div className="w-full mb-10 px-6 md:px-10 lg:px-12 py-16">
       <div className="mx-auto flex flex-col lg:flex-row max-w-[1400px] gap-10">
-        
+
         {/* LEFT CONTENT */}
         <div className="flex-1 min-w-0">
           {/* POST TITLE */}
@@ -181,7 +181,7 @@ export default function Detail({ params }: { params: Promise<{ slug: string }> }
 
           {/* ===== TOC ===== */}
           {headings.length > 0 && (
-            <div className="toc rounded-2xl bg-[#EAF3FC] my-6 p-6 text-[#2E357F] font-sans shadow-sm border border-[#3F489A]/5">
+            <div className="toc rounded-2xl bg-[#EAF3FC] my-6 p-6 text-[#2E357F]  shadow-sm border border-[#3F489A]/5">
               {/* TITLE */}
               <p className="title font-bold text-[18px] mb-3 flex items-center justify-start gap-2">
                 <span>Mục lục</span>

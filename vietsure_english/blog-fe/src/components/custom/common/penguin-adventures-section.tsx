@@ -7,12 +7,12 @@ export default function PenguinAdventuresSection() {
         
         {/* Header */}
         <div className="text-center max-w-none mx-auto mb-12">
-          <h2 className="section-title text-center !font-extrabold !text-lg md:!text-xl lg:!text-2xl opacity-90">
+          <h2 className="section-title text-center  !text-lg md:!text-xl lg:!text-2xl opacity-90">
             KHÁC BIỆT TỪ SERIES PHIM NGẮN TIẾNG ANH
           </h2>
-          <h3 className="section-subtitle text-center text-[#FF6B00] !font-black !text-2xl md:!text-3xl lg:!text-4xl tracking-wider mt-2">
+          <h2 className="section-title  text-[#FF6B00] tracking-wider mt-2">
             &quot;PENGUIN ADVENTURES&quot;
-          </h3>
+          </h2>
           <p className="section-desc mt-4 max-w-7xl mx-auto text-center">
             Penguin Adventures được thiết kế theo từng giai đoạn học gắn liền with những giá trị văn hóa người Việt Nam, giúp trẻ hứng thú học tập và chuyển từ &quot;học tiếng Anh&quot; sang &quot;sử dụng tiếng Anh&quot; một cách tự nhiên, chủ động.
           </p>

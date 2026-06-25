@@ -71,7 +71,7 @@ export default function Login() {
   };
 
   return (
-    <div className="md:col-span-3 relative min-h-[55vh] flex items-center justify-center overflow-hidden">
+    <div className="md:col-span-3 relative min-h-[63vh] flex items-center justify-center overflow-hidden">
 
       {/* Background: hero gradient colors */}
       <div className="absolute inset-0 bg-white z-0" />

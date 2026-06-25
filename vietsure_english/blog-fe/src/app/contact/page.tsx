@@ -2,12 +2,12 @@ import TrialSection from "@/components/custom/common/traial-section";
 
 export default function Contact() {
   return (
-    <div className="bg-white text-gray-800 font-sans">
+    <div className="bg-white text-gray-800 ">
 
       {/* Main Content Info & Map */}
       <section className="py-20 px-6 bg-[#3F489A]">
         <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 flex flex-col lg:flex-row gap-12 items-center justify-between">
-          
+
           {/* Left Column: Contact Info */}
           <div className="flex-1 text-white flex flex-col justify-center">
             <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-4xl xl:text-[42px] font-black text-[#FF6B00] leading-tight uppercase mb-6 whitespace-nowrap lg:whitespace-normal">

@@ -8,7 +8,7 @@ export default function LinkDetailContent() {
 
   return (
     <>
-      {/* <span className="mr-2 font-bold font-sans  leading-[18px] text-[13px]">{trans.common.post.postDetailTitle}</span> */}
+      {/* <span className="mr-2 font-bold   leading-[18px] text-[13px]">{trans.common.post.postDetailTitle}</span> */}
       {Icons.arrowRight()}
     </>
   );

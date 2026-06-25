@@ -7,6 +7,8 @@ export default function MediaSection() {
         { src: "/images/media-5.png", alt: "VTV1" },
         { src: "/images/media-4.png", alt: "Thanh Niên" },
         { src: "/images/media-1.png", alt: "HTV7" },
+        { src: "/images/media-6.png", alt: "cafebiz" },
+        { src: "/images/media-7.png", alt: "24h" },
     ];
 
     // Duplicate the logos to create a seamless infinite scrolling list

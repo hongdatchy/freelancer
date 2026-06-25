@@ -12,7 +12,7 @@ import BrandStats from '@/components/custom/common/brand-stats';
 
 export default function Course() {
   return (
-    <div className="bg-white text-gray-800 font-sans">
+    <div className="bg-white text-gray-800 ">
 
       {/* BEGIN: CourseHeroSection */}
       <section className="py-20 px-6 md:px-16 lg:px-24 bg-[#2E357F] text-white relative" data-purpose="course-hero">

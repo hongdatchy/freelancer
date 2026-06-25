@@ -56,8 +56,8 @@ export default function ParentFeedbackSection() {
           <h2 className="section-title">
             PHỤ HUYNH NÓI VỀ VIETSURE ENGLISH
           </h2>
-          <p className="section-desc mt-4 max-w-6xl mx-auto text-center opacity-75">
-            Được hàng trăm phụ huynh tin tưởng và lựa chọn, Vietsure English mang đến chương trình học tiếng Anh <br className="hidden xl:inline" /> trực tuyến hiệu quả, giúp trẻ tiến bộ mỗi ngày
+          <p className="section-desc mt-4 w-full mx-auto text-center max-w-7xl">
+            Được hàng trăm phụ huynh tin tưởng và lựa chọn, Vietsure English mang đến chương trình học tiếng Anh trực tuyến hiệu quả, giúp trẻ tiến bộ mỗi ngày
           </p>
         </div>
 

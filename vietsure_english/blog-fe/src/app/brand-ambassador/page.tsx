@@ -35,8 +35,8 @@ export default function BrandAmbassadorPage() {
 
       {/* 1. HERO BANNER SECTION */}
       <section className="relative bg-gradient-to-b from-[#E2F0FF] to-white pb-16 overflow-hidden">
-        <div className="container mx-auto px-6 lg:px-24 relative z-10">
-          <div className="grid items-center lg:gap-12 lg:grid-cols-2">
+        <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 relative z-10">
+          <div className="grid items-center xl:gap-12 lg:grid-cols-[3fr_8fr]">
 
             {/* Left side: Banner composite image */}
             <div className="flex justify-center lg:justify-start order-2 lg:order-1 w-full">

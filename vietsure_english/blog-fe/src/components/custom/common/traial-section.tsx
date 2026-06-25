@@ -63,10 +63,10 @@ export default function TrialSection({ isPopup = false, onSuccess }: { isPopup?:
     };
 
     return (
-        <section id="trial-section" className={isPopup ? "px-2 py-4 w-full" : "px-4 py-16"}>
+        <section id="trial-section" className={isPopup ? "px-2 py-4 w-full" : "px-4 pb-16"}>
             <div className={`w-full flex flex-col items-center ${isPopup ? 'px-0 max-w-none' : 'mx-auto max-w-[1440px] px-6 md:px-10 lg:px-12'}`}>
                 {/* Tiêu đề phía trên Form */}
-                {!isPopup && (
+                {/* {!isPopup && (
                     <div className="text-center mb-8">
                         <p className="section-subtitle mb-2">
                             Form đăng ký
@@ -74,8 +74,8 @@ export default function TrialSection({ isPopup = false, onSuccess }: { isPopup?:
                         <h2 className="section-title text-[#1b2b85]">
                             BA MẸ ĐIỀN THÔNG TIN ĐỂ<br />VIETSURE ENGLISH TƯ VẤN NHÉ!
                         </h2>
-                    </div>
-                )}
+                    </div>z
+                )} */}
 
                 {/* Card chứa Form */}
                 <div className={`w-full bg-[#badeff] ${isPopup ? 'border-none shadow-none p-3 rounded-[28px]' : 'brand-light-border rounded-[36px] md:rounded-[48px] shadow-2xl p-6'} grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch`}>
