@@ -2,6 +2,7 @@ import { LearningBreadcrumb } from '@/components/custom/elearning/learning-bread
 import StudyTimer from '@/components/custom/elearning/StudyTimer';
 import { getData } from '@/service/api';
 import PPTViewer from '@/components/custom/elearning/ppt-viewer';
+import PDFViewer from '@/components/custom/elearning/pdf-viewer';
 
 export default async function LearningPage(props: {
   params: Promise<{ id: string; media_id: string }>;
