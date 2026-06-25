@@ -10,7 +10,7 @@ export default function Contact() {
 
           {/* Left Column: Contact Info */}
           <div className="flex-1 text-white flex flex-col justify-center">
-            <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-4xl xl:text-[42px] font-black text-[#FF6B00] leading-tight uppercase mb-6 whitespace-nowrap lg:whitespace-normal">
+            <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-4xl xl:text-[42px] font-black text-[#ff791a] leading-tight uppercase mb-6 whitespace-nowrap lg:whitespace-normal">
               LIÊN HỆ VỚI VIETSURE ENGLISH
             </h1>
             <div className="space-y-4">
@@ -50,7 +50,7 @@ export default function Contact() {
       </section>
 
       {/* Trial Section at the bottom */}
-      <section className="bg-white">
+      <section className="bg-white mt-16">
         <TrialSection />
       </section>
     </div>

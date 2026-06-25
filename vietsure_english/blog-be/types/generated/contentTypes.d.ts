@@ -465,6 +465,7 @@ export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
         'Movers',
         'Level 5+6',
         'Flyers',
+        'Test \u0110\u1EA7u V\u00E0o',
       ]
     >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;

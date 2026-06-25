@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import TrialSection from "@/components/custom/common/traial-section";
 import LearningPathSection from "@/components/custom/common/learning-path-section";
 import CtvRegisterSection from "@/components/custom/brand/ctv-register-section";
 
@@ -36,7 +35,7 @@ export default function BrandAmbassadorPage() {
       {/* 1. HERO BANNER SECTION */}
       <section className="relative bg-gradient-to-b from-[#E2F0FF] to-white pb-16 overflow-hidden">
         <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 relative z-10">
-          <div className="grid items-center xl:gap-12 lg:grid-cols-[3fr_8fr]">
+          <div className="grid items-center xl:gap-12 xl:grid-cols-[3fr_8fr]">
 
             {/* Left side: Banner composite image */}
             <div className="flex justify-center lg:justify-start order-2 lg:order-1 w-full">
@@ -55,7 +54,7 @@ export default function BrandAmbassadorPage() {
             {/* Right side: Introduction content */}
             <div className="flex flex-col items-center lg:items-end text-center lg:text-right order-1 lg:order-2 w-full">
               <h1 className="section-title mb-3">
-                GIỚI THIỆU KHÓA HỌC <span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span>
+                GIỚI THIỆU KHÓA HỌC <span className="text-[#ff791a]">CHẤT LƯỢNG CAO</span>
               </h1>
 
               <h2 className="section-subtitle mb-8">
@@ -89,7 +88,7 @@ export default function BrandAmbassadorPage() {
                 </li>
               </ul>
 
-              <Button className="h-12 rounded-full bg-[#3F489A] hover:bg-[#252a60] px-10 text-base font-bold uppercase transition-all duration-300 transform hover:scale-105 shadow-lg">
+              <Button className="h-12 rounded-full bg-[#3F489A] hover:bg-[#252a60] px-10 text-base font-bold transition-all duration-300 transform hover:scale-105 shadow-lg">
                 Học thử miễn phí
               </Button>
             </div>
@@ -362,7 +361,7 @@ export default function BrandAmbassadorPage() {
       </section>
 
       {/* 6. REGISTRATION FORM */}
-      <section className="bg-white">
+      <section className="bg-white mt-16">
         <CtvRegisterSection />
       </section>
 

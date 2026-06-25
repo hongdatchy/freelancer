@@ -36,8 +36,8 @@ export default function LearningPathSection() {
               />
 
               {/* Overlaid text: LỘ TRÌNH HỌC */}
-              <div className="absolute left-[8%] md:left-[10%] top-[63%] -translate-y-1/2 w-max text-center pointer-events-none select-none">
-                <span className="text-[#2E357F] font-black text-[10px] sm:text-xs md:text-sm lg:text-base leading-tight uppercase whitespace-nowrap">
+              <div className="absolute left-[8%] md:left-[10%] top-[63%] -translate-y-1/2 w-max text-center pointer-events-none select-none flex flex-col items-center justify-center">
+                <span className="text-[#2E357F] font-black text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-tight uppercase whitespace-nowrap">
                   LỘ TRÌNH HỌC
                 </span>
               </div>

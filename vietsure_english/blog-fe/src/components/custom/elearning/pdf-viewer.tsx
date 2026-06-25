@@ -48,7 +48,7 @@ export default function PDFViewer({ fileUrl }: { fileUrl: string }) {
           In Chromium PDF viewer, the top toolbar is 56px high and has bg-[#323639].
           We overlay a div on the top right to hide the Print and 3-dots buttons (approx 100px wide).
       */}
-      <div className="absolute top-0 right-0 w-[110px] h-[56px] bg-[#323639] z-10 flex items-center justify-center">
+      <div className="absolute top-0 right-0 w-[80px] h-[56px] bg-[#323639] z-10 flex items-center justify-center">
         <button
           onClick={toggleFullscreen}
           className="text-gray-300 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors flex items-center justify-center cursor-pointer"

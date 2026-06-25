@@ -15,7 +15,7 @@ export default function Course() {
     <div className="bg-white text-gray-800 ">
 
       {/* BEGIN: CourseHeroSection */}
-      <section className="py-20 px-6 md:px-16 lg:px-24 bg-[#2E357F] text-white relative" data-purpose="course-hero">
+      <section className="py-20 lg:py-14 xl:py-10 2xl:py-28 px-6 md:px-16 lg:px-24 bg-[#2E357F] text-white relative" data-purpose="course-hero">
 
         {/* Background Image (Seamlessly matches the blue section color) */}
         <div className="absolute inset-0 w-full h-full z-0 pointer-events-none select-none">
@@ -34,13 +34,13 @@ export default function Course() {
           <div className="flex flex-col xl:flex-row items-center justify-between gap-6">
 
             {/* Left Side: Title */}
-            <div className="w-full xl:w-[58%] flex flex-col justify-between relative select-none">
+            <div className="w-full xl:w-[58%] flex flex-col justify-start relative select-none">
               <h1
-                className="text-2xl lg:text-[38px] tracking-wide text-white/95 uppercase mb-4 text-center xl:text-left"
-                style={{ lineHeight: '1.6', fontWeight: 100 }}
+                className="text-2xl lg:text-[38px] tracking-wide text-white uppercase mb-4 text-center xl:text-left"
+                style={{ lineHeight: '1.6', fontWeight: 800, textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 KHÓA HỌC TIẾNG ANH ONLINE<br />
-                QUỐC TẾ <span className="text-[#FBBC05]" style={{ fontWeight: 100 }}>CHẤT LƯỢNG CAO</span>
+                QUỐC TẾ <span className="text-[#ff791a]" style={{ fontWeight: 800 }}>CHẤT LƯỢNG CAO</span>
               </h1>
               {/* Spacer on desktop to give height so background kids are fully visible */}
               <div className="hidden xl:block h-[240px]" />

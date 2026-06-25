@@ -8,7 +8,7 @@ export default function CourseRoadmapSection() {
         {/* Header */}
         <div className="text-center w-full mb-10">
           <h2 className="section-title text-[#2E357F] font-black leading-tight">
-            CHƯƠNG TRÌNH HỌC TIẾNG ANH ONLINE <span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span> DÀNH CHO CÁC BÉ
+            CHƯƠNG TRÌNH HỌC TIẾNG ANH ONLINE <span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span>
           </h2>
           <h3 className="text-lg sm:text-xl md:text-[22px] font-bold text-[#3F489A] mt-3">
             (Lớp 1-1 & 1-4)
@@ -31,7 +31,7 @@ export default function CourseRoadmapSection() {
         <div className="flex justify-center mt-10">
           <a
             href="#trial-section"
-            className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-black py-5 px-12 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md text-base md:text-lg uppercase tracking-wide"
+            className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-black py-5 px-12 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md text-base md:text-lg tracking-wide"
           >
             Học thử miễn phí
           </a>

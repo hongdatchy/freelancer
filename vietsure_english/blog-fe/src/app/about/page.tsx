@@ -17,7 +17,8 @@ export default function About() {
           <div className="w-full md:w-1/2 relative">
             <div className="aspect-video rounded-3xl overflow-hidden shadow-2xl border-4 border-white/20 relative w-full">
               <iframe
-                src="https://www.youtube.com/embed/tosYNLutaLw?list=PLnwkiTgOYjUwMBX8qrJpstCCfUb6t89PJ"
+                // src="https://www.youtube.com/embed/tosYNLutaLw?list=PLnwkiTgOYjUwMBX8qrJpstCCfUb6t89PJ"
+                src="https://www.youtube.com/embed/770vUpI9YFY"
                 title="Vietsure English"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
@@ -27,7 +28,7 @@ export default function About() {
           </div>
           {/* Text Side */}
           <div className="w-full md:w-1/2 text-center md:text-left flex flex-col justify-center">
-            <h1 className="section-title !text-[#fbb03b] mb-6">GIỚI THIỆU</h1>
+            <h1 className="section-title !text-[#ff791a] mb-6">GIỚI THIỆU</h1>
             <p className="section-desc !text-white mb-4">
               Vietsure English là nền tảng dạy tiếng Anh online hàng đầu Việt Nam được xây dựng từ nhiều năm kinh nghiệm giảng dạy tiếng Anh online cho trẻ em Việt Nam sinh ra ở nước ngoài học song ngữ Anh - Việt để duy trì tiếng mẹ đẻ.
             </p>
@@ -375,7 +376,7 @@ export default function About() {
           <div className="text-center">
             <a
               href="#trial-section"
-              className="inline-block bg-[#1e3a8a] text-white font-bold py-3.5 px-12 rounded-full shadow-lg hover:bg-blue-700 transition-colors uppercase text-sm tracking-wider"
+              className="inline-block bg-[#1e3a8a] text-white font-bold py-3.5 px-12 rounded-full shadow-lg hover:bg-blue-700 transition-colors text-sm tracking-wider"
             >
               Học thử miễn phí
             </a>
@@ -420,9 +421,9 @@ export default function About() {
 
             {/* Central Text: 4 GIÁ TRỊ CỐT LÕI */}
             <div className="absolute flex flex-col items-center justify-center text-white text-center"
-              style={{ top: '52%', left: '17.8%', transform: 'translate(-50%, -50%)', width: '25%' }}>
+              style={{ top: '52%', left: '15.5%', transform: 'translate(-50%, -50%)', width: '25%' }}>
               <span className="text-[2.9vw] md:text-[1.6rem] lg:text-[1.9rem] xl:text-[2.3rem] font-black leading-tight drop-shadow-md">4 GIÁ TRỊ</span>
-              <span className="text-[2.2vw] md:text-[1.2rem] lg:text-[1.5rem] xl:text-[1.8rem] font-black leading-tight mt-0.5 md:mt-1 drop-shadow-md">CỐT LÕI</span>
+              <span className="text-[2.9vw] md:text-[1.6rem] lg:text-[1.9rem] xl:text-[2.3rem] font-black leading-tight drop-shadow-md">CỐT LÕI</span>
             </div>
 
             {/* Value 1: CHUẨN QUỐC TẾ */}

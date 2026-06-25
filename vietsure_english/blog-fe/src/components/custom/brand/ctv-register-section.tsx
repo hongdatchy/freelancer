@@ -65,18 +65,9 @@ export default function CtvRegisterSection() {
     return (
         <section id="ctv-register-section" className="px-4 py-16 bg-white">
             <div className="w-full flex flex-col items-center mx-auto max-w-[1440px] px-6 md:px-10 lg:px-12">
-                {/* Tiêu đề phía trên Form */}
-                <div className="text-center mb-8">
-                    <p className="section-subtitle mb-2">
-                        Form đăng ký
-                    </p>
-                    <h2 className="section-title text-[#1b2b85]">
-                        ĐĂNG KÝ TRỞ THÀNH CỘNG TÁC VIÊN<br />CÙNG VIETSURE ENGLISH
-                    </h2>
-                </div>
-
+    
                 {/* Card chứa Form */}
-                <div className="w-full bg-[#badeff] brand-light-border rounded-[36px] md:rounded-[48px] shadow-2xl p-6 lg:p-12 flex flex-col gap-8 lg:gap-10">
+                <div className="w-full bg-[#badeff] brand-light-border rounded-[36px] md:rounded-[48px] shadow-2xl p-6 lg:p-12 flex flex-col ">
                     
                     {/* Top Title inside Card */}
                     <div className="w-full text-center">

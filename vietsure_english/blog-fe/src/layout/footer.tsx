@@ -69,11 +69,11 @@ export default function Footer() {
           
           {/* Cột 1: Thông tin liên hệ */}
           <div className="flex flex-col gap-4">
-            <h3 className="text-sm font-black uppercase tracking-wider text-white">
+            <h3 className="text-lg font-black uppercase tracking-wider text-white">
               THÔNG TIN LIÊN HỆ
             </h3>
 
-            <div className="space-y-4 text-xs text-white/80 leading-relaxed">
+            <div className="space-y-4 text-base text-white/80 leading-relaxed">
               <div className="flex items-center gap-3">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sky-500/20 text-sky-400">
                   <Phone className="h-3.5 w-3.5" />
@@ -93,13 +93,13 @@ export default function Footer() {
                   <MapPin className="h-3.5 w-3.5" />
                 </span>
                 <div>
-                  <p className="font-extrabold text-white uppercase text-[11px] mb-1">
+                  <p className="font-extrabold text-white uppercase text-sm mb-1">
                     CÔNG TY TNHH VIETSURE EDUCATION
                   </p>
                   <p className="leading-relaxed">
                     Trụ sở: A12, Khu nhà ở Hoàng Hùng 5, đường Nguyễn Thị Khắp, khu phố Chiêu Liêu, Phường Tân Đông Hiệp, TP. HCM
                   </p>
-                  <p className="mt-2 text-white/60 text-[10px]">
+                  <p className="mt-2 text-white/60 text-xs">
                     Giấy phép ĐKKD số 0319055324 do Sở Tài Chính TP.HCM cấp
                   </p>
                 </div>
@@ -109,10 +109,10 @@ export default function Footer() {
 
           {/* Cột 2: Về chúng tôi */}
           <div>
-            <h3 className="mb-5 text-sm font-black uppercase tracking-wider text-white">
+            <h3 className="mb-5 text-lg font-black uppercase tracking-wider text-white">
               VỀ CHÚNG TÔI
             </h3>
-            <div className="flex flex-col gap-3.5 text-xs text-white/80">
+            <div className="flex flex-col gap-3.5 text-base text-white/80">
               {aboutLinks.map((item) => (
                 <Link
                   key={item.href}
@@ -129,10 +129,10 @@ export default function Footer() {
           {/* Cột 3: Hỗ trợ khách hàng */}
           <div className="flex flex-col justify-between">
             <div>
-              <h3 className="mb-5 text-sm font-black uppercase tracking-wider text-white">
+              <h3 className="mb-5 text-lg font-black uppercase tracking-wider text-white">
                 HỖ TRỢ KHÁCH HÀNG
               </h3>
-              <div className="flex flex-col gap-3.5 text-xs text-white/80 mb-6">
+              <div className="flex flex-col gap-3.5 text-base text-white/80 mb-6">
                 {supportLinks.map((item) => (
                   <Link
                     key={item.href}
@@ -216,7 +216,7 @@ export default function Footer() {
 
           {/* Cột 4: Hệ sinh thái */}
           <div className="flex flex-col gap-4">
-            <h3 className="text-sm font-black uppercase tracking-wider text-white">
+            <h3 className="text-lg font-black uppercase tracking-wider text-white">
               HỆ SINH THÁI
             </h3>
             
@@ -230,7 +230,7 @@ export default function Footer() {
               />
             </div>
             
-            <p className="text-xs text-white/70 leading-relaxed max-w-[200px]">
+            <p className="text-base text-white/70 leading-relaxed max-w-[200px]">
               Tiếng Việt online cho trẻ nước ngoài
             </p>
           </div>
@@ -238,7 +238,7 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="flex flex-col sm:flex-row justify-between items-center text-xs text-white/50 gap-4 mt-12">
+        <div className="flex flex-col sm:flex-row justify-between items-center text-base text-white/50 gap-4 mt-12">
           <p>Copyright © 2026 Vietsure Education | All Rights Reserved</p>
         </div>
 

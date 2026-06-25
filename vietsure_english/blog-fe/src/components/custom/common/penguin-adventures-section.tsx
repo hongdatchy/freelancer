@@ -7,7 +7,7 @@ export default function PenguinAdventuresSection() {
         
         {/* Header */}
         <div className="text-center max-w-none mx-auto mb-12">
-          <h2 className="section-title text-center  !text-lg md:!text-xl lg:!text-2xl opacity-90">
+          <h2 className="section-title text-center">
             KHÁC BIỆT TỪ SERIES PHIM NGẮN TIẾNG ANH
           </h2>
           <h2 className="section-title  text-[#FF6B00] tracking-wider mt-2">

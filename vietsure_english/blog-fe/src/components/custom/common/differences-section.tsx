@@ -70,7 +70,7 @@ export default function DifferencesSection() {
         <div className="flex justify-center mt-16">
           <a
             href="#trial-section"
-            className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-bold py-4 px-12 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-900/25 text-base uppercase tracking-wide"
+            className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-bold py-4 px-12 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-900/25 text-base tracking-wide"
           >
             Học thử miễn phí
           </a>

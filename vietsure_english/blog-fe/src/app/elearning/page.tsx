@@ -53,12 +53,27 @@ export default async function ElearningPage(props: {
             CÁC KHÓA HỌC TẠI VIETSURE ENGLISH
           </h2>
           <div className="mt-4">
-            <Link
-              href="/elearning/nj2pedenlgoegr5eayzm1tr8"
-              className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-extrabold py-3.5 px-9 rounded-full shadow-md text-sm md:text-base transition-all duration-300 hover:scale-105"
-            >
-              Test đầu vào
-            </Link>
+            {(() => {
+              const testLevel = 'Test Đầu Vào';
+              const active = level === testLevel;
+              const query = new URLSearchParams();
+              if (searchParams?.name) query.set('name', searchParams.name);
+              if (searchParams?.pageSize) query.set('pageSize', searchParams.pageSize);
+              if (!active) query.set('level', testLevel);
+              return (
+                <Link
+                  href={`?${query.toString()}`}
+                  scroll={false}
+                  className={`inline-block font-extrabold py-3.5 px-9 rounded-full shadow-md text-sm md:text-base transition-all duration-300 hover:scale-105 ${
+                    active
+                      ? 'bg-[#FF6B00] text-white'
+                      : 'bg-[#2E357F] hover:bg-[#3F489A] text-white'
+                  }`}
+                >
+                  Test đầu vào
+                </Link>
+              );
+            })()}
           </div>
         </div>
 
