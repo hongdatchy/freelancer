@@ -3,6 +3,7 @@
 import { getData, postData, putData } from '@/service/api';
 import useUserLoginStore from '@/state-manager/user-login-store';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 
 // ---- Config ----
@@ -55,6 +56,7 @@ interface Props {
 // ---- Component ----
 export function TeacherScheduleView({ teacherId }: Props) {
   const { user } = useUserLoginStore();
+  const router = useRouter();
   const [resolvedTeacherId, setResolvedTeacherId] = useState<number | null>(null);
   const [scheduleMap, setScheduleMap] = useState<ScheduleMap>({});
   const [loading, setLoading] = useState(false);
@@ -62,6 +64,9 @@ export function TeacherScheduleView({ teacherId }: Props) {
   const [selectedSlotForBooking, setSelectedSlotForBooking] = useState<{day: string, slot: string} | null>(null);
   const [popupBookingType, setPopupBookingType] = useState<'VSE' | 'OTHER'>('VSE');
   const [popupClassCode, setPopupClassCode] = useState('');
+
+  // Popup for viewing/acting on an existing booked slot
+  const [selectedSlotForView, setSelectedSlotForView] = useState<{day: string, slot: string} | null>(null);
 
   const canEdit = !teacherId && !!user;
 
@@ -105,32 +110,41 @@ export function TeacherScheduleView({ teacherId }: Props) {
     fetchSchedule();
   }, [resolvedTeacherId]);
 
-  const handleCellClick = async (day: string, slot: string) => {
+  const handleCellClick = (day: string, slot: string) => {
     if (!canEdit) return;
 
     const key = `${day}_${slot}`;
 
     if (scheduleMap[key]) {
-      try {
-        await fetch(`${process.env.NEXT_PUBLIC_BE_HOST}/api/teacher-schedules/${scheduleMap[key].id}`, {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_BE_TOKEN_ADMIN}`,
-          },
-        });
-        setScheduleMap(prev => {
-          const s = { ...prev };
-          delete s[key];
-          return s;
-        });
-      } catch (err) {
-        console.error('Delete error:', err);
-      }
+      // Open view popup instead of deleting directly
+      setSelectedSlotForView({ day, slot });
     } else {
       setSelectedSlotForBooking({ day, slot });
       setPopupBookingType('VSE');
       setPopupClassCode('');
     }
+  };
+
+  const deleteSchedule = async () => {
+    if (!selectedSlotForView) return;
+    const { day, slot } = selectedSlotForView;
+    const key = `${day}_${slot}`;
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_BE_HOST}/api/teacher-schedules/${scheduleMap[key].id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_BE_TOKEN_ADMIN}`,
+        },
+      });
+      setScheduleMap(prev => {
+        const s = { ...prev };
+        delete s[key];
+        return s;
+      });
+    } catch (err) {
+      console.error('Delete error:', err);
+    }
+    setSelectedSlotForView(null);
   };
 
   const confirmBooking = async () => {
@@ -365,6 +379,68 @@ export function TeacherScheduleView({ teacherId }: Props) {
               Xác nhận
             </button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Popup for existing booked slot */}
+      <Dialog open={!!selectedSlotForView} onOpenChange={(open) => !open && setSelectedSlotForView(null)}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="text-center text-[#2E357F] font-bold text-xl">Lịch đã đặt</DialogTitle>
+            <DialogDescription className="text-center mt-2">
+              {selectedSlotForView && (() => {
+                const key = `${selectedSlotForView.day}_${selectedSlotForView.slot}`;
+                const item = scheduleMap[key];
+                return (
+                  <span>
+                    {selectedSlotForView.slot} ({selectedSlotForView.day})
+                    {item?.student_name ? ` — ${item.student_name}` : ''}
+                  </span>
+                );
+              })()}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-3 py-4">
+            {/* Option 1: Enter class */}
+            <button
+              onClick={() => {
+                if (!selectedSlotForView) return;
+                const key = `${selectedSlotForView.day}_${selectedSlotForView.slot}`;
+                const item = scheduleMap[key];
+                // Use class code (student_name) as room name, fallback to day_slot
+                const roomName = item?.student_name?.trim()
+                  ? item.student_name.trim()
+                  : `${selectedSlotForView.day}-${selectedSlotForView.slot}`;
+                setSelectedSlotForView(null);
+                router.push(`/classroom/${encodeURIComponent(roomName)}`);
+              }}
+              className="w-full py-3 rounded-xl text-sm font-bold bg-[#3F489A] text-white hover:bg-[#2E357F] transition-all shadow-md flex items-center justify-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 10l5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" />
+              </svg>
+              Vào dạy học
+            </button>
+
+            {/* Option 2: Delete schedule */}
+            <button
+              onClick={deleteSchedule}
+              className="w-full py-3 rounded-xl text-sm font-bold bg-red-50 text-red-600 hover:bg-red-100 border-2 border-red-200 transition-all flex items-center justify-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4h6v2" />
+              </svg>
+              Xóa lịch học
+            </button>
+
+            <button
+              onClick={() => setSelectedSlotForView(null)}
+              className="w-full py-2.5 rounded-xl text-sm font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors"
+            >
+              Đóng
+            </button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
