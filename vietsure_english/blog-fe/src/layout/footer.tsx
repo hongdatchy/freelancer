@@ -99,7 +99,7 @@ export default function Footer() {
                   <p className="leading-relaxed">
                     Trụ sở: A12, Khu nhà ở Hoàng Hùng 5, đường Nguyễn Thị Khắp, khu phố Chiêu Liêu, Phường Tân Đông Hiệp, TP. HCM
                   </p>
-                  <p className="mt-2 text-white/60 text-xs">
+                  <p className="mt-2 leading-relaxed">
                     Giấy phép ĐKKD số 0319055324 do Sở Tài Chính TP.HCM cấp
                   </p>
                 </div>
@@ -221,13 +221,19 @@ export default function Footer() {
             </h3>
             
             <div className="flex items-center justify-start max-w-[150px]">
-              <Image
-                src="/images/Viet Sure.png"
-                alt="Viet Sure"
-                width={140}
-                height={36}
-                className="h-auto w-[100px] object-contain"
-              />
+              <Link 
+                href="https://vietsure.com/" 
+                target="_blank" 
+                rel="nofollow noopener noreferrer"
+              >
+                <Image
+                  src="/images/Viet Sure.png"
+                  alt="Viet Sure"
+                  width={140}
+                  height={36}
+                  className="h-auto w-[100px] object-contain hover:opacity-80 transition-opacity"
+                />
+              </Link>
             </div>
             
             <p className="text-base text-white/70 leading-relaxed max-w-[200px]">

@@ -19,7 +19,7 @@ export default function Contact() {
 
       <LearnFromStart />
 
-      <section className="bg-white">
+      <section className="bg-white mt-16">
         <TrialSection />
       </section>
     </div>

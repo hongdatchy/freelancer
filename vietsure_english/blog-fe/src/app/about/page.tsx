@@ -235,7 +235,7 @@ export default function About() {
       <section className="py-16 bg-[#f0f9ff]" data-purpose="characters">
         <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
           <h2 className="section-title text-center mb-16">
-            NHÂN VẬT TRONG SERIES PHIM NGẮN & CHƯƠNG TRÌNH HỌC TIẾNG ANH
+            NHÂN VẬT TRONG SERIES PHIM NGẮN & CHƯƠNG TRÌNH TIẾNG ANH
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
@@ -325,7 +325,7 @@ export default function About() {
                   <p><span className="font-extrabold">Tuổi:</span> 6 tuổi</p>
                   <p><span className="font-extrabold">Quốc tịch:</span> Việt Nam</p>
                   <p><span className="font-extrabold">Nghề nghiệp:</span> Học sinh</p>
-                  <p className="leading-tight"><span className="font-extrabold">Tính cách:</span> Thông minh, hòa đồng, lễ phép và ham học hỏi</p>
+                  <p className="leading-tight"><span className="font-extrabold">Tính cách:</span> Thông minh, lễ phép và ham học hỏi</p>
                 </div>
               </div>
             </div>

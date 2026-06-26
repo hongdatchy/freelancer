@@ -19,8 +19,7 @@ export function middleware(request: NextRequest) {
   const isProtectedRoute =
     url.pathname.startsWith('/elearning') ||
     url.pathname.startsWith('/schedule-management') ||
-    url.pathname.startsWith('/teacher-training') ||
-    url.pathname.startsWith('/classroom');
+    url.pathname.startsWith('/teacher-training');
 
   // ===== 1. CHƯA LOGIN -> CHỈ ĐƯỢC VÀO "/" =====
   if (!token && isProtectedRoute) {

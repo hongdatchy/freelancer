@@ -36,7 +36,7 @@ export default function LearningPathSection() {
               />
 
               {/* Overlaid text: LỘ TRÌNH HỌC */}
-              <div className="absolute left-[8%] md:left-[10%] top-[63%] -translate-y-1/2 w-max text-center pointer-events-none select-none flex flex-col items-center justify-center">
+              <div className="absolute left-[4%] sm:left-[10%] lg:left-[6%] top-[60%] -translate-y-1/2 w-max text-center pointer-events-none select-none flex flex-col items-center justify-center">
                 <span className="text-[#2E357F] font-black text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-tight uppercase whitespace-nowrap">
                   LỘ TRÌNH HỌC
                 </span>
@@ -99,7 +99,7 @@ export default function LearningPathSection() {
 
             <a
               href="#trial-section"
-              className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-black py-5 px-10 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md text-base md:text-xl tracking-wide"
+              className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-bold py-4 px-12 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-900/25 text-base tracking-wide"
             >
               Học thử miễn phí
             </a>

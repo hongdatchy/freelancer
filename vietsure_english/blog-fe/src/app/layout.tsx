@@ -5,6 +5,7 @@ import Header from '@/layout/header';
 import Footer from '@/layout/footer';
 import { BreadcrumbProvider } from '@/context/useBreadcrumb';
 import FloatingContact from '@/components/custom/common/floating-contact';
+import FloatingJitsiWidget from '@/components/custom/common/floating-jitsi-widget';
 
 if (typeof Promise.withResolvers === 'undefined') {
   (Promise as any).withResolvers = function() {
@@ -51,6 +52,7 @@ export default async function RootLayout({
           {children}
           <Footer />
           <FloatingContact />
+          <FloatingJitsiWidget />
         </BreadcrumbProvider>
       </body>
     </html>

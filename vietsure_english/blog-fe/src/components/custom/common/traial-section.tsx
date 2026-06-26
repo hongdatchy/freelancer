@@ -119,7 +119,7 @@ export default function TrialSection({ isPopup = false, onSuccess }: { isPopup?:
                                     name="parentName"
                                     value={formData.parentName}
                                     onChange={handleChange}
-                                    placeholder="Tên ba mẹ"
+                                    placeholder="Họ tên ba mẹ"
                                     disabled={isLoading}
                                     className={`h-16 px-6 rounded-[24px] bg-white border-none text-gray-800 text-base shadow-[0_4px_10px_rgba(0,0,0,0.04)] placeholder:text-[#2E357F]/80 focus-visible:ring-2 focus-visible:ring-[#3f4ebd] ${errors.parentName ? 'ring-2 ring-red-400' : ''
                                         }`}

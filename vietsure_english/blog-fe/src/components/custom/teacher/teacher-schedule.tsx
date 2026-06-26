@@ -1,6 +1,7 @@
 'use client';
 
 import { getData, postData, putData } from '@/service/api';
+import useJitsiStore from '@/state-manager/jitsi-store';
 import useUserLoginStore from '@/state-manager/user-login-store';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -57,6 +58,7 @@ interface Props {
 export function TeacherScheduleView({ teacherId }: Props) {
   const { user } = useUserLoginStore();
   const router = useRouter();
+  const startMeeting = useJitsiStore((state) => state.startMeeting);
   const [resolvedTeacherId, setResolvedTeacherId] = useState<number | null>(null);
   const [scheduleMap, setScheduleMap] = useState<ScheduleMap>({});
   const [loading, setLoading] = useState(false);
@@ -413,7 +415,7 @@ export function TeacherScheduleView({ teacherId }: Props) {
                   ? item.student_name.trim()
                   : `${selectedSlotForView.day}-${selectedSlotForView.slot}`;
                 setSelectedSlotForView(null);
-                router.push(`/classroom/${encodeURIComponent(roomName)}`);
+                startMeeting(roomName);
               }}
               className="w-full py-3 rounded-xl text-sm font-bold bg-[#3F489A] text-white hover:bg-[#2E357F] transition-all shadow-md flex items-center justify-center gap-2"
             >
