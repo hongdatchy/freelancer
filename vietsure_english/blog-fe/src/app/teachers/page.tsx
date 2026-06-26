@@ -1,4 +1,5 @@
 import Paging from '@/components/custom/common/paging';
+import TrialSection from '@/components/custom/common/traial-section';
 import TeacherCard from '@/components/custom/teacher/teacher-card';
 import TeacherFilter from '@/components/custom/teacher/teacher-filter';
 import { TeacherDTO } from '@/dto/TeacherDTO';
@@ -130,6 +131,9 @@ export default async function Teachers(props: {
             )}
           />
         </div>
+      </section>
+      <section className="bg-white">
+        <TrialSection />
       </section>
     </div>
   );

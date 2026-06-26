@@ -91,7 +91,7 @@ export default function Course() {
       <CommitmentsSection />
       <JobSuccessSection />
       <TeacherSection />
-      <section className="bg-white mt-16">
+      <section className="bg-white">
         <TrialSection />
       </section>
     </div>
