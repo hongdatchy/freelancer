@@ -132,7 +132,7 @@ export default async function Teachers(props: {
           />
         </div>
       </section>
-      <section className="bg-white">
+      <section className="bg-white mt-16">
         <TrialSection />
       </section>
     </div>
