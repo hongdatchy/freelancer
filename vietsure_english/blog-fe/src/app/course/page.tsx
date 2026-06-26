@@ -9,6 +9,7 @@ import JobSuccessSection from '@/components/custom/common/job-success-section';
 import TeacherSection from '@/components/custom/common/teacher-section';
 import Image from 'next/image';
 import BrandStats from '@/components/custom/common/brand-stats';
+import TrialSection from '@/components/custom/common/traial-section';
 
 export default function Course() {
   return (
@@ -90,6 +91,9 @@ export default function Course() {
       <CommitmentsSection />
       <JobSuccessSection />
       <TeacherSection />
+      <section className="bg-white mt-16">
+        <TrialSection />
+      </section>
     </div>
   );
 }
