@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import useJitsiStore from '@/state-manager/jitsi-store';
 import useUserLoginStore from '@/state-manager/user-login-store';
 
-const JITSI_SERVER = '27.71.24.102:8443';
+const JITSI_SERVER = 'cloudcamera.online:8443';
 
 export default function FloatingJitsiWidget() {
   const { roomName, isOpen, isMinimized, closeMeeting, setMinimized } = useJitsiStore();
