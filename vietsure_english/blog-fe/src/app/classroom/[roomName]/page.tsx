@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import useUserLoginStore from '@/state-manager/user-login-store';
 
-const JITSI_SERVER = '27.71.24.102:8443';
+const JITSI_SERVER = 'meet.cloudcamera.online';
 
 declare global {
   interface Window {
