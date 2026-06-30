@@ -7,6 +7,8 @@ services:
             - '${HTTP_PORT}:80'
             - '${HTTPS_PORT}:443'
         volumes:
+            - ./custom-config.js:/config/custom-config.js:Z
+            - ./custom-interface_config.js:/config/custom-interface_config.js:Z
             - ${CONFIG}/web:/config:Z
             - ${CONFIG}/web/crontabs:/var/spool/cron/crontabs:Z
             - ${CONFIG}/transcripts:/usr/share/jitsi-meet/transcripts:Z
@@ -515,6 +517,16 @@ services:
             - prosody
         networks:
             meet.jitsi:
+
+    whiteboard:
+        image: jitsi/excalidraw-backend:2026.3.0
+        restart: ${RESTART_POLICY:-unless-stopped}
+        depends_on:
+            - web
+        networks:
+            meet.jitsi:
+              aliases:
+                  - whiteboard.meet.jitsi
 
 # Custom network so all services can communicate using a FQDN
 networks:
