@@ -35,7 +35,7 @@ export default function FloatingJitsiWidget() {
       return;
     }
 
-    const initJitsi = () => {
+    const initJitsi = async () => {
       // Find the container element. If currently minimized, we might need a tick or Jitsi might mount later,
       // but to prevent losing the session, we keep the container in DOM hidden rather than unmounting it.
       if (!containerRef.current || !roomName) return;
@@ -51,8 +51,62 @@ export default function FloatingJitsiWidget() {
         .replace(/[^a-zA-Z0-9À-ỹ\-_]/g, '-')
         .replace(/-+/g, '-');
 
+      // Generate JWT Token using Web Crypto API
+      const generateJitsiJWT = async () => {
+        const header = { alg: "HS256", typ: "JWT" };
+        const now = Math.floor(Date.now() / 1000);
+        const payload = {
+          context: {
+            user: { name: displayName, email: email },
+            features: { recording: true, livestreaming: true }
+          },
+          aud: "vietsure_app",
+          iss: "vietsure_app",
+          sub: "meet.jitsi",
+          room: sanitizedRoom,
+          iat: now,
+          nbf: now - 60, // allow 1 min clock skew
+          exp: now + 86400 // 24 hours valid
+        };
+        
+        const base64UrlEncode = (obj: any) => {
+          const str = JSON.stringify(obj);
+          // Encode UTF-8 characters safely for btoa
+          const encoded = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, 
+            (match, p1) => String.fromCharCode(parseInt(p1, 16))
+          );
+          return btoa(encoded).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        };
+        const encodedHeader = base64UrlEncode(header);
+        const encodedPayload = base64UrlEncode(payload);
+        
+        const secret = "vietsure_secret_key_2026";
+        const encoder = new TextEncoder();
+        const key = await crypto.subtle.importKey(
+          "raw",
+          encoder.encode(secret),
+          { name: "HMAC", hash: "SHA-256" },
+          false,
+          ["sign"]
+        );
+        
+        const signature = await crypto.subtle.sign(
+          "HMAC",
+          key,
+          encoder.encode(`${encodedHeader}.${encodedPayload}`)
+        );
+        
+        const encodedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)))
+          .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+          
+        return `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
+      };
+
+      const token = await generateJitsiJWT();
+
       apiRef.current = new (window as any).JitsiMeetExternalAPI(JITSI_SERVER, {
         roomName: sanitizedRoom,
+        jwt: token,
         width: '100%',
         height: '100%',
         parentNode: containerRef.current,
@@ -95,7 +149,7 @@ export default function FloatingJitsiWidget() {
       const script = document.createElement('script');
       script.src = `https://${JITSI_SERVER}/external_api.js`;
       script.async = true;
-      script.onload = () => initJitsi();
+      script.onload = () => { initJitsi(); };
       script.onerror = () => console.error('Failed to load Jitsi API');
       document.body.appendChild(script);
       return () => {
