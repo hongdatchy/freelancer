@@ -64,8 +64,8 @@ export default function Header() {
         {/* Right: Actions & Menu */}
         <div className="flex flex-col items-end gap-3">
           
-          {/* Top Row: Social + Login + CTA */}
-          <div className="hidden md:flex items-center space-x-6">
+          {/* Top Row: Social + Login + CTA (Desktop only - lg) */}
+          <div className="hidden lg:flex items-center space-x-6">
             
             {/* Social Icons */}
             <div className="flex items-center space-x-4">
@@ -90,16 +90,16 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Menu Mobile (mobile only) */}
+          {/* Menu Mobile (mobile/tablet only) */}
           {(!user || pathname !== '/') && (
-            <div className="flex md:hidden items-center">
+            <div className="flex lg:hidden items-center">
               <HeaderMenuMobile onChange={handleMenuChange} user={user} />
             </div>
           )}
 
-          {/* Bottom Row: Navigation Menu (desktop only) */}
+          {/* Bottom Row: Navigation Menu (desktop only - lg) */}
           {(!user || pathname !== '/') && (
-            <div className="hidden md:flex items-center justify-end w-full">
+            <div className="hidden lg:flex items-center justify-end w-full">
               <HeaderMenu onChange={handleMenuChange} user={user} />
             </div>
           )}

@@ -440,7 +440,7 @@ export default function HallOfFameSection() {
                     </div>
 
                     {/* GRID */}
-                    <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
                         {filteredStudents.slice(0, visibleCount).map((student, index) => (
                             <div
                                 key={student.id}
@@ -451,12 +451,12 @@ export default function HallOfFameSection() {
                             >
                                 <button
                                     onClick={() => setSelectedStudent(student)}
-                                    className="group relative w-full max-w-[210px] mx-auto text-left block"
+                                    className="group relative w-full max-w-none sm:max-w-[210px] mx-auto text-left block"
                                   >
                                     {/* CARD */}
-                                    <div className="overflow-hidden rounded-[24px] bg-white shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.14)]">
+                                    <div className="overflow-hidden rounded-[24px] bg-white shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.14)] aspect-square sm:aspect-auto flex flex-col">
                                         {/* IMAGE */}
-                                        <div className="relative overflow-hidden bg-[#f5f5f5]">
+                                        <div className="relative overflow-hidden bg-[#f5f5f5] flex-1">
                                             <Image
                                                 src={student.image}
                                                 alt={student.name}
@@ -464,7 +464,7 @@ export default function HallOfFameSection() {
                                                 height={520}
                                                 quality={100}
                                                 priority={index < 4}
-                                                className="h-[120px] w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.01]"
+                                                className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.01]"
                                             />
 
                                             {/* hover */}

@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
+import BtnTrial from '../common/btn-trial';
 
 import { Card, CardContent } from '@/components/ui/card';
 import useUserLoginStore from '@/state-manager/user-login-store';
@@ -102,13 +103,10 @@ export default function BlogSidebar({ banners: propBanners }: Props) {
       ))}
 
       {!user && (
-        <button
-          onClick={handleTrialClick}
-          className="group flex h-[60px] items-center justify-center rounded-full bg-[#3F489A] hover:bg-[#2E357F] px-6 text-center text-[16px] font-extrabold tracking-wide text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
-        >
+        <BtnTrial className="group flex h-[60px] items-center justify-center rounded-full bg-[#3F489A] hover:bg-[#2E357F] px-6 text-center text-[16px] font-extrabold tracking-wide text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
           Học thử miễn phí
           <ArrowRight className="ml-3 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-        </button>
+        </BtnTrial>
       )}
     </aside>
   );

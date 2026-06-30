@@ -5,7 +5,7 @@ import useUserLoginStore from '@/state-manager/user-login-store';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 
-export default function UserInfo() {
+export default function UserInfo({ onActionCallback }: { onActionCallback?: () => void }) {
   const { user, logout } = useUserLoginStore();
   const router = useRouter();
 
@@ -17,10 +17,12 @@ export default function UserInfo() {
 
     router.push('/');
     router.refresh(); // đảm bảo middleware chạy lại
+    onActionCallback?.();
   };
 
   const handleLoginRedirect = () => {
     router.push('/login');
+    onActionCallback?.();
   };
 
   return (
@@ -38,7 +40,7 @@ export default function UserInfo() {
       ) : (
         <Button
           onClick={handleLoginRedirect}
-          className="p-0 h-auto text-sm font-semibold text-[#1e3a8a] hover:text-[#3b82f6] bg-transparent hover:bg-transparent shadow-none border-0"
+          className="p-0 h-auto text-sm font-semibold text-[#1e3a8a] hover:text-[#3b82f6] bg-transparent hover:bg-transparent shadow-none border-0 hidden md:inline-flex"
         >
           Đăng nhập
         </Button>

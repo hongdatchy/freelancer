@@ -21,10 +21,6 @@ export default async function Home() {
 
       <LearningPathSection />
 
-      {/* END: LearningPathSection */}
-
-
-
       <section className="px-6 py-20 bg-gradient-to-b from-white to-[#F0F7FF]">
         <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
           <div className="text-center max-w-none mx-auto mb-16">
@@ -78,7 +74,7 @@ export default async function Home() {
 
       <ValuesSection />
 
-      <section className="px-6 lg:py-20 pt-10 bg-gradient-to-b from-white to-[#F0F7FF] overflow-hidden">
+      <section className="px-6 lg:py-20 py-10 bg-gradient-to-b from-white to-[#F0F7FF] overflow-hidden">
         <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
 
           {/* Header */}

@@ -22,19 +22,19 @@ export default function CommitmentsSection() {
   ];
 
   return (
-    <section className="py-20 bg-sky-50 relative overflow-hidden" data-purpose="commitments">
+    <section className="lg:py-20 py-10 bg-sky-50 relative overflow-hidden" data-purpose="commitments">
       <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
-        <h2 className="section-title text-[#ff791a] text-center mb-16">
+        <h2 className="section-title text-[#ff791a] text-center lg:mb-16 mb-5">
           Cam Kết
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
           {commitments.map((item, idx) => (
             <div 
               key={idx} 
-              className="bg-white p-8 md:p-10 rounded-[32px] brand-light-border shadow-sm flex flex-col items-center justify-start text-center min-h-[220px] relative"
+              className="bg-white p-6 md:p-10 rounded-[28px] md:rounded-[32px] brand-light-border shadow-sm flex flex-col items-center justify-center text-center min-h-[140px] md:min-h-[220px] relative"
             >
               {item.hasStamp && (
-                <div className="absolute top-[-40px] right-[-20px] md:right-[-50px] z-20 w-[110px] md:w-[130px] rotate-[15deg]">
+                <div className="absolute top-[-30px] right-[-15px] md:right-[-50px] z-20 w-[95px] md:w-[130px] rotate-[15deg]">
                   <Image
                     src="/images/cambridge-commitment.png"
                     alt="Cambridge Commitment Stamp"
@@ -44,8 +44,8 @@ export default function CommitmentsSection() {
                   />
                 </div>
               )}
-              <h4 className="text-2xl md:text-3xl font-black text-[#1e3a8a] uppercase mb-4">{item.title}</h4>
-              <p className="text-[#1e3a8a] font-semibold text-base md:text-lg">{item.desc}</p>
+              <h4 className="text-xl md:text-3xl font-black text-[#1e3a8a] uppercase mb-2 md:mb-4">{item.title}</h4>
+              <p className="text-[#1e3a8a] font-semibold text-sm md:text-lg">{item.desc}</p>
             </div>
           ))}
         </div>

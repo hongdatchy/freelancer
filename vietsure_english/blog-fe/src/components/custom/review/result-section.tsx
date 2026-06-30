@@ -108,15 +108,12 @@ export default function ResultSection() {
 
                     {/* RIGHT: Titles */}
                     <div className="lg:col-span-2 lg:pl-10">
-                        <h2 className="text-[38px] lg:text-[50px] font-black leading-[1.3] text-white">
-                            Nơi lưu trữ những kết quả<br />
-                            <span className="inline-block bg-[#FF6B00] px-3.5 py-1 uppercase rounded-2xl text-[30px] lg:text-[40px] my-1 shadow-md font-black">
+                    <h2 className="text-[22px] sm:text-[38px] lg:text-[50px] font-black leading-[1.4] text-white">
+                            Nơi lưu trữ những kết quả{" "}
+                            <span className="inline-block bg-[#FF6B00] px-3.5 py-1 uppercase rounded-2xl text-[18px] sm:text-[30px] lg:text-[40px] my-1 shadow-md font-black">
                                 ĐÁNG TỰ HÀO
-                            </span>
-                            <br />
-                            của <span className="inline-block bg-[#3BAEFF] px-3.5 py-1 uppercase rounded-2xl text-[30px] lg:text-[40px] my-1 shadow-md font-black">HỌC VIÊN</span> và cảm
-                            <br />
-                            nhận của <span className="inline-block bg-[#4D9DF2] px-3.5 py-1 uppercase rounded-2xl text-[30px] lg:text-[40px] my-1 shadow-md font-black">PHỤ HUYNH</span>
+                            </span>{" "}
+                            của <span className="inline-block bg-[#3BAEFF] px-3.5 py-1 uppercase rounded-2xl text-[18px] sm:text-[30px] lg:text-[40px] my-1 shadow-md font-black">HỌC VIÊN</span> và cảm nhận của <span className="inline-block bg-[#4D9DF2] px-3.5 py-1 uppercase rounded-2xl text-[18px] sm:text-[30px] lg:text-[40px] my-1 shadow-md font-black">PHỤ HUYNH</span>
                         </h2>
                     </div>
                 </div>

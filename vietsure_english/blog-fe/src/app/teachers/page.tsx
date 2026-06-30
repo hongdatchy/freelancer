@@ -75,7 +75,7 @@ export default async function Teachers(props: {
                 },
                 {
                   title: "Kinh nghiệm thực tế từ môi trường quốc tế",
-                  desc: "Đội ngũ giáo viên được đào tạo từ kinh nghiệm giảng dạy trẻ em Việt Nam tại nước ngoài - nơi tiếng Anh được sử dụng tự nhiên trong học tập và đời sống",
+                  desc: "Đội ngũ giáo viên được đào tạo từ kinh nghiệm giảng dạy trẻ em Việt Nam tại nước ngoài - nơi tiếng Anh được sử dụng tự nhiên trong học tập và đời sống.",
                 },
                 {
                   title: "Theo sát từng học viên",
@@ -94,9 +94,7 @@ export default async function Teachers(props: {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     </span>
-                    {i < arr.length - 1 && (
-                      <div className="w-px flex-1 my-2 border-l-[4px] border-dotted border-[#2E357F]/30" />
-                    )}
+                    <div className="w-px flex-1 my-2 border-l-[4px] border-dotted border-[#2E357F]/30" />
                   </div>
 
                   {/* Nội dung */}

@@ -9,11 +9,11 @@ export default function BrandStats() {
   ];
 
   return (
-    <div className="w-full bg-white border-2 border-blue-200 rounded-[24px] py-4 px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
+    <div className="w-full bg-white border-2 border-blue-200 rounded-[24px] py-6 px-4 md:px-6 grid grid-cols-2 md:flex items-center justify-between gap-y-6 gap-x-2 md:gap-0">
       {stats.map((stat, idx) => (
         <React.Fragment key={idx}>
-          <div className="flex-1 text-center">
-            <div className="text-4xl md:text-5xl font-black text-[#3f489a] tracking-tight">
+          <div className="text-center w-full">
+            <div className="text-3xl md:text-5xl font-black text-[#3f489a] tracking-tight">
               {stat.value}
             </div>
             <div className="text-xs md:text-sm lg:text-base font-bold text-[#7aa2db] mt-2 whitespace-nowrap">

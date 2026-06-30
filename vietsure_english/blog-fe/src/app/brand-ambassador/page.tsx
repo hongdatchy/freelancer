@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import LearningPathSection from "@/components/custom/common/learning-path-section";
 import CtvRegisterSection from "@/components/custom/brand/ctv-register-section";
 
@@ -33,7 +32,7 @@ export default function BrandAmbassadorPage() {
     <div className="bg-[#F3F9FF]">
 
       {/* 1. HERO BANNER SECTION */}
-      <section className="relative bg-gradient-to-b from-[#E2F0FF] to-white pb-16 overflow-hidden">
+      <section className="lg:py-0 py-10 relative bg-gradient-to-b from-[#E2F0FF] to-white pb-16 overflow-hidden">
         <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 relative z-10">
           <div className="grid items-center xl:gap-12 xl:grid-cols-[3fr_8fr]">
 
@@ -88,9 +87,12 @@ export default function BrandAmbassadorPage() {
                 </li>
               </ul>
 
-              <Button className="h-12 rounded-full bg-[#3F489A] hover:bg-[#252a60] px-10 text-base font-bold transition-all duration-300 transform hover:scale-105 shadow-lg">
-                Học thử miễn phí
-              </Button>
+              <a
+                href="#ctv-register-section"
+                className="inline-flex items-center justify-center h-10 md:h-12 rounded-full bg-[#3F489A] hover:bg-[#252a60] px-6 md:px-10 text-sm md:text-base font-bold transition-all duration-300 transform hover:scale-105 shadow-lg text-white"
+              >
+                Tham gia ngay
+              </a>
             </div>
 
           </div>
@@ -193,7 +195,7 @@ export default function BrandAmbassadorPage() {
       <LearningPathSection />
 
       {/* 4. 4 BƯỚC ĐƠN GIẢN SECTION */}
-      <section className="py-20 bg-white">
+      <section className="lg:py-20 py-10 bg-white">
         <div className="container mx-auto px-6 lg:px-24">
           <h2 className="section-title text-center mb-16">
             4 BƯỚC ĐƠN GIẢN CÓ THÊM THU NHẬP LÊN ĐẾN <span className="text-[#FF6B00]">30 TRIỆU/THÁNG</span> CÙNG VIETSURE ENGLISH
@@ -212,7 +214,7 @@ export default function BrandAmbassadorPage() {
       </section>
 
       {/* 5. CHÍNH SÁCH VÀ QUYỀN LỢI SECTION */}
-      <section className="py-20 bg-[#F3F9FF]">
+      <section className="lg:py-20 py-10 bg-[#F3F9FF]">
         <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
           <h2 className="section-title text-center mb-16">
             CHÍNH SÁCH VÀ QUYỀN LỢI KHI TRỞ THÀNH CTV CỦA VIETSURE ENGLISH
@@ -361,7 +363,7 @@ export default function BrandAmbassadorPage() {
       </section>
 
       {/* 6. REGISTRATION FORM */}
-      <section className="bg-white mt-16">
+      <section className="bg-white">
         <CtvRegisterSection />
       </section>
 

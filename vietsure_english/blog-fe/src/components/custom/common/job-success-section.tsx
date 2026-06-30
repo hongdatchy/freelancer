@@ -23,7 +23,7 @@ const jobCards = [
 
 export default function JobSuccessSection() {
     return (
-        <section className="py-[120px]">
+        <section className="py-10 lg:py-20">
             <div className="mx-auto max-w-6xl px-6">
                 {/* HEADER */}
                 <div className="text-center mb-10">

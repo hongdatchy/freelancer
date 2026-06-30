@@ -172,6 +172,20 @@ export function HeaderMenuMobile({ onChange, user }: Props) {
                 )}
               </div>
             ))}
+
+            {/* Đăng nhập item added to the list only if user is not logged in */}
+            {!user && (
+              <Link
+                href="/login"
+                onClick={handleCloseDrawer}
+                className={cn(
+                  "flex items-center w-full py-3 px-4 rounded-2xl text-[15.5px] font-extrabold transition-all duration-200",
+                  pathname === '/login' ? "bg-[#3F489A]/8 text-[#3F489A]" : "text-slate-700 hover:bg-slate-50"
+                )}
+              >
+                Đăng nhập
+              </Link>
+            )}
           </div>
         </div>
 
@@ -200,7 +214,7 @@ export function HeaderMenuMobile({ onChange, user }: Props) {
             </div>
             
             <div className="mt-1">
-              <UserInfo />
+              <UserInfo onActionCallback={handleCloseDrawer} />
             </div>
             <p className="text-[10px] text-slate-400 mt-1">© 2026 Vietsure Education</p>
           </div>

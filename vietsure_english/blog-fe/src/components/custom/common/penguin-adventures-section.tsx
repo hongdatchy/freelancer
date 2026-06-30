@@ -13,7 +13,7 @@ export default function PenguinAdventuresSection() {
           <h2 className="section-title  text-[#FF6B00] tracking-wider mt-2">
             &quot;PENGUIN ADVENTURES&quot;
           </h2>
-          <p className="section-desc mt-4 max-w-7xl mx-auto text-center">
+          <p className="section-desc section-desc-justify mt-4 max-w-7xl mx-auto text-center">
             Penguin Adventures được thiết kế theo từng giai đoạn học gắn liền with những giá trị văn hóa người Việt Nam, giúp trẻ hứng thú học tập và chuyển từ &quot;học tiếng Anh&quot; sang &quot;sử dụng tiếng Anh&quot; một cách tự nhiên, chủ động.
           </p>
         </div>
@@ -21,7 +21,7 @@ export default function PenguinAdventuresSection() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
           
           {/* Left Column: Values Cards */}
-          <div className="lg:col-span-7 space-y-6 flex flex-col justify-between">
+          <div className="lg:col-span-7 space-y-6 flex flex-col justify-between order-last lg:order-first">
             
             {/* Card 1: Học viên */}
             <div className="bg-white rounded-[32px] brand-light-border p-6 md:p-8 shadow-[0_10px_35px_rgba(96,165,250,0.06)] flex-1 flex flex-col justify-center">
@@ -70,7 +70,7 @@ export default function PenguinAdventuresSection() {
           </div>
 
           {/* Right Column: Poster Image */}
-          <div className="lg:col-span-5 flex justify-center w-full">
+          <div className="lg:col-span-5 flex justify-center w-full order-first lg:order-last">
             <div className="w-full max-w-[370px] lg:max-w-[420px] aspect-[420/580] lg:aspect-auto lg:h-full relative select-none pointer-events-none filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] rounded-2xl overflow-hidden hover:scale-[1.02] transition-transform duration-300 border-4 border-[#2E357F]">
               <Image
                 src="/images/penguin.png"

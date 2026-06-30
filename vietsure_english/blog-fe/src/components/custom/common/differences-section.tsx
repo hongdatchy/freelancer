@@ -1,3 +1,5 @@
+import BtnTrial from './btn-trial';
+
 export default function DifferencesSection() {
   return (
     <section className="px-6 lg:py-20 py-10 bg-gradient-to-b from-[#F0F7FF] to-white overflow-hidden">
@@ -67,13 +69,8 @@ export default function DifferencesSection() {
         </div>
 
         {/* Bottom Trial Button */}
-        <div className="flex justify-center mt-16">
-          <a
-            href="#trial-section"
-            className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-bold py-4 px-12 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-900/25 text-base tracking-wide"
-          >
-            Học thử miễn phí
-          </a>
+        <div className="flex justify-center lg:mt-16 mt-5">
+          <BtnTrial className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-bold py-2.5 px-6 md:py-4 md:px-12 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-900/25 text-sm md:text-base tracking-wide" />
         </div>
 
       </div>

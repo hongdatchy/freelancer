@@ -64,7 +64,7 @@ export default function TrialSection({ isPopup = false, onSuccess }: { isPopup?:
 
     return (
         <section id="trial-section" className={isPopup ? "px-2 py-4 w-full" : "px-4 pb-16"}>
-            <div className={`w-full flex flex-col items-center ${isPopup ? 'px-0 max-w-none' : 'mx-auto max-w-[1440px] px-6 md:px-10 lg:px-12'}`}>
+            <div className={`w-full flex flex-col items-center ${isPopup ? 'px-0 max-w-none' : 'mx-auto max-w-[1440px] lg:px-6 md:px-10 lg:px-12'}`}>
                 {/* Tiêu đề phía trên Form */}
                 {/* {!isPopup && (
                     <div className="text-center mb-8">

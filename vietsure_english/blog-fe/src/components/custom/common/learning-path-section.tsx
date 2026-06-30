@@ -1,21 +1,22 @@
 "use client";
 
 import Image from "next/image";
+import BtnTrial from "./btn-trial";
 
 export default function LearningPathSection() {
   return (
-    <section className="px-6 lg:py-20 bg-gradient-to-b from-[#F0F7FF] to-white" data-purpose="learning-path">
-      <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
+    <section className="lg:py-20 py-10 bg-gradient-to-b from-[#F0F7FF] to-white" data-purpose="learning-path">
+      <div className="mx-auto w-full max-w-[1440px] px-0 md:px-10 lg:px-12">
 
         {/* Header */}
-        <div className="text-center max-w-none mx-auto mb-16">
+        <div className="text-center max-w-none mx-auto mb-16 px-6 md:px-0">
           <h2 className="section-title">
             LỘ TRÌNH HỌC TIẾNG ANH ONLINE QUỐC TẾ - DÙNG CẢ ĐỜI
           </h2>
           <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold text-[#2E357F] mt-2">
             (CHUẨN CEFR & CAMBRIDGE)
           </h3>
-          <p className="section-desc mt-4 max-w-7xl mx-auto text-center">
+          <p className="section-desc section-desc-justify mt-4 max-w-7xl mx-auto text-center">
             Từ kinh nghiệm dạy online cho trẻ em Việt sinh ra tại nước ngoài chỉ biết tiếng Anh học tiếng mẹ đẻ. Vietsure tiếp tục xây dựng lộ trình học tiếng Anh cho trẻ em Việt Nam từ &quot;Nền tảng - Theo 1 lộ trình học liền mạch, cá nhân hóa - Dùng cả đời&quot; giúp trẻ tiến bộ, tự tin phản xạ tiếng Anh trong cuộc sống như trẻ em nước ngoài và chuẩn chương trình Cambridge.
           </p>
         </div>
@@ -24,7 +25,7 @@ export default function LearningPathSection() {
 
           {/* Left Content: Diagram Image with Overlaid Text */}
           <div className="w-full lg:w-[52%] flex justify-center">
-            <div className="relative w-full max-w-[850px] aspect-[580/460]">
+            <div className="relative w-full px-[10px] md:px-0 max-w-[850px] aspect-[580/460]">
               {/* Background Diagram Image */}
               <Image
                 src="/images/learning-path-diagram.png"
@@ -36,14 +37,14 @@ export default function LearningPathSection() {
               />
 
               {/* Overlaid text: LỘ TRÌNH HỌC */}
-              <div className="absolute left-[4%] sm:left-[10%] lg:left-[6%] top-[60%] -translate-y-1/2 w-max text-center pointer-events-none select-none flex flex-col items-center justify-center">
-                <span className="text-[#2E357F] font-black text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-tight uppercase whitespace-nowrap">
+              <div className="absolute left-[8%] sm:left-[10%] lg:left-[6%] top-[60%] -translate-y-1/2 w-max text-center pointer-events-none select-none flex flex-col items-center justify-center">
+                <span className="text-[#2E357F] font-black text-[8px] sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-tight uppercase whitespace-nowrap">
                   LỘ TRÌNH HỌC
                 </span>
               </div>
 
               {/* Overlaid text: Card 1 */}
-              <div className="absolute left-[40%] top-[5%] w-[55%] text-left">
+              <div className="absolute left-[38%] top-[5%] w-[55%] text-left">
                 <h4 className="font-extrabold text-[#2E357F] text-[9px] sm:text-xs md:text-base lg:text-sm xl:text-base uppercase leading-tight">
                   TIẾNG ANH MẪU GIÁO
                 </h4>
@@ -53,7 +54,7 @@ export default function LearningPathSection() {
               </div>
 
               {/* Overlaid text: Card 2 */}
-              <div className="absolute left-[58%] top-[30%] w-[38%] text-left">
+              <div className="absolute left-[56%] top-[30%] w-[38%] text-left">
                 <h4 className="font-extrabold text-[#3b82f6] text-[9px] sm:text-xs md:text-base lg:text-sm xl:text-base uppercase leading-tight">
                   TIẾNG ANH THIẾU NHI
                 </h4>
@@ -73,7 +74,7 @@ export default function LearningPathSection() {
               </div>
 
               {/* Overlaid text: Card 4 */}
-              <div className="absolute left-[48%] top-[85%] w-[46%] text-left">
+              <div className="absolute left-[45%] top-[85%] w-[46%] text-left">
                 <h4 className="font-extrabold text-[#78a5db] text-[9px] sm:text-xs md:text-base lg:text-sm xl:text-base uppercase leading-tight">
                   IELTS
                 </h4>
@@ -97,12 +98,7 @@ export default function LearningPathSection() {
               />
             </div>
 
-            <a
-              href="#trial-section"
-              className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-bold py-4 px-12 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-900/25 text-base tracking-wide"
-            >
-              Học thử miễn phí
-            </a>
+            <BtnTrial className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-bold py-2.5 px-6 md:py-4 md:px-12 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-900/25 text-sm md:text-base tracking-wide" />
           </div>
 
         </div>

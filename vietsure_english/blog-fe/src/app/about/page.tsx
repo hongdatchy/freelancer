@@ -1,6 +1,5 @@
 import Image from "next/image";
 import TrialSection from '@/components/custom/common/traial-section';
-import LearnFromStart from '@/components/custom/common/learn-from-start';
 import BrandStats from '@/components/custom/common/brand-stats';
 import ParentFeedbackSection from '@/components/custom/common/parent-feedback-section';
 import MediaSection from '@/components/custom/common/media-section';
@@ -85,11 +84,11 @@ export default function About() {
 
       {/* BEGIN: LogoMeaning (GIỮ NGUYÊN NHƯ CODE CŨ) */}
       <section
-        className="px-6 py-14 relative overflow-hidden bg-[#f0f9ff]"
+        className="xl:px-6 lg:py-14 relative overflow-hidden bg-[#f0f9ff]"
         data-purpose="logo-meaning"
       >
-        <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
-          <h2 className="section-title text-center mb-16">Ý nghĩa logo Vietsure English</h2>
+        <div className="mx-auto w-full max-w-[1440px] xl:px-6 md:px-10 lg:px-12">
+          <h2 className="section-title text-center mb-16 px-6 xl:px-0">Ý nghĩa logo Vietsure English</h2>
 
           {/* ===== DESKTOP (xl+): layout absolute ===== */}
           <div className="relative w-full hidden xl:block" style={{ height: "620px" }}>
@@ -159,34 +158,73 @@ export default function About() {
             </div>
           </div>
 
-          {/* ===== MOBILE/TABLET (dưới xl): layout flex column ===== */}
-          <div className="flex flex-col items-center gap-8 xl:hidden">
+          {/* ===== MOBILE/TABLET (dưới xl): layout zigzag ===== */}
+          <div className="flex flex-col items-center gap-6 xl:hidden">
 
             {/* Logo giữa */}
             <div className="flex items-center justify-center">
               <Image src="/images/Vietsure English_Logo-15.png" alt="logo" width={160} height={160} className="object-contain" />
             </div>
 
-            {/* 4 text xếp dạng grid 2 cột trên tablet, 1 cột trên mobile */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full text-center md:text-left">
-              <div>
-                <span className="text-[#3F489A] font-bold text-[15px] md:text-[17px] block mb-1">Ngôi sao tượng trưng cho:</span>
-                <span className="section-desc block">Mục tiêu và định hướng rõ ràng trong hành trình học tập. Sự tỏa sáng và thành công của học viên sau quá trình rèn luyện. Khát vọng vươn xa ra thế giới, đúng với tinh thần của một trung tâm đào tạo tiếng Anh chuẩn quốc tế.</span>
+            {/* Zigzag cards */}
+            <div className="flex flex-col gap-8 w-full relative">
+              {/* Vertical connecting line */}
+              <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-[#2E357F] via-[#FF6B00] to-[#2E357F] -translate-x-1/2 rounded-full opacity-30" />
+
+              {/* Card 1: Ngôi sao (Left) */}
+              <div className="flex items-start justify-end w-full pr-[55%] relative">
+                <div className="bg-[#3F489A] rounded-[24px] p-4 border-4 border-white shadow-lg text-right">
+                  <span className="inline-block text-[10px] font-bold text-[#ff791a] mb-1">Biểu tượng</span>
+                  <h4 className="text-sm font-black text-yellow-300 uppercase leading-tight">
+                    Ngôi sao tượng trưng cho:
+                  </h4>
+                  <p className="text-[11px] text-white/90 mt-1 font-medium leading-relaxed">
+                    Mục tiêu và định hướng rõ ràng trong hành trình học tập. Sự tỏa sáng và thành công của học viên sau quá trình rèn luyện. Khát vọng vươn xa ra thế giới, đúng với tinh thần của một trung tâm đào tạo tiếng Anh chuẩn quốc tế.
+                  </p>
+                </div>
+                <div className="absolute right-1/2 translate-x-1/2 top-6 w-4 h-4 rounded-full border-4 border-white bg-[#2E357F] shadow-sm z-10" />
               </div>
-              <div>
-                <span className="text-[#3F489A] font-bold text-[15px] md:text-[17px] block mb-1">Phông chữ được xây dựng theo:</span>
-                <span className="section-desc block">Cấu trúc liền mạch, các ký tự bo tròn mềm mại nhưng vẫn vững chắc, tạo cảm giác kết nối - ổn định - bền vững. Sự liên kết giữa các chữ cái thể hiện quá trình học tập xuyên suốt, có hệ thống và được dẫn dắt rõ ràng.</span>
+
+              {/* Card 2: Phông chữ (Right) */}
+              <div className="flex items-start justify-start w-full pl-[55%] relative">
+                <div className="bg-[#3F489A] rounded-[24px] p-4 border-4 border-white shadow-lg text-left">
+                  <span className="inline-block text-[10px] font-bold text-[#ff791a] mb-1">Kiểu chữ</span>
+                  <h4 className="text-sm font-black text-yellow-300 uppercase leading-tight">
+                    Phông chữ được xây dựng theo:
+                  </h4>
+                  <p className="text-[11px] text-white/90 mt-1 font-medium leading-relaxed">
+                    Cấu trúc liền mạch, các ký tự bo tròn mềm mại nhưng vẫn vững chắc, tạo cảm giác kết nối - ổn định - bền vững. Sự liên kết giữa các chữ cái thể hiện quá trình học tập xuyên suốt, có hệ thống và được dẫn dắt rõ ràng.
+                  </p>
+                </div>
+                <div className="absolute left-1/2 -translate-x-1/2 top-6 w-4 h-4 rounded-full border-4 border-white bg-[#FF6B00] shadow-sm z-10" />
               </div>
-              <div>
-                <span className="text-[#3F489A] font-bold text-[15px] md:text-[17px] block mb-1">Hình tượng mascot chim cánh cụt:</span>
-                <span className="section-desc block">Thân thiện, thông minh và tràn đầy năng lượng, đại diện cho tinh thần học tập tích cực, tự tin và không ngừng tiến bộ của học viên.</span>
+
+              {/* Card 3: Mascot (Left) */}
+              <div className="flex items-start justify-end w-full pr-[55%] relative">
+                <div className="bg-[#3F489A] rounded-[24px] p-4 border-4 border-white shadow-lg text-right">
+                  <span className="inline-block text-[10px] font-bold text-[#ff791a] mb-1">Mascot</span>
+                  <h4 className="text-sm font-black text-yellow-300 uppercase leading-tight">
+                    Hình tượng mascot chim cánh cụt:
+                  </h4>
+                  <p className="text-[11px] text-white/90 mt-1 font-medium leading-relaxed">
+                    Thân thiện, thông minh và tràn đầy năng lượng, đại diện cho tinh thần học tập tích cực, tự tin và không ngừng tiến bộ của học viên.
+                  </p>
+                </div>
+                <div className="absolute right-1/2 translate-x-1/2 top-6 w-4 h-4 rounded-full border-4 border-white bg-[#2E357F] shadow-sm z-10" />
               </div>
-              <div>
-                <span className="text-[#3F489A] font-bold text-[15px] md:text-[17px] block mb-1">Về màu sắc:</span>
-                <span className="section-desc block">
-                  - Xanh tím đậm tượng trưng cho uy tín, chiều sâu học thuật và sự cam kết chất lượng.<br />
-                  - Xanh dương sáng đại diện cho tinh thần trẻ trung, năng động và khả năng hội nhập quốc tế.
-                </span>
+
+              {/* Card 4: Màu sắc (Right) */}
+              <div className="flex items-start justify-start w-full pl-[55%] relative">
+                <div className="bg-[#3F489A] rounded-[24px] p-4 border-4 border-white shadow-lg text-left">
+                  <span className="inline-block text-[10px] font-bold text-[#ff791a] mb-1">Màu sắc</span>
+                  <h4 className="text-sm font-black text-yellow-300 uppercase leading-tight">
+                    Về màu sắc:
+                  </h4>
+                  <p className="text-[11px] text-white/90 mt-1 font-medium leading-relaxed">
+                    - Xanh tím đậm tượng trưng cho uy tín, chiều sâu học thuật và sự cam kết chất lượng.<br />- Xanh dương sáng đại diện cho tinh thần trẻ trung, năng động và khả năng hội nhập quốc tế.
+                  </p>
+                </div>
+                <div className="absolute left-1/2 -translate-x-1/2 top-6 w-4 h-4 rounded-full border-4 border-white bg-[#FF6B00] shadow-sm z-10" />
               </div>
             </div>
           </div>
@@ -196,7 +234,7 @@ export default function About() {
       {/* END: LogoMeaning */}
 
       {/* BEGIN: BrandMascot */}
-      <section className="py-20 bg-gradient-to-b from-[#f0f9ff] to-white" data-purpose="brand-mascot">
+      <section className="lg:py-20 py-10 bg-gradient-to-b from-[#f0f9ff] to-white" data-purpose="brand-mascot">
         <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
             {/* Left Mascot */}
@@ -238,7 +276,7 @@ export default function About() {
             NHÂN VẬT TRONG SERIES PHIM NGẮN & CHƯƠNG TRÌNH TIẾNG ANH
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 mb-16">
 
             {/* Row 1: NAM */}
             <div className="bg-white rounded-[32px] p-8 border-2 border-sky-200 shadow-sm flex items-end relative overflow-hidden h-72 hover:shadow-md transition-shadow">
@@ -296,7 +334,7 @@ export default function About() {
                   Mascot chim cánh cụt thân thiện, thông minh và tràn đầy năng lượng, đại diện cho tinh thần học tập tích cực, tự tin và không ngừng tiến bộ của học viên.
                 </p>
               </div>
-              <div className="w-1/2 h-full flex items-center justify-center select-none">
+              <div className="w-1/2 h-full flex items-center justify-center select-none max-sm:scale-[1.3] transform">
                 <Image
                   src="/images/character-penguin.png"
                   alt="PENGUIN"
@@ -408,7 +446,7 @@ export default function About() {
         }}
         data-purpose="core-values"
       >
-        <div className="mx-auto w-full max-w-[1200px] px-6 md:px-10 lg:px-12">
+        <div className="mx-auto w-full max-w-[1200px] px-0 md:px-10 lg:px-12">
           <div className="relative w-full">
             <Image
               src="/images/7.png"

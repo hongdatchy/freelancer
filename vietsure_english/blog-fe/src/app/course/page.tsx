@@ -9,6 +9,7 @@ import JobSuccessSection from '@/components/custom/common/job-success-section';
 import TeacherSection from '@/components/custom/common/teacher-section';
 import Image from 'next/image';
 import BrandStats from '@/components/custom/common/brand-stats';
+import BtnTrial from '@/components/custom/common/btn-trial';
 import TrialSection from '@/components/custom/common/traial-section';
 
 export default function Course() {
@@ -37,7 +38,7 @@ export default function Course() {
             {/* Left Side: Title */}
             <div className="w-full xl:w-[58%] flex flex-col justify-start relative select-none">
               <h1
-                className="text-2xl lg:text-[38px] tracking-wide text-white uppercase mb-4 text-center xl:text-left"
+                className="text-xl sm:text-2xl lg:text-[36px] tracking-wide text-white uppercase mb-4 text-center xl:text-left"
                 style={{ lineHeight: '1.6', fontWeight: 800, textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}
               >
                 KHÓA HỌC TIẾNG ANH ONLINE<br />
@@ -53,19 +54,14 @@ export default function Course() {
 
                 {/* Card */}
                 <div className="bg-white rounded-[32px] p-5 shadow-2xl text-slate-800 mb-5 w-full">
-                  <p className="section-desc text-justify [text-align-last:center] font-bold ">
+                  <p className="section-desc section-desc-justify text-justify [text-align-last:center] font-bold ">
                     Dựa trên kinh nghiệm giảng dạy tiếng Việt online cho trẻ em 4 - 18 tuổi sinh sống tại nước ngoài - nơi mà các bé dùng hoàn toàn 100% tiếng Anh, Vietsure English sẽ mang đến chương trình học tiếng Anh trực tuyến dành cho trẻ em từ 4 - 12+ tuổi, được thiết kế độc quyền theo chuẩn quốc tế, giúp học viên phát triển toàn diện 4 kỹ năng nghe - nói - đọc - viết trong môi trường học tập sinh động và tương tác cao.
                   </p>
                 </div>
 
                 {/* CTA Button */}
                 <div className="w-full flex justify-center">
-                  <a
-                    href="#trial-section"
-                    className="inline-block bg-[#FF6B00] hover:bg-[#e66000] text-white font-extrabold py-4 px-12 rounded-full shadow-lg shadow-[#FF6B00]/30 transition-transform hover:scale-105 text-base tracking-wider text-center border-none"
-                  >
-                    Học thử miễn phí
-                  </a>
+                  <BtnTrial className="inline-block bg-[#FF6B00] hover:bg-[#e66000] text-white font-extrabold py-2.5 px-6 md:py-4 md:px-12 rounded-full shadow-lg shadow-[#FF6B00]/30 transition-transform hover:scale-105 text-sm md:text-base tracking-wider text-center border-none" />
                 </div>
 
               </div>

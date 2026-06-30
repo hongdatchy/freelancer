@@ -63,7 +63,7 @@ export default function HeroSection({
           {/* RightContent - Typography and CTA */}
           <div className="w-full lg:w-[51%] flex flex-col items-center lg:items-start text-center lg:text-left space-y-4 md:space-y-6 px-6 lg:px-0">
             <div className="space-y-2 md:space-y-4" data-purpose="heading-group">
-              <h2 className="text-xs sm:text-xs md:text-lg lg:text-2xl xl:text-4xl font-black text-[#3F489A] tracking-wide uppercase">
+              <h2 className="text-2xl sm:text-3xl md:text-lg lg:text-2xl xl:text-4xl font-black text-[#3F489A] tracking-wide uppercase">
                 TIẾNG ANH PHẢN XẠ ONLINE QUỐC TẾ
               </h2>
               <h1
@@ -91,10 +91,10 @@ export default function HeroSection({
             </div>
             
             {/* Call to Action Button */}
-            <div className="pt-4 lg:pt-8" data-purpose="cta-container">
+            <div className="pt-2 lg:pt-8" data-purpose="cta-container">
               {showButton && (
                 <a 
-                  className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-bold py-4 px-10 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg text-lg uppercase" 
+                  className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-bold py-2.5 px-6 md:py-4 md:px-10 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg text-sm md:text-lg uppercase" 
                   href={buttonHref} 
                   role="button"
                 >

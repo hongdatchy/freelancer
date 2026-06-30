@@ -6,6 +6,7 @@ import Footer from '@/layout/footer';
 import { BreadcrumbProvider } from '@/context/useBreadcrumb';
 import FloatingContact from '@/components/custom/common/floating-contact';
 import FloatingJitsiWidget from '@/components/custom/common/floating-jitsi-widget';
+import GlobalTrialModal from '@/components/custom/common/global-trial-modal';
 
 if (typeof Promise.withResolvers === 'undefined') {
   (Promise as any).withResolvers = function() {
@@ -53,6 +54,7 @@ export default async function RootLayout({
           <Footer />
           <FloatingContact />
           <FloatingJitsiWidget />
+          <GlobalTrialModal />
         </BreadcrumbProvider>
       </body>
     </html>

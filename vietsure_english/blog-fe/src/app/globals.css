@@ -127,6 +127,13 @@ svg {
   }
 }
 
+@media (max-width: 767px) {
+  .section-desc-justify {
+    text-align: justify;
+    text-align-last: center;
+  }
+}
+
 .writing-vertical {
   writing-mode: vertical-rl;
   text-orientation: mixed;
