@@ -1,6 +1,6 @@
 export default function DifferencesSection() {
   return (
-    <section className="px-6 py-20 bg-gradient-to-b from-[#F0F7FF] to-white overflow-hidden">
+    <section className="px-6 lg:py-20 py-10 bg-gradient-to-b from-[#F0F7FF] to-white overflow-hidden">
       <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
 
         {/* Header */}

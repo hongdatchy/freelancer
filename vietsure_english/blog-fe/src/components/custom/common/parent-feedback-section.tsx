@@ -48,7 +48,7 @@ export default function ParentFeedbackSection() {
   );
 
   return (
-    <section className="px-6 py-20 bg-gradient-to-b from-[#F0F7FF] to-white overflow-hidden" data-purpose="parent-feedback-section">
+    <section className="px-6 lg:py-20 py-10 bg-gradient-to-b from-[#F0F7FF] to-white overflow-hidden" data-purpose="parent-feedback-section">
       <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 relative">
         
         {/* Header */}

@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function CertificateSection() {
   return (
-    <section className="px-6 py-20 bg-gradient-to-b from-white to-[#F0F7FF] overflow-hidden" data-purpose="certificate-section">
+    <section className="px-6 lg:py-20 py-10 bg-gradient-to-b from-white to-[#F0F7FF] overflow-hidden" data-purpose="certificate-section">
       <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 flex flex-col lg:flex-row items-center gap-10 lg:gap-0 relative">
         
         {/* Left Column: Text Content */}

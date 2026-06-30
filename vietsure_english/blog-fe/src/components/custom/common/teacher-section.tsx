@@ -33,7 +33,7 @@ export default function TeacherSection() {
     );
 
     return (
-        <section className="px-6 py-20 bg-gradient-to-b from-[#F0F7FF] to-white">
+        <section className="px-6 lg:py-20 py-10 bg-gradient-to-b from-[#F0F7FF] to-white">
             <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 relative">
                 {/* TITLE */}
                 <div className="text-center mb-16">
