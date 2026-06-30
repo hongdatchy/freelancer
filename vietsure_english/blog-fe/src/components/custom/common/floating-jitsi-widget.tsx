@@ -65,14 +65,20 @@ export default function FloatingJitsiWidget() {
           startWithVideoMuted: false,
           disableDeepLinking: true,
           prejoinPageEnabled: false,
+          disablePolls: false,
+          whiteboard: { enabled: true },
+          localRecording: { enabled: true },
+          toolbarButtons: [
+            'camera', 'chat', 'closedcaptions', 'desktop', 'download',
+            'etherpad', 'feedback', 'filmstrip', 'fullscreen', 'hangup',
+            'help', 'highlight', 'invite', 'livestreaming', 'microphone',
+            'mute-everyone', 'mute-video-everyone', 'participants-pane',
+            'profile', 'raisehand', 'recording', 'select-background',
+            'settings', 'shareaudio', 'sharedvideo', 'stats', 'tileview',
+            'toggle-camera', 'videoquality', 'whiteboard', 'polls'
+          ],
         },
         interfaceConfigOverwrite: {
-          TOOLBAR_BUTTONS: [
-            'microphone', 'camera', 'closedcaptions', 'desktop',
-            'fullscreen', 'fodeviceselection', 'hangup', 'chat',
-            'settings', 'raisehand', 'videoquality', 'filmstrip',
-            'tileview', 'download', 'help',
-          ],
           SHOW_JITSI_WATERMARK: false,
           SHOW_WATERMARK_FOR_GUESTS: false,
           DEFAULT_BACKGROUND: '#1d285c',

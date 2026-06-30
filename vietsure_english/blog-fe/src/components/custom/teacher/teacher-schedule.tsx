@@ -404,26 +404,33 @@ export function TeacherScheduleView({ teacherId }: Props) {
           </DialogHeader>
 
           <div className="grid gap-3 py-4">
-            {/* Option 1: Enter class */}
-            <button
-              onClick={() => {
-                if (!selectedSlotForView) return;
-                const key = `${selectedSlotForView.day}_${selectedSlotForView.slot}`;
-                const item = scheduleMap[key];
-                // Use class code (student_name) as room name, fallback to day_slot
-                const roomName = item?.student_name?.trim()
-                  ? item.student_name.trim()
-                  : `${selectedSlotForView.day}-${selectedSlotForView.slot}`;
-                setSelectedSlotForView(null);
-                startMeeting(roomName);
-              }}
-              className="w-full py-3 rounded-xl text-sm font-bold bg-[#3F489A] text-white hover:bg-[#2E357F] transition-all shadow-md flex items-center justify-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 10l5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" />
-              </svg>
-              Vào dạy học
-            </button>
+            {/* Option 1: Enter class (Only for VietSure English) */}
+            {(() => {
+              const key = selectedSlotForView ? `${selectedSlotForView.day}_${selectedSlotForView.slot}` : '';
+              const item = scheduleMap[key];
+              
+              if (item?.isVietSureEnglish) {
+                return (
+                  <button
+                    onClick={() => {
+                      if (!selectedSlotForView) return;
+                      const roomName = item?.student_name?.trim()
+                        ? item.student_name.trim()
+                        : `${selectedSlotForView.day}-${selectedSlotForView.slot}`;
+                      setSelectedSlotForView(null);
+                      startMeeting(roomName);
+                    }}
+                    className="w-full py-3 rounded-xl text-sm font-bold bg-[#3F489A] text-white hover:bg-[#2E357F] transition-all shadow-md flex items-center justify-center gap-2"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M15 10l5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" />
+                    </svg>
+                    Vào dạy học
+                  </button>
+                );
+              }
+              return null;
+            })()}
 
             {/* Option 2: Delete schedule */}
             <button
