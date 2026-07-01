@@ -238,7 +238,18 @@ export default function FloatingJitsiWidget() {
       </button>
 
       {/* Maximized Meeting Window Structure (always rendered so iframe isn't destroyed, but hidden using class when minimized) */}
-      <div className={`w-full h-full flex-col ${isMinimized ? 'hidden' : 'flex'}`}>
+      <div 
+        className="flex-col bg-[#1d285c]"
+        style={{
+          display: isMinimized ? 'block' : 'flex',
+          position: isMinimized ? 'absolute' : 'relative',
+          width: isMinimized ? '1px' : '100%',
+          height: isMinimized ? '1px' : '100%',
+          opacity: isMinimized ? 0 : 1,
+          pointerEvents: isMinimized ? 'none' : 'auto',
+          overflow: 'hidden'
+        }}
+      >
         {/* Header Bar */}
         <div
           className="flex items-center justify-between px-4 py-2.5 bg-[#1d285c] border-b border-white/10 select-none cursor-default"
@@ -266,7 +277,15 @@ export default function FloatingJitsiWidget() {
             </button>
             {/* Close meeting */}
             <button
-              onClick={closeMeeting}
+              onClick={() => {
+                if (apiRef.current) {
+                   const participants = apiRef.current.getParticipantsInfo();
+                   participants.forEach((p: any) => {
+                     apiRef.current.executeCommand('sendEndpointTextMessage', p.participantId, JSON.stringify({ action: 'END_MEETING' }));
+                   });
+                }
+                closeMeeting();
+              }}
               className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
               title="Thoát lớp"
             >

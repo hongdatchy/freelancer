@@ -16,3 +16,4 @@ if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
         return originalGetDisplayMedia(constraints);
     };
 }
+
