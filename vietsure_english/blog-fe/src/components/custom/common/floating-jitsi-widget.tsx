@@ -237,10 +237,10 @@ export default function FloatingJitsiWidget() {
     }
   }, [bgImage]);
 
-  // Set the single static course image URL as background
+  // Set the transparent PNG Base64 placeholder as background to keep it blank by default
   useEffect(() => {
     if (!isOpen) return;
-    setBgImage("http://127.0.0.1:1337/uploads/course1_cecede884c.webp");
+    setBgImage("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=");
   }, [isOpen]);
 
   // Handle Dragging (Restored)

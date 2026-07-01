@@ -19,7 +19,8 @@ if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
 
 // Global state for background images
 if (typeof window !== 'undefined') {
-    window.currentBgImageUrl = "http://127.0.0.1:1337/uploads/course1_cecede884c.webp";
+    // Valid 1x1 transparent PNG Base64 placeholder to ensure browser loads it successfully and calls drawImage (keeps whiteboard blank when not sharing)
+    window.currentBgImageUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
     window.lastExcalidrawAPI = null;
 }
 
@@ -27,13 +28,13 @@ if (typeof window !== 'undefined') {
 function applyBackgroundToExcalidraw(api, url) {
     try {
         if (!api || !url) return;
-        const fileId = "bg-image-file-" + (url.includes('course1') ? '1' : '2');
+        const fileId = "bg-image-file-1";
         
-        // Add the file to Excalidraw repository using the HTTP URL as dataURL directly
+        // Add the file to Excalidraw repository using the dataURL directly
         api.addFiles([{
             id: fileId,
             dataURL: url,
-            mimeType: "image/webp",
+            mimeType: "image/png",
             created: Date.now()
         }]);
 
@@ -126,12 +127,12 @@ if (typeof window !== 'undefined') {
                 const elements = getElements ? (getElements.call(api) || []) : [];
                 const hasBg = elements.some(el => el && el.id === 'excalidraw-custom-bg-element');
                 
-                // 1. ALWAYS ensure the file is registered in this Excalidraw instance (handles re-join / visibility state)
-                const fileId = "bg-image-file-" + (window.currentBgImageUrl.includes('course1') ? '1' : '2');
+                // 1. ALWAYS ensure the transparent placeholder file is registered in this Excalidraw instance
+                const fileId = "bg-image-file-1";
                 api.addFiles([{
                     id: fileId,
                     dataURL: window.currentBgImageUrl,
-                    mimeType: "image/webp",
+                    mimeType: "image/png",
                     created: Date.now()
                 }]);
 
@@ -146,22 +147,15 @@ if (typeof window !== 'undefined') {
         }
     }, 1500); // Verify every 1.5 seconds
 
-    // Listen for parent messages to dynamically update background image
+    // Listen for parent messages (legacy, kept for structural integrity)
     window.addEventListener('message', function(event) {
         if (event.data && event.data.type === 'SET_WHITEBOARD_BACKGROUND') {
-            const imageUrl = event.data.imageUrl;
-            console.log("🖼️ Jitsi received background image URL:", imageUrl ? imageUrl.substring(0, 50) + "..." : "null");
-            
-            window.currentBgImageUrl = imageUrl;
-            const api = findExcalidrawAPI();
-            if (api) {
-                applyBackgroundToExcalidraw(api, imageUrl);
-            }
+            console.log("🖼️ Jitsi received background command (ignored to keep screenshare focus)");
         }
     });
 }
 
-// HACK: Override Canvas fillRect to block Excalidraw's solid white background fills
+// HACK: Override Canvas fillRect to block Excalidraw's solid white background fills and maintain transparency
 if (typeof CanvasRenderingContext2D !== 'undefined') {
     const originalFillRect = CanvasRenderingContext2D.prototype.fillRect;
     CanvasRenderingContext2D.prototype.fillRect = function(x, y, w, h) {
@@ -193,4 +187,115 @@ if (typeof document !== 'undefined') {
         }
     `;
     document.head.appendChild(style);
+}
+
+// HACK: Monitor screen sharing and hijack Canvas drawImage to swap the static placeholder with the live screenshare stream
+if (typeof window !== 'undefined') {
+    let videoBg = null;
+
+    // Helper to create a rendering video tag inside the whiteboard container to prevent browser suspensions
+    function getOrCreateVideoBuffer() {
+        const container = document.querySelector('.excalidraw-container');
+        if (!container) return null;
+
+        let video = container.querySelector('.whiteboard-custom-video-bg-buffer');
+        if (!video) {
+            video = document.createElement('video');
+            video.className = 'whiteboard-custom-video-bg-buffer';
+            video.autoplay = true;
+            video.playsInline = true;
+            video.muted = true;
+            // Keeps it layout-active but effectively invisible to the user
+            video.style.cssText = "position: absolute; top: 0; left: 0; width: 1px; height: 1px; opacity: 0.001; pointer-events: none; z-index: -9999;";
+            container.appendChild(video);
+        }
+        return video;
+    }
+
+    // Track active local or remote desktop/screenshare track in Jitsi Redux State (Stashed logic)
+    setInterval(() => {
+        try {
+            videoBg = getOrCreateVideoBuffer();
+            if (!videoBg) return;
+
+            let desktopTrack = null;
+            if (window.APP && window.APP.store) {
+                const tracks = window.APP.store.getState()['features/base/tracks'] || [];
+                const trackObj = tracks.find(t => {
+                    if (t.videoType === 'desktop') return true;
+                    if (t.jitsiTrack && t.jitsiTrack.videoType === 'desktop') return true;
+                    return false;
+                });
+                if (trackObj) {
+                    desktopTrack = trackObj.track || (trackObj.jitsiTrack ? trackObj.jitsiTrack.track : null);
+                }
+            }
+
+            if (desktopTrack) {
+                const currentStream = videoBg.srcObject;
+                const currentTrack = currentStream ? currentStream.getVideoTracks()[0] : null;
+
+                // Assign stream to video tag if not already active or if track changed
+                if (!currentTrack || currentTrack.id !== desktopTrack.id) {
+                    console.log("🖥️ Live screen share stream detected! Buffering stream inside whiteboard layout.");
+                    const newStream = new MediaStream([desktopTrack]);
+                    videoBg.srcObject = newStream;
+                    videoBg.play().catch(err => console.error("Error playing video:", err));
+                }
+            } else {
+                if (videoBg.srcObject) {
+                    console.log("🖥️ Screen share stopped. Clearing buffer.");
+                    videoBg.srcObject = null;
+                }
+            }
+        } catch (err) {
+            console.error("❌ Error in screenshare monitor loop:", err);
+        }
+    }, 1000);
+
+    // Hijack drawImage: when Excalidraw is drawing our background image, draw the live screenshare stream instead!
+    const originalDrawImage = CanvasRenderingContext2D.prototype.drawImage;
+    CanvasRenderingContext2D.prototype.drawImage = function(img, x, y, w, h) {
+        // Match the background image element (matches SVG placeholder, PNG placeholder, or course1/banner)
+        if (img && img.src && (img.src === window.currentBgImageUrl || img.src.includes('course1') || img.src.includes('banner') || img.src.includes('data:image/'))) {
+            if (videoBg && videoBg.srcObject) {
+                // Handle both 5-argument and 9-argument drawImage calls natively to prevent cropping issues
+                if (arguments.length === 5) {
+                    return originalDrawImage.call(this, videoBg, x, y, w, h);
+                } else if (arguments.length === 9) {
+                    // Hijack the source coordinates to take the FULL video frame (0, 0, videoWidth, videoHeight)
+                    // and map it fully into the destination bounds calculated by Excalidraw, preventing cropping.
+                    const sx = 0;
+                    const sy = 0;
+                    const sw = videoBg.videoWidth || videoBg.width || 1280;
+                    const sh = videoBg.videoHeight || videoBg.height || 720;
+                    const dx = arguments[5];
+                    const dy = arguments[6];
+                    const dw = arguments[7];
+                    const dh = arguments[8];
+                    return originalDrawImage.call(this, videoBg, sx, sy, sw, sh, dx, dy, dw, dh);
+                }
+            }
+        }
+        return originalDrawImage.apply(this, arguments);
+    };
+
+    // Force Excalidraw canvas refresh at ~24fps ONLY when screensharing is active to play the live video background smoothly
+    // Update the background element's version to mark it dirty so Excalidraw triggers a redraw on every frame
+    setInterval(() => {
+        if (videoBg && videoBg.srcObject) {
+            const api = findExcalidrawAPI();
+            if (api) {
+                const getElements = api.getSceneElements || api.getElements;
+                const elements = getElements ? (getElements.call(api) || []) : [];
+                const bgEl = elements.find(el => el && el.id === 'excalidraw-custom-bg-element');
+                if (bgEl) {
+                    // Update element version and nonce to force Excalidraw to redraw this element
+                    bgEl.version = Date.now();
+                    bgEl.versionNonce = Math.floor(Math.random() * 100000);
+                    api.updateScene({ elements: [...elements] });
+                }
+            }
+        }
+    }, 40);
 }
