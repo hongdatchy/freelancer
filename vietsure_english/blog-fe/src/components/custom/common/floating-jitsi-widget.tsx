@@ -24,6 +24,9 @@ export default function FloatingJitsiWidget() {
     closeMeetingRef.current = closeMeeting;
   }, [user, closeMeeting]);
 
+  const [bgImage, setBgImage] = useState<string | null>(null);
+  const participantsRef = useRef<string[]>([]);
+
   // Jitsi meeting should be initialized exactly ONCE when the meeting starts
   // and disposed exactly ONCE when closed. We do NOT recreate Jitsi when minimized/maximized.
   useEffect(() => {
@@ -139,6 +142,53 @@ export default function FloatingJitsiWidget() {
         },
       });
 
+      // Sync background to newly joined participants
+      apiRef.current.addEventListener('participantJoined', (event: any) => {
+        if (!participantsRef.current.includes(event.id)) {
+          participantsRef.current.push(event.id);
+        }
+        if (!!userRef.current && bgImageRef.current) {
+          // Delay sending by 2 seconds to ensure the Jitsi WebRTC Bridge Channel is fully open
+          setTimeout(() => {
+            if (apiRef.current && bgImageRef.current) {
+              console.log("📤 Delay-sending current whiteboard background to participant:", event.id);
+              apiRef.current.executeCommand('sendEndpointTextMessage', event.id, JSON.stringify({
+                type: 'SET_WHITEBOARD_BACKGROUND',
+                imageUrl: bgImageRef.current
+              }));
+            }
+          }, 2000);
+        }
+      });
+
+      apiRef.current.addEventListener('participantLeft', (event: any) => {
+        participantsRef.current = participantsRef.current.filter(id => id !== event.id);
+      });
+
+      // Listen for background image sync from teacher
+      apiRef.current.addEventListener('endpointTextMessageReceived', (event: any) => {
+        try {
+          const text = event.eventData?.text || event.text || event.data?.text;
+          const payload = JSON.parse(text);
+          if (payload.type === 'SET_WHITEBOARD_BACKGROUND') {
+            setBgImage(payload.imageUrl);
+          }
+        } catch (err) {}
+      });
+
+      // Push background image state to Jitsi iframe when conference joins
+      apiRef.current.addEventListener('videoConferenceJoined', () => {
+        if (bgImage && apiRef.current) {
+          const iframe = containerRef.current?.querySelector('iframe');
+          if (iframe) {
+            iframe.contentWindow?.postMessage({
+              type: 'SET_WHITEBOARD_BACKGROUND',
+              imageUrl: bgImage
+            }, '*');
+          }
+        }
+      });
+
       apiRef.current.addEventListener('readyToClose', () => {
         closeMeetingRef.current();
       });
@@ -169,7 +219,31 @@ export default function FloatingJitsiWidget() {
     };
   }, [isOpen, roomName]);
 
-  // Handle Dragging
+  const bgImageRef = useRef<string | null>(null);
+  useEffect(() => {
+    bgImageRef.current = bgImage;
+  }, [bgImage]);
+
+  // Push background image state to Jitsi iframe whenever it changes
+  useEffect(() => {
+    if (apiRef.current) {
+      const iframe = containerRef.current?.querySelector('iframe');
+      if (iframe) {
+        iframe.contentWindow?.postMessage({
+          type: 'SET_WHITEBOARD_BACKGROUND',
+          imageUrl: bgImage
+        }, '*');
+      }
+    }
+  }, [bgImage]);
+
+  // Set the single static course image URL as background
+  useEffect(() => {
+    if (!isOpen) return;
+    setBgImage("http://127.0.0.1:1337/uploads/course1_cecede884c.webp");
+  }, [isOpen]);
+
+  // Handle Dragging (Restored)
   const handleMouseDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.no-drag')) return;
     setIsDragging(true);
@@ -263,6 +337,8 @@ export default function FloatingJitsiWidget() {
               <p className="text-white/60 text-[10px]">Phòng: {roomName}</p>
             </div>
           </div>
+
+
 
           <div className="flex items-center gap-1">
             {/* Minimize button */}
