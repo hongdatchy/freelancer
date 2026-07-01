@@ -185,6 +185,11 @@ if (typeof document !== 'undefined') {
             background-color: transparent !important;
             background: transparent !important;
         }
+        /* Override Jitsi inline margin-top and height to expand whiteboard space */
+        .whiteboard-container {
+            margin-top: 0px !important;
+            height: 100% !important;
+        }
     `;
     document.head.appendChild(style);
 }
