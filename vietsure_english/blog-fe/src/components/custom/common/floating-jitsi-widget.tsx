@@ -15,6 +15,86 @@ export default function FloatingJitsiWidget() {
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
 
+  // Custom resizing state (NW-resize dragging from top-left) - Landscape default (width > height)
+  const [size, setSize] = useState({ width: 650, height: 450 });
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeStartRef = useRef({ mouseX: 0, mouseY: 0, width: 0, height: 0 });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const initialWidth = window.innerWidth < 768 ? Math.floor(window.innerWidth * 0.9) : 650;
+      const initialHeight = window.innerHeight < 768 ? Math.floor(window.innerHeight * 0.6) : 450;
+      setSize({ width: initialWidth, height: initialHeight });
+    }
+  }, []);
+
+  const handleResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(true);
+    resizeStartRef.current = {
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      width: size.width,
+      height: size.height,
+    };
+  };
+
+  const handleTouchResizeStart = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    setIsResizing(true);
+    const touch = e.touches[0];
+    resizeStartRef.current = {
+      mouseX: touch.clientX,
+      mouseY: touch.clientY,
+      width: size.width,
+      height: size.height,
+    };
+  };
+
+  const handleResizeMove = (e: MouseEvent) => {
+    if (!isResizing) return;
+    const deltaX = resizeStartRef.current.mouseX - e.clientX;
+    const deltaY = resizeStartRef.current.mouseY - e.clientY;
+    
+    // Limits: min size 320x400, max size cannot overflow the screen viewport boundaries
+    const newWidth = Math.max(320, Math.min(window.innerWidth - 48, resizeStartRef.current.width + deltaX));
+    const newHeight = Math.max(400, Math.min(window.innerHeight - 48, resizeStartRef.current.height + deltaY));
+    
+    setSize({ width: newWidth, height: newHeight });
+  };
+
+  const handleTouchResizeMove = (e: TouchEvent) => {
+    if (!isResizing) return;
+    const touch = e.touches[0];
+    const deltaX = resizeStartRef.current.mouseX - touch.clientX;
+    const deltaY = resizeStartRef.current.mouseY - touch.clientY;
+    
+    const newWidth = Math.max(320, Math.min(window.innerWidth - 48, resizeStartRef.current.width + deltaX));
+    const newHeight = Math.max(400, Math.min(window.innerHeight - 48, resizeStartRef.current.height + deltaY));
+    
+    setSize({ width: newWidth, height: newHeight });
+  };
+
+  const handleResizeUp = () => {
+    setIsResizing(false);
+  };
+
+  useEffect(() => {
+    if (isResizing) {
+      window.addEventListener('mousemove', handleResizeMove);
+      window.addEventListener('mouseup', handleResizeUp);
+      window.addEventListener('touchmove', handleTouchResizeMove, { passive: false });
+      window.addEventListener('touchend', handleResizeUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleResizeMove);
+      window.removeEventListener('mouseup', handleResizeUp);
+      window.removeEventListener('touchmove', handleTouchResizeMove);
+      window.removeEventListener('touchend', handleResizeUp);
+    };
+  }, [isResizing]);
+
   // Use refs to store callback/user data to prevent changing dependency array size and layout effects
   const userRef = useRef(user);
   const closeMeetingRef = useRef(closeMeeting);
@@ -288,14 +368,32 @@ export default function FloatingJitsiWidget() {
         right: isMinimized ? `${position.x}px` : 24,
         top: isMinimized ? undefined : 'unset',
         left: isMinimized ? undefined : 'unset',
+        width: isMinimized ? undefined : `${size.width}px`,
+        height: isMinimized ? undefined : `${size.height}px`,
       }}
-      className={`z-[9999] transition-all duration-300 ${
+      className={`z-[9999] ${
         isMinimized
-          ? 'w-16 h-16 rounded-full bg-[#FF6B00] shadow-2xl hover:scale-105 cursor-move flex items-center justify-center border-2 border-white'
-          : 'w-[30vw] h-[65vh] bg-[#1d285c] rounded-2xl overflow-hidden shadow-2xl border border-white/10 flex flex-col'
+          ? 'transition-all duration-300 w-16 h-16 rounded-full bg-[#FF6B00] shadow-2xl hover:scale-105 cursor-move flex items-center justify-center border-2 border-white'
+          : 'bg-[#1d285c] rounded-2xl overflow-hidden shadow-2xl border border-white/10 flex flex-col'
       }`}
       onMouseDown={isMinimized ? handleMouseDown : undefined}
     >
+      {/* Top-Left Resize Handle (nw-resize) */}
+      {!isMinimized && (
+        <div
+          onMouseDown={handleResizeStart}
+          onTouchStart={handleTouchResizeStart}
+          className="absolute top-0 left-0 w-6 h-6 cursor-nw-resize z-[10000] flex items-center justify-center text-white/30 hover:text-white transition-colors"
+          title="Kéo để thay đổi kích thước"
+        >
+          {/* Diagonal drag lines icon */}
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" className="pointer-events-none">
+            <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="5" y1="1" x2="9" y2="5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+            <line x1="1" y1="5" x2="5" y2="9" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+          </svg>
+        </div>
+      )}
       {/* Minimized Trigger Circle (shows when minimized) */}
       <button
         onClick={() => setMinimized(false)}
