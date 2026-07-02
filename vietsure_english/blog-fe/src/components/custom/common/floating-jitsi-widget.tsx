@@ -358,121 +358,214 @@ export default function FloatingJitsiWidget() {
     };
   }, [isDragging]);
 
+  // ── Document Picture-in-Picture ──────────────────────────────────────────
+  const [isPipActive, setIsPipActive] = useState(false);
+  const pipWindowRef = useRef<any>(null);
+  const widgetInnerRef = useRef<HTMLDivElement | null>(null);
+  const slotRef = useRef<HTMLDivElement | null>(null);
+
+  const handlePiP = async () => {
+    if (!(window as any).documentPictureInPicture) {
+      alert('Trình duyệt chưa hỗ trợ Document PiP. Vui lòng dùng Chrome 116+.');
+      return;
+    }
+    if (isPipActive) {
+      pipWindowRef.current?.close();
+      return;
+    }
+
+    const inner = widgetInnerRef.current;
+    if (!inner) return;
+
+    try {
+      const pipWin = await (window as any).documentPictureInPicture.requestWindow({
+        width: size.width,
+        height: size.height,
+      });
+      pipWindowRef.current = pipWin;
+
+      // Copy styles so Tailwind works inside PiP window
+      [...document.styleSheets].forEach((sheet) => {
+        try {
+          const css = [...(sheet as CSSStyleSheet).cssRules].map(r => r.cssText).join('');
+          const s = pipWin.document.createElement('style');
+          s.textContent = css;
+          pipWin.document.head.appendChild(s);
+        } catch (_) {
+          if ((sheet as CSSStyleSheet).href) {
+            const l = pipWin.document.createElement('link');
+            l.rel = 'stylesheet';
+            l.href = (sheet as CSSStyleSheet).href!;
+            pipWin.document.head.appendChild(l);
+          }
+        }
+      });
+
+      // Centre content inside PiP window
+      pipWin.document.body.style.cssText =
+        'margin:0;padding:0;width:100vw;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#1d285c;';
+
+      inner.style.width = '100%';
+      inner.style.height = '100%';
+
+      setIsPipActive(true);
+      setMinimized(true);
+
+      // Move DOM to PiP window. Chrome handles adoptNode implicitly.
+      pipWin.document.body.appendChild(inner);
+
+      pipWin.addEventListener('pagehide', () => {
+        setIsPipActive(false);
+        setMinimized(false);
+        // Move back to original slot
+        if (slotRef.current) {
+          slotRef.current.appendChild(inner);
+        }
+        pipWindowRef.current = null;
+      });
+    } catch (err: any) {
+      console.error('[DocumentPiP]', err);
+      alert('Không thể mở PiP: ' + err.message);
+    }
+  };
+  // ────────────────────────────────────────────────────────────────────────
+
   if (!isOpen || !roomName) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        bottom: isMinimized ? `${position.y}px` : 24,
-        right: isMinimized ? `${position.x}px` : 24,
-        top: isMinimized ? undefined : 'unset',
-        left: isMinimized ? undefined : 'unset',
-        width: isMinimized ? undefined : `${size.width}px`,
-        height: isMinimized ? undefined : `${size.height}px`,
-      }}
-      className={`z-[9999] ${
-        isMinimized
-          ? 'transition-all duration-300 w-16 h-16 rounded-full bg-[#FF6B00] shadow-2xl hover:scale-105 cursor-move flex items-center justify-center border-2 border-white'
-          : 'bg-[#1d285c] rounded-2xl overflow-hidden shadow-2xl border border-white/10 flex flex-col'
-      }`}
-      onMouseDown={isMinimized ? handleMouseDown : undefined}
-    >
-      {/* Top-Left Resize Handle (nw-resize) */}
-      {!isMinimized && (
-        <div
-          onMouseDown={handleResizeStart}
-          onTouchStart={handleTouchResizeStart}
-          className="absolute top-0 left-0 w-6 h-6 cursor-nw-resize z-[10000] flex items-center justify-center text-white/30 hover:text-white transition-colors"
-          title="Kéo để thay đổi kích thước"
-        >
-          {/* Diagonal drag lines icon */}
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" className="pointer-events-none">
-            <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            <line x1="5" y1="1" x2="9" y2="5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
-            <line x1="1" y1="5" x2="5" y2="9" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
-          </svg>
-        </div>
-      )}
-      {/* Minimized Trigger Circle (shows when minimized) */}
-      <button
-        onClick={() => setMinimized(false)}
-        className={`no-drag w-full h-full flex flex-col items-center justify-center text-white relative ${
-          !isMinimized ? 'hidden' : 'flex'
-        }`}
-        title="Mở rộng lớp học"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
-        <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-ping" />
-        <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full" />
-      </button>
-
-      {/* Maximized Meeting Window Structure (always rendered so iframe isn't destroyed, but hidden using class when minimized) */}
-      <div 
-        className="flex-col bg-[#1d285c]"
+    <>
+      {/* Main page widget */}
+      <div
         style={{
-          display: isMinimized ? 'block' : 'flex',
-          position: isMinimized ? 'absolute' : 'relative',
-          width: isMinimized ? '1px' : '100%',
-          height: isMinimized ? '1px' : '100%',
-          opacity: isMinimized ? 0 : 1,
-          pointerEvents: isMinimized ? 'none' : 'auto',
-          overflow: 'hidden'
+          position: 'fixed',
+          bottom: isMinimized ? `${position.y}px` : 24,
+          right: isMinimized ? `${position.x}px` : 24,
+          top: isMinimized ? undefined : 'unset',
+          left: isMinimized ? undefined : 'unset',
+          width: isMinimized ? undefined : `${size.width}px`,
+          height: isMinimized ? undefined : `${size.height}px`,
+          zIndex: 9999,
         }}
+        className={`${
+          isMinimized
+            ? 'transition-all duration-300 w-16 h-16 rounded-full bg-[#FF6B00] shadow-2xl hover:scale-105 cursor-move flex items-center justify-center border-2 border-white'
+            : 'bg-[#1d285c] rounded-2xl overflow-hidden shadow-2xl border border-white/10 flex flex-col'
+        }`}
+        onMouseDown={isMinimized ? handleMouseDown : undefined}
       >
-        {/* Header Bar */}
-        <div
-          className="flex items-center justify-between px-4 py-2.5 bg-[#1d285c] border-b border-white/10 select-none cursor-default"
-        >
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-[#FF6B00] flex items-center justify-center">
-              <span className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse" />
-            </div>
-            <div>
-              <p className="text-white font-bold text-xs leading-none">VIETSURE ENGLISH</p>
-              <p className="text-white/60 text-[10px]">Phòng: {roomName}</p>
-            </div>
+        {/* Top-Left Resize Handle */}
+        {!isMinimized && !isPipActive && (
+          <div
+            onMouseDown={handleResizeStart}
+            onTouchStart={handleTouchResizeStart}
+            className="absolute top-0 left-0 w-6 h-6 cursor-nw-resize z-[10000] flex items-center justify-center text-white/30 hover:text-white transition-colors"
+            title="Kéo để thay đổi kích thước"
+          >
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" className="pointer-events-none">
+              <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <line x1="5" y1="1" x2="9" y2="5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+              <line x1="1" y1="5" x2="5" y2="9" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+            </svg>
           </div>
+        )}
 
+        {/* Minimized button */}
+        <button
+          onClick={() => {
+            if (isPipActive) {
+              pipWindowRef.current?.close();
+            } else {
+              setMinimized(false);
+            }
+          }}
+          className={`no-drag w-full h-full flex flex-col items-center justify-center text-white relative ${
+            !isMinimized ? 'hidden' : 'flex'
+          }`}
+          title={isPipActive ? 'Đóng PiP và mở rộng' : 'Mở rộng lớp học'}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            {isPipActive ? (
+              // PiP return icon
+              <>
+                <rect x="2" y="3" width="20" height="14" rx="2" />
+                <rect x="12" y="10" width="9" height="6" rx="1" fill="currentColor" stroke="none" />
+              </>
+            ) : (
+              // Expand icon
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            )}
+          </svg>
+          <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-ping" />
+          <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full" />
+        </button>
 
-
-          <div className="flex items-center gap-1">
-            {/* Minimize button */}
-            <button
-              onClick={() => setMinimized(true)}
-              className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-              title="Thu nhỏ cửa sổ"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-            </button>
-            {/* Close meeting */}
-            <button
-              onClick={() => {
-                if (apiRef.current) {
-                   const participants = apiRef.current.getParticipantsInfo();
-                   participants.forEach((p: any) => {
-                     apiRef.current.executeCommand('sendEndpointTextMessage', p.participantId, JSON.stringify({ action: 'END_MEETING' }));
-                   });
-                }
-                closeMeeting();
-              }}
-              className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-              title="Thoát lớp"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-            </button>
+        {/* Slot for widgetInnerRef. React will never try to insert siblings next to widgetInnerRef inside this div. */}
+        <div ref={slotRef} className="flex-1 w-full flex" style={{ display: isMinimized ? 'none' : 'flex' }}>
+          {/* Maximized Meeting Window Structure */}
+          <div
+            ref={widgetInnerRef}
+            className="flex-col bg-[#1d285c] flex-1 w-full flex"
+          >
+            {/* Header Bar */}
+            <div className={`items-center justify-between px-4 py-2.5 bg-[#1d285c] border-b border-white/10 select-none cursor-default ${isPipActive ? 'hidden' : 'flex'}`}>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-[#FF6B00] flex items-center justify-center">
+                  <span className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse" />
+                </div>
+                <div>
+                  <p className="text-white font-bold text-xs leading-none">VIETSURE ENGLISH</p>
+                  <p className="text-white/60 text-[10px]">Phòng: {roomName}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                {/* PiP button */}
+                <button
+                  onClick={handlePiP}
+                  className="p-1.5 rounded-lg text-blue-300 hover:text-blue-100 hover:bg-blue-500/20 transition-colors"
+                  title={isPipActive ? 'Đóng PiP' : 'Mở Picture-in-Picture'}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2" />
+                    <rect x="12" y="10" width="9" height="6" rx="1" fill="currentColor" stroke="none" />
+                  </svg>
+                </button>
+                {/* Minimize button */}
+                {!isPipActive && (
+                  <button
+                    onClick={() => setMinimized(true)}
+                    className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                    title="Thu nhỏ cửa sổ"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                  </button>
+                )}
+                {/* Close meeting */}
+                <button
+                  onClick={() => {
+                    if (apiRef.current) {
+                      const participants = apiRef.current.getParticipantsInfo();
+                      participants.forEach((p: any) => {
+                        apiRef.current.executeCommand('sendEndpointTextMessage', p.participantId, JSON.stringify({ action: 'END_MEETING' }));
+                      });
+                    }
+                    closeMeeting();
+                  }}
+                  className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                  title="Thoát lớp"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            {/* Jitsi Call Frame (Always remains mounted to prevent connection teardown) */}
+            <div ref={containerRef} className="flex-1 w-full bg-[#151b3d]" />
           </div>
         </div>
-
-        {/* Jitsi Call Frame (Always remains mounted to prevent connection teardown) */}
-        <div ref={containerRef} className="flex-1 w-full bg-[#151b3d]" />
       </div>
-    </div>
+    </>
   );
 }
