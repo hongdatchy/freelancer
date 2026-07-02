@@ -36,12 +36,12 @@ if (typeof document !== 'undefined') {
     const style = document.createElement('style');
     style.id = 'jitsi-whiteboard-custom-style';
     style.textContent = `
-        /* Make Excalidraw component background transparent */
-        .excalidraw__canvas-wrapper,
-        .excalidraw__canvas,
-        .excalidraw,
-        .excalidraw-container,
-        .excalidraw-app {
+        /* Make Excalidraw component background transparent ONLY during screenshare */
+        .whiteboard-screenshare-active .excalidraw__canvas-wrapper,
+        .whiteboard-screenshare-active .excalidraw__canvas,
+        .whiteboard-screenshare-active .excalidraw,
+        .whiteboard-screenshare-active .excalidraw-container,
+        .whiteboard-screenshare-active .excalidraw-app {
             background-color: transparent !important;
             background: transparent !important;
         }
@@ -398,11 +398,13 @@ if (typeof window !== 'undefined') {
     }, 500);
 }
 
-// HACK: Override Canvas fillRect to block Excalidraw's solid white background fills and maintain transparency
+// HACK: Override Canvas fillRect to block Excalidraw's solid white background fills ONLY during screenshare
 if (typeof CanvasRenderingContext2D !== 'undefined') {
     const originalFillRect = CanvasRenderingContext2D.prototype.fillRect;
     CanvasRenderingContext2D.prototype.fillRect = function(x, y, w, h) {
-        if (this.canvas && this.canvas.className && typeof this.canvas.className === 'string' && this.canvas.className.includes('excalidraw__canvas')) {
+        // Only intercept when screenshare is active - otherwise let Excalidraw draw its normal white background
+        const isScreenshareActive = document.body && document.body.classList.contains('whiteboard-screenshare-active');
+        if (isScreenshareActive && this.canvas && this.canvas.className && typeof this.canvas.className === 'string' && this.canvas.className.includes('excalidraw__canvas')) {
             const fillStyleStr = String(this.fillStyle).toLowerCase().trim();
             if (fillStyleStr === '#ffffff' || fillStyleStr === 'rgb(255, 255, 255)' || fillStyleStr === '#fff' || fillStyleStr === 'white' || 
                 fillStyleStr === '#f8f9fa' || fillStyleStr === '#f1f3f5' || fillStyleStr === '#e9ecef' || fillStyleStr === '#dee2e6') {
