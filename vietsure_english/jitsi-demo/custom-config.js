@@ -161,7 +161,8 @@ if (typeof CanvasRenderingContext2D !== 'undefined') {
     CanvasRenderingContext2D.prototype.fillRect = function(x, y, w, h) {
         if (this.canvas && this.canvas.className && typeof this.canvas.className === 'string' && this.canvas.className.includes('excalidraw__canvas')) {
             const fillStyleStr = String(this.fillStyle).toLowerCase().trim();
-            if (fillStyleStr === '#ffffff' || fillStyleStr === 'rgb(255, 255, 255)' || fillStyleStr === '#fff' || fillStyleStr === 'white') {
+            if (fillStyleStr === '#ffffff' || fillStyleStr === 'rgb(255, 255, 255)' || fillStyleStr === '#fff' || fillStyleStr === 'white' || 
+                fillStyleStr === '#f8f9fa' || fillStyleStr === '#f1f3f5' || fillStyleStr === '#e9ecef' || fillStyleStr === '#dee2e6') {
                 // Clear the canvas to transparent
                 this.clearRect(x, y, w, h);
                 return;
@@ -189,6 +190,8 @@ if (typeof document !== 'undefined') {
         .whiteboard-container {
             margin-top: 0px !important;
             height: 100% !important;
+            background-color: transparent !important;
+            background: transparent !important;
         }
     `;
     document.head.appendChild(style);
@@ -279,6 +282,11 @@ if (typeof window !== 'undefined') {
                     const dw = arguments[7];
                     const dh = arguments[8];
                     return originalDrawImage.call(this, videoBg, sx, sy, sw, sh, dx, dy, dw, dh);
+                }
+            } else {
+                // Hide the broken image SVG placeholder when not sharing screen
+                if (img.src.includes('data:image/svg+xml')) {
+                    return;
                 }
             }
         }
