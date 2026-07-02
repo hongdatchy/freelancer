@@ -193,6 +193,12 @@ if (typeof document !== 'undefined') {
             background-color: transparent !important;
             background: transparent !important;
         }
+        /* Hide Jitsi's top subject pill (room name, timer) to prevent overlapping Excalidraw toolbar */
+        .subject,
+        .subject-info-container,
+        .subject-text {
+            display: none !important;
+        }
     `;
     document.head.appendChild(style);
 }
@@ -271,17 +277,28 @@ if (typeof window !== 'undefined') {
                 if (arguments.length === 5) {
                     return originalDrawImage.call(this, videoBg, x, y, w, h);
                 } else if (arguments.length === 9) {
-                    // Hijack the source coordinates to take the FULL video frame (0, 0, videoWidth, videoHeight)
-                    // and map it fully into the destination bounds calculated by Excalidraw, preventing cropping.
-                    const sx = 0;
-                    const sy = 0;
+                    // Preserve native aspect ratio (object-fit: contain logic)
                     const sw = videoBg.videoWidth || videoBg.width || 1280;
                     const sh = videoBg.videoHeight || videoBg.height || 720;
                     const dx = arguments[5];
                     const dy = arguments[6];
                     const dw = arguments[7];
                     const dh = arguments[8];
-                    return originalDrawImage.call(this, videoBg, sx, sy, sw, sh, dx, dy, dw, dh);
+
+                    const srcRatio = sw / sh;
+                    const destRatio = dw / dh;
+                    let newDx = dx, newDy = dy, newDw = dw, newDh = dh;
+
+                    if (srcRatio > destRatio) {
+                        newDw = dw;
+                        newDh = dw / srcRatio;
+                        newDy = dy + (dh - newDh) / 2;
+                    } else {
+                        newDh = dh;
+                        newDw = dh * srcRatio;
+                        newDx = dx + (dw - newDw) / 2;
+                    }
+                    return originalDrawImage.call(this, videoBg, 0, 0, sw, sh, newDx, newDy, newDw, newDh);
                 }
             } else {
                 // Hide the broken image SVG placeholder when not sharing screen
@@ -306,7 +323,28 @@ if (typeof window !== 'undefined') {
                     // Update element version and nonce to force Excalidraw to redraw this element
                     bgEl.version = Date.now();
                     bgEl.versionNonce = Math.floor(Math.random() * 100000);
-                    api.updateScene({ elements: [...elements] });
+                    
+                    let nextAppState;
+                    if (!window.hasCenteredOnLoad) {
+                        const container = document.querySelector('.excalidraw-container');
+                        const width = (container && container.clientWidth > 0) ? container.clientWidth : window.innerWidth;
+                        const height = (container && container.clientHeight > 0) ? container.clientHeight : window.innerHeight;
+                        
+                        if (width > 0 && height > 0) {
+                            window.hasCenteredOnLoad = true;
+                            nextAppState = {
+                                scrollX: width / 2,
+                                scrollY: height / 2,
+                                zoom: { value: 1 }
+                            };
+                        }
+                    }
+
+                    if (nextAppState) {
+                        api.updateScene({ elements: [...elements], appState: nextAppState });
+                    } else {
+                        api.updateScene({ elements: [...elements] });
+                    }
                 }
             }
         }
