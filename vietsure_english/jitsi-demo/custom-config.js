@@ -57,13 +57,29 @@ if (typeof document !== 'undefined') {
         .subject-text {
             display: none !important;
         }
-        /* Hide Excalidraw zoom controls when screensharing is active */
-        .whiteboard-screenshare-active .zoom-actions,
-        .whiteboard-screenshare-active .layer-ui__wrapper .Scrollbar {
+        
+        /* UNCONDITIONAL CSS BLOCKERS FOR ZOOM & SCROLLBARS & HAND TOOL */
+        .zoom-actions,
+        .zoom-controls,
+        .layer-ui__wrapper .zoom-actions,
+        .excalidraw-scrollbars,
+        .Scrollbar,
+        .excalidraw .Scrollbar {
             display: none !important;
         }
-        /* HIDE HAND TOOL BUTTON */
-        [data-testid="toolbar-hand"] {
+        
+        /* Hide hand tool button through all possible element patterns */
+        [data-testid="toolbar-hand"],
+        label:has(input[value="hand"]),
+        .excalidraw label:has(input[value="hand"]),
+        label:has(input[id*="hand"]),
+        .ToolIcon_type_radio:has(input[value="hand"]),
+        button[title*="Hand"],
+        button[title*="Bàn tay"],
+        label[title*="Hand"],
+        label[title*="Bàn tay"],
+        [aria-label*="Hand"],
+        [aria-label*="Bàn tay"] {
             display: none !important;
         }
     `;
@@ -198,14 +214,17 @@ if (typeof window !== 'undefined') {
             const container = document.querySelector('.excalidraw-container') || document.querySelector('.whiteboard-container');
             if (!container) return;
 
-            // FORCE PREVENT HAND TOOL (reset to selection if activated)
+            // FORCE PREVENT HAND TOOL (Compatibility check for both string and object tool formats)
             const appState = typeof api.getAppState === 'function' ? api.getAppState() : null;
-            if (appState && appState.activeTool && appState.activeTool.type === 'hand') {
-                api.updateScene({
-                    appState: {
-                        activeTool: { type: 'selection' }
-                    }
-                });
+            if (appState && appState.activeTool) {
+                const toolType = typeof appState.activeTool === 'string' ? appState.activeTool : appState.activeTool.type;
+                if (toolType === 'hand') {
+                    api.updateScene({
+                        appState: {
+                            activeTool: typeof appState.activeTool === 'string' ? 'selection' : { type: 'selection' }
+                        }
+                    });
+                }
             }
 
             const videoBg = window.videoBgElement;
@@ -272,50 +291,111 @@ if (typeof window !== 'undefined') {
         lastWidth = 0;
     });
 
-    // INTERCEPT INPUTS & WHEEL TO DISABLE SCROLL AND ZOOM BY MOUSE/TOUCH
-    document.addEventListener('DOMContentLoaded', () => {
-        const attachBlockers = () => {
-            const container = document.querySelector('.excalidraw-container') || document.querySelector('.whiteboard-container');
-            if (container) {
-                // 1. Chặn cuộn chuột (scroll) và phóng to bằng cuộn (ctrl+wheel)
-                container.addEventListener('wheel', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }, { passive: false });
+    // GLOBAL INTERCEPT ON CAPTURE PHASE: Block events before they can reach Excalidraw's local listeners
+    // This solves the problem of Excalidraw catching the wheel events locally and stopping propagation.
+    const isTargetWhiteboard = (target) => {
+        if (!target) return false;
+        if (typeof target.closest !== 'function') return false;
+        return target.closest('.excalidraw-container') || target.closest('.whiteboard-container');
+    };
 
-                // 2. Chặn cuộn bằng nhấn chuột giữa (middle button drag)
-                container.addEventListener('pointerdown', (e) => {
-                    if (e.button === 1) { // Middle click
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }
-                }, true);
-            }
-        };
+    // 1. Chặn cuộn lăn chuột (wheel) ở capture phase
+    window.addEventListener('wheel', (e) => {
+        if (isTargetWhiteboard(e.target)) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }, true); // true = Capture phase
 
-        // Chạy ngay và chạy lại sau 1s, 3s để đề phòng Excalidraw render trễ
-        attachBlockers();
-        setTimeout(attachBlockers, 1000);
-        setTimeout(attachBlockers, 3000);
-    });
+    // 2. Chặn nhấn giữ chuột giữa (middle click scroll) ở capture phase
+    window.addEventListener('pointerdown', (e) => {
+        if (isTargetWhiteboard(e.target) && e.button === 1) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }, true);
 
-    // 3. Chặn phím tắt Spacebar (dùng để cuộn) và phím H (dùng kích hoạt bàn tay)
+    // 3. Chặn zoom bằng cử chỉ cảm ứng trên thiết bị di động (multi-touch zoom) ở capture phase
+    window.addEventListener('touchmove', (e) => {
+        if (isTargetWhiteboard(e.target) && e.touches && e.touches.length > 1) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }, { capture: true, passive: false });
+
+    // 4. Chặn phím tắt Spacebar (pan) và H (hand tool) ở capture phase
     window.addEventListener('keydown', (e) => {
         const activeEl = document.activeElement;
         const isInput = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.contentEditable === 'true');
         
-        // Chặn phím H
-        if ((e.key.toLowerCase() === 'h' || e.code === 'KeyH') && !isInput) {
-            e.stopPropagation();
-            e.preventDefault();
+        if (!isInput) {
+            // Chặn phím H
+            if (e.key.toLowerCase() === 'h' || e.code === 'KeyH') {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+            // Chặn phím Space
+            if (e.code === 'Space' || e.key === ' ') {
+                e.stopPropagation();
+                e.preventDefault();
+            }
         }
+    }, true);
 
-        // Chặn phím cách (Space)
-        if ((e.code === 'Space' || e.key === ' ') && !isInput) {
-            e.stopPropagation();
-            e.preventDefault();
-        }
-    }, true); // Dùng capture phase để chặn từ gốc
+    // 5. Quét ẩn liên tục nút Bàn tay trong DOM (đề phòng Jitsi render trễ)
+    setInterval(() => {
+        try {
+            const docs = [document];
+            
+            // Tìm cả trong các iframe nếu có
+            const iframes = document.querySelectorAll('iframe');
+            iframes.forEach(iframe => {
+                try {
+                    if (iframe.contentDocument) docs.push(iframe.contentDocument);
+                } catch (e) {}
+            });
+
+            docs.forEach(doc => {
+                // Thêm CSS ẩn cứng vào head của tài liệu
+                if (!doc.getElementById('custom-hide-hand-tool-css')) {
+                    const style = doc.createElement('style');
+                    style.id = 'custom-hide-hand-tool-css';
+                    style.textContent = `
+                        [data-testid="toolbar-hand"],
+                        label:has(input[value="hand"]),
+                        .excalidraw label:has(input[value="hand"]),
+                        .ToolIcon_type_radio:has(input[value="hand"]),
+                        button[title*="Hand"], button[title*="Bàn tay"],
+                        label[title*="Hand"], label[title*="Bàn tay"],
+                        [aria-label*="Hand"], [aria-label*="Bàn tay"] {
+                            display: none !important;
+                        }
+                        .zoom-actions, .zoom-controls, .excalidraw-scrollbars, .Scrollbar {
+                            display: none !important;
+                        }
+                    `;
+                    doc.head.appendChild(style);
+                }
+
+                // Quét thủ công thuộc tính của các element để ẩn
+                const buttons = doc.querySelectorAll('button, label, input, .ToolIcon_type_radio, [data-testid]');
+                buttons.forEach(el => {
+                    const title = String(el.title || el.getAttribute('aria-label') || '').toLowerCase();
+                    const testId = String(el.getAttribute('data-testid') || '').toLowerCase();
+                    const value = String(el.value || el.getAttribute('data-tool') || '').toLowerCase();
+                    const id = String(el.id || '').toLowerCase();
+                    
+                    if (title.includes('hand') || title.includes('bàn tay') || 
+                        testId.includes('hand') || testId.includes('toolbar-hand') ||
+                        value === 'hand' || id === 'hand') {
+                        el.style.setProperty('display', 'none', 'important');
+                        const parentLabel = el.closest('label') || el.closest('.ToolIcon') || el.closest('.ToolIcon_type_radio');
+                        if (parentLabel) parentLabel.style.setProperty('display', 'none', 'important');
+                    }
+                });
+            });
+        } catch (err) {}
+    }, 500);
 }
 
 // HACK: Override Canvas fillRect to block Excalidraw's solid white background fills and maintain transparency
