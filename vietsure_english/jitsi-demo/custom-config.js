@@ -325,17 +325,57 @@ if (typeof window !== 'undefined') {
                     bgEl.versionNonce = Math.floor(Math.random() * 100000);
                     
                     let nextAppState;
-                    if (!window.hasCenteredOnLoad) {
-                        const container = document.querySelector('.excalidraw-container');
-                        const width = (container && container.clientWidth > 0) ? container.clientWidth : window.innerWidth;
-                        const height = (container && container.clientHeight > 0) ? container.clientHeight : window.innerHeight;
+                    const container = document.querySelector('.excalidraw-container');
+                    const width = (container && container.clientWidth > 0) ? container.clientWidth : window.innerWidth;
+                    const height = (container && container.clientHeight > 0) ? container.clientHeight : window.innerHeight;
+                    
+                    if (!window.hasAddedResizeListener) {
+                        window.hasAddedResizeListener = true;
+                        window.lastContainerWidth = width;
+                        window.lastContainerHeight = height;
                         
-                        if (width > 0 && height > 0) {
-                            window.hasCenteredOnLoad = true;
+                        const obs = new ResizeObserver(() => {
+                            if (videoBg && videoBg.srcObject) {
+                                clearTimeout(window.centerCameraTimeout);
+                                window.centerCameraTimeout = setTimeout(() => {
+                                    window.shouldCenterCamera = true;
+                                }, 150);
+                            }
+                        });
+                        if (container) obs.observe(container);
+                        else obs.observe(document.body);
+                    }
+
+                    if (!window.hasCenteredOnLoad && width > 0 && height > 0) {
+                        window.hasCenteredOnLoad = true;
+                        window.lastContainerWidth = width;
+                        window.lastContainerHeight = height;
+                        window.shouldCenterCamera = false;
+                        nextAppState = {
+                            scrollX: width / 2,
+                            scrollY: height / 2,
+                            zoom: { value: 1 }
+                        };
+                    } else if (window.shouldCenterCamera && width > 0 && height > 0) {
+                        window.shouldCenterCamera = false;
+                        
+                        const appState = typeof api.getAppState === 'function' ? api.getAppState() : null;
+                        if (appState) {
+                            const currentZoom = appState.zoom ? appState.zoom.value : 1;
+                            const currentScrollX = appState.scrollX;
+                            const currentScrollY = appState.scrollY;
+                            
+                            // Calculate how much the viewport grew/shrunk
+                            const deltaX = width - window.lastContainerWidth;
+                            const deltaY = height - window.lastContainerHeight;
+                            
+                            window.lastContainerWidth = width;
+                            window.lastContainerHeight = height;
+                            
+                            // Shift the camera by half the growth amount to keep the center pinned!
                             nextAppState = {
-                                scrollX: width / 2,
-                                scrollY: height / 2,
-                                zoom: { value: 1 }
+                                scrollX: currentScrollX + (deltaX / 2) / currentZoom,
+                                scrollY: currentScrollY + (deltaY / 2) / currentZoom
                             };
                         }
                     }

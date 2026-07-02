@@ -284,15 +284,15 @@ export default function FloatingJitsiWidget() {
     <div
       style={{
         position: 'fixed',
-        bottom: isMinimized ? `${position.y}px` : undefined,
-        right: isMinimized ? `${position.x}px` : undefined,
-        top: !isMinimized ? 'unset' : undefined,
-        left: !isMinimized ? 'unset' : undefined,
+        bottom: isMinimized ? `${position.y}px` : 24,
+        right: isMinimized ? `${position.x}px` : 24,
+        top: isMinimized ? undefined : 'unset',
+        left: isMinimized ? undefined : 'unset',
       }}
       className={`z-[9999] transition-all duration-300 ${
         isMinimized
           ? 'w-16 h-16 rounded-full bg-[#FF6B00] shadow-2xl hover:scale-105 cursor-move flex items-center justify-center border-2 border-white'
-          : 'fixed bottom-5 right-5 w-[550px] h-[400px] md:w-[650px] md:h-[480px] bg-[#1d285c] rounded-2xl overflow-hidden shadow-2xl border border-white/10 flex flex-col'
+          : 'w-[30vw] h-[65vh] bg-[#1d285c] rounded-2xl overflow-hidden shadow-2xl border border-white/10 flex flex-col'
       }`}
       onMouseDown={isMinimized ? handleMouseDown : undefined}
     >

@@ -3,8 +3,16 @@
 import Image from 'next/image';
 import { Phone } from 'lucide-react';
 import BtnTrial from '@/components/custom/common/btn-trial';
+import { usePathname } from 'next/navigation';
 
 export default function FloatingContact() {
+  const pathname = usePathname();
+
+  // Hide on classroom pages to prevent blocking the whiteboard and UI
+  if (pathname?.includes('/classroom')) {
+    return null;
+  }
+
   return (
     <>
       {/* Mobile View: Sticky Bottom Bar (Only shows on Mobile) */}
