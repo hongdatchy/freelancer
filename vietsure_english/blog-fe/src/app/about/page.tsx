@@ -40,7 +40,7 @@ export default function About() {
       {/* END: HeroIntroduction */}
 
       {/* BEGIN: BrandStats */}
-      <section className="pt-24 pb-12 bg-white" data-purpose="stats-section">
+      <section className="pt-24 pb-4 md:pb-12 bg-white" data-purpose="stats-section">
         <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
           <h2 className="section-title text-center mb-8">
             Phủ sóng thương hiệu trên toàn quốc
@@ -57,14 +57,14 @@ export default function About() {
 
       {/* BEGIN: GlobalMap */}
       <section className="bg-white overflow-hidden" data-purpose="world-map">
-        <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
+        <div className="mx-auto w-full max-w-[1440px] px-0 md:px-10 lg:px-12">
           <div className="relative flex justify-center">
             <Image
               src="/images/MapChart_Map2.png"
               alt="World Map"
               width={1200}
               height={1000}
-              className="w-[90%] md:w-[85%] lg:w-[80%] max-w-6xl object-contain mx-auto"
+              className="w-full md:w-[85%] lg:w-[80%] max-w-6xl object-contain mx-auto"
             />
           </div>
         </div>
@@ -159,72 +159,58 @@ export default function About() {
           </div>
 
           {/* ===== MOBILE/TABLET (dưới xl): layout zigzag ===== */}
-          <div className="flex flex-col items-center gap-6 xl:hidden">
+          <div className="flex flex-col items-center gap-6 xl:hidden px-2">
 
             {/* Logo giữa */}
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center mb-4">
               <Image src="/images/Vietsure English_Logo-15.png" alt="logo" width={160} height={160} className="object-contain" />
             </div>
 
-            {/* Zigzag cards */}
-            <div className="flex flex-col gap-8 w-full relative">
-              {/* Vertical connecting line */}
-              <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-[#2E357F] via-[#FF6B00] to-[#2E357F] -translate-x-1/2 rounded-full opacity-30" />
-
-              {/* Card 1: Ngôi sao (Left) */}
-              <div className="flex items-start justify-end w-full pr-[55%] relative">
-                <div className="bg-[#3F489A] rounded-[24px] p-4 border-4 border-white shadow-lg text-right">
-                  <span className="inline-block text-[10px] font-bold text-[#ff791a] mb-1">Biểu tượng</span>
-                  <h4 className="text-sm font-black text-yellow-300 uppercase leading-tight">
-                    Ngôi sao tượng trưng cho:
-                  </h4>
-                  <p className="text-[11px] text-white/90 mt-1 font-medium leading-relaxed">
-                    Mục tiêu và định hướng rõ ràng trong hành trình học tập. Sự tỏa sáng và thành công của học viên sau quá trình rèn luyện. Khát vọng vươn xa ra thế giới, đúng với tinh thần của một trung tâm đào tạo tiếng Anh chuẩn quốc tế.
-                  </p>
-                </div>
-                <div className="absolute right-1/2 translate-x-1/2 top-6 w-4 h-4 rounded-full border-4 border-white bg-[#2E357F] shadow-sm z-10" />
+            {/* Stacked cards (Mobile layout like the image) */}
+            <div className="flex flex-col gap-6 w-full mt-2">
+              
+              {/* Card 1: Ngôi sao */}
+              <div className="w-full bg-[#3F489A] rounded-[24px] p-5 md:p-6 border-4 border-white shadow-lg text-left text-white">
+                <div className="w-10 h-10 rounded-full bg-[#ff791a] text-white flex items-center justify-center font-bold text-lg mb-3 shadow-md shrink-0">1</div>
+                <h4 className="text-[15px] md:text-[16px] font-black text-yellow-300 uppercase tracking-wide mb-2">
+                  Ngôi sao tượng trưng cho
+                </h4>
+                <p className="text-[14px] md:text-[15px] font-medium opacity-90 leading-relaxed text-left">
+                  Mục tiêu và định hướng rõ ràng trong hành trình học tập. Sự tỏa sáng và thành công của học viên sau quá trình rèn luyện. Khát vọng vươn xa ra thế giới, đúng với tinh thần của một trung tâm đào tạo tiếng Anh chuẩn quốc tế.
+                </p>
               </div>
 
-              {/* Card 2: Phông chữ (Right) */}
-              <div className="flex items-start justify-start w-full pl-[55%] relative">
-                <div className="bg-[#3F489A] rounded-[24px] p-4 border-4 border-white shadow-lg text-left">
-                  <span className="inline-block text-[10px] font-bold text-[#ff791a] mb-1">Kiểu chữ</span>
-                  <h4 className="text-sm font-black text-yellow-300 uppercase leading-tight">
-                    Phông chữ được xây dựng theo:
-                  </h4>
-                  <p className="text-[11px] text-white/90 mt-1 font-medium leading-relaxed">
-                    Cấu trúc liền mạch, các ký tự bo tròn mềm mại nhưng vẫn vững chắc, tạo cảm giác kết nối - ổn định - bền vững. Sự liên kết giữa các chữ cái thể hiện quá trình học tập xuyên suốt, có hệ thống và được dẫn dắt rõ ràng.
-                  </p>
-                </div>
-                <div className="absolute left-1/2 -translate-x-1/2 top-6 w-4 h-4 rounded-full border-4 border-white bg-[#FF6B00] shadow-sm z-10" />
+              {/* Card 2: Phông chữ */}
+              <div className="w-full bg-[#6A78D4] rounded-[24px] p-5 md:p-6 border-4 border-white shadow-lg text-left text-white">
+                <div className="w-10 h-10 rounded-full bg-[#ff791a] text-white flex items-center justify-center font-bold text-lg mb-3 shadow-md shrink-0">2</div>
+                <h4 className="text-[15px] md:text-[16px] font-black text-yellow-300 uppercase tracking-wide mb-2">
+                  Phông chữ được xây dựng theo
+                </h4>
+                <p className="text-[14px] md:text-[15px] font-medium opacity-90 leading-relaxed text-left">
+                  Cấu trúc liền mạch, các ký tự bo tròn mềm mại nhưng vẫn vững chắc, tạo cảm giác kết nối - ổn định - bền vững. Sự liên kết giữa các chữ cái thể hiện quá trình học tập xuyên suốt, có hệ thống và được dẫn dắt rõ ràng.
+                </p>
               </div>
 
-              {/* Card 3: Mascot (Left) */}
-              <div className="flex items-start justify-end w-full pr-[55%] relative">
-                <div className="bg-[#3F489A] rounded-[24px] p-4 border-4 border-white shadow-lg text-right">
-                  <span className="inline-block text-[10px] font-bold text-[#ff791a] mb-1">Mascot</span>
-                  <h4 className="text-sm font-black text-yellow-300 uppercase leading-tight">
-                    Hình tượng mascot chim cánh cụt:
-                  </h4>
-                  <p className="text-[11px] text-white/90 mt-1 font-medium leading-relaxed">
-                    Thân thiện, thông minh và tràn đầy năng lượng, đại diện cho tinh thần học tập tích cực, tự tin và không ngừng tiến bộ của học viên.
-                  </p>
-                </div>
-                <div className="absolute right-1/2 translate-x-1/2 top-6 w-4 h-4 rounded-full border-4 border-white bg-[#2E357F] shadow-sm z-10" />
+              {/* Card 3: Mascot */}
+              <div className="w-full bg-[#3F489A] rounded-[24px] p-5 md:p-6 border-4 border-white shadow-lg text-left text-white">
+                <div className="w-10 h-10 rounded-full bg-[#ff791a] text-white flex items-center justify-center font-bold text-lg mb-3 shadow-md shrink-0">3</div>
+                <h4 className="text-[15px] md:text-[16px] font-black text-yellow-300 uppercase tracking-wide mb-2">
+                  Hình tượng mascot chim cánh cụt
+                </h4>
+                <p className="text-[14px] md:text-[15px] font-medium opacity-90 leading-relaxed text-left">
+                  Thân thiện, thông minh và tràn đầy năng lượng, đại diện cho tinh thần học tập tích cực, tự tin và không ngừng tiến bộ của học viên.
+                </p>
               </div>
 
-              {/* Card 4: Màu sắc (Right) */}
-              <div className="flex items-start justify-start w-full pl-[55%] relative">
-                <div className="bg-[#3F489A] rounded-[24px] p-4 border-4 border-white shadow-lg text-left">
-                  <span className="inline-block text-[10px] font-bold text-[#ff791a] mb-1">Màu sắc</span>
-                  <h4 className="text-sm font-black text-yellow-300 uppercase leading-tight">
-                    Về màu sắc:
-                  </h4>
-                  <p className="text-[11px] text-white/90 mt-1 font-medium leading-relaxed">
-                    - Xanh tím đậm tượng trưng cho uy tín, chiều sâu học thuật và sự cam kết chất lượng.<br />- Xanh dương sáng đại diện cho tinh thần trẻ trung, năng động và khả năng hội nhập quốc tế.
-                  </p>
-                </div>
-                <div className="absolute left-1/2 -translate-x-1/2 top-6 w-4 h-4 rounded-full border-4 border-white bg-[#FF6B00] shadow-sm z-10" />
+              {/* Card 4: Màu sắc */}
+              <div className="w-full bg-[#6A78D4] rounded-[24px] p-5 md:p-6 border-4 border-white shadow-lg text-left text-white">
+                <div className="w-10 h-10 rounded-full bg-[#ff791a] text-white flex items-center justify-center font-bold text-lg mb-3 shadow-md shrink-0">4</div>
+                <h4 className="text-[15px] md:text-[16px] font-black text-yellow-300 uppercase tracking-wide mb-2">
+                  Về màu sắc
+                </h4>
+                <p className="text-[14px] md:text-[15px] font-medium opacity-90 leading-relaxed text-left">
+                  - Xanh tím đậm tượng trưng cho uy tín, chiều sâu học thuật và sự cam kết chất lượng.<br />- Xanh dương sáng đại diện cho tinh thần trẻ trung, năng động và khả năng hội nhập quốc tế.
+                </p>
               </div>
             </div>
           </div>
@@ -328,7 +314,7 @@ export default function About() {
 
             {/* Row 1: PENGUIN */}
             <div className="bg-white rounded-[32px] p-8 border-2 border-sky-200 shadow-sm flex items-center relative overflow-hidden h-72 hover:shadow-md transition-shadow">
-              <div className="w-1/2 pl-4 text-left">
+              <div className="w-1/2 text-left z-10">
                 <h3 className="text-3xl font-black text-[#1e3a8a] mb-2">PENGUIN</h3>
                 <p className="text-[13px] text-blue-900 leading-relaxed font-semibold">
                   Mascot chim cánh cụt thân thiện, thông minh và tràn đầy năng lượng, đại diện cho tinh thần học tập tích cực, tự tin và không ngừng tiến bộ của học viên.
@@ -357,7 +343,7 @@ export default function About() {
                   className="w-[65%] lg:w-[60%] max-w-[140px] h-auto object-contain"
                 />
               </div>
-              <div className="w-1/2 pl-4 text-right">
+              <div className="w-1/2 lg:pl-4 text-right">
                 <h3 className="text-3xl font-black text-[#1e3a8a] mb-2">MARK</h3>
                 <div className="text-[13px] text-blue-900 space-y-1">
                   <p><span className="font-extrabold">Tuổi:</span> 6 tuổi</p>
@@ -379,7 +365,7 @@ export default function About() {
                   className="w-[75%] lg:w-[70%] max-w-[160px] h-auto object-contain"
                 />
               </div>
-              <div className="w-1/2 pl-4 text-right">
+              <div className="w-1/2 lg:pl-4 text-right">
                 <h3 className="text-3xl font-black text-[#1e3a8a] mb-2">SUE</h3>
                 <div className="text-[13px] text-blue-900 space-y-1">
                   <p><span className="font-extrabold">Tuổi:</span> 6 tuổi</p>
@@ -447,7 +433,7 @@ export default function About() {
         data-purpose="core-values"
       >
         <div className="mx-auto w-full max-w-[1200px] px-0 md:px-10 lg:px-12">
-          <div className="relative w-full">
+          <div className="relative w-[140%] md:w-full -translate-x-[3%] md:translate-x-0" style={{ containerType: 'inline-size' }}>
             <Image
               src="/images/7.png"
               alt="4 Giá trị cốt lõi"
@@ -460,42 +446,42 @@ export default function About() {
             {/* Central Text: 4 GIÁ TRỊ CỐT LÕI */}
             <div className="absolute flex flex-col items-center justify-center text-white text-center"
               style={{ top: '52%', left: '15.5%', transform: 'translate(-50%, -50%)', width: '25%' }}>
-              <span className="text-[2.9vw] md:text-[1.6rem] lg:text-[1.9rem] xl:text-[2.3rem] font-black leading-tight drop-shadow-md">4 GIÁ TRỊ</span>
-              <span className="text-[2.9vw] md:text-[1.6rem] lg:text-[1.9rem] xl:text-[2.3rem] font-black leading-tight drop-shadow-md">CỐT LÕI</span>
+              <span className="text-[3cqi] font-black leading-tight drop-shadow-md">4 GIÁ TRỊ</span>
+              <span className="text-[3cqi] font-black leading-tight drop-shadow-md">CỐT LÕI</span>
             </div>
 
             {/* Value 1: CHUẨN QUỐC TẾ */}
             <div className="absolute"
-              style={{ top: '7%', left: '39%', width: '22%' }}>
-              <h4 className="font-black text-[#1e3a8a] uppercase text-[1.8vw] md:text-[12px] lg:text-[14px] xl:text-[17px] mb-0.5 md:mb-1">Chuẩn quốc tế</h4>
-              <p className="text-[#1e3a8a]/80 text-[1.3vw] md:text-[9.5px] lg:text-[11.5px] xl:text-[14px] leading-snug md:leading-relaxed font-semibold">
+              style={{ top: '6%', left: '38%', width: '25%' }}>
+              <h4 className="font-black text-[#1e3a8a] uppercase text-[1.6cqi] mb-[0.5cqi]">Chuẩn quốc tế</h4>
+              <p className="text-[#1e3a8a]/80 text-[1.52cqi] leading-[1.3] font-semibold">
                 Xây dựng từ môi trường giáo dục trẻ em quốc tế, giúp trẻ em Việt sử dụng tiếng Anh như trẻ em thế giới.
               </p>
             </div>
 
             {/* Value 2: CÁ NHÂN HÓA */}
             <div className="absolute"
-              style={{ top: '35%', left: '50%', width: '22%' }}>
-              <h4 className="font-black text-[#1e3a8a] uppercase text-[1.8vw] md:text-[12px] lg:text-[14px] xl:text-[17px] mb-0.5 md:mb-1">Cá nhân hóa</h4>
-              <p className="text-[#1e3a8a]/80 text-[1.3vw] md:text-[9.5px] lg:text-[11.5px] xl:text-[14px] leading-snug md:leading-relaxed font-semibold">
+              style={{ top: '33%', left: '49%', width: '22%' }}>
+              <h4 className="font-black text-[#1e3a8a] uppercase text-[1.6cqi] mb-[0.5cqi]">Cá nhân hóa</h4>
+              <p className="text-[#1e3a8a]/80 text-[1.52cqi] leading-[1.3] font-semibold">
                 Lộ trình phù hợp để trẻ tiến bộ bền vững và đúng khả năng.
               </p>
             </div>
 
             {/* Value 3: ĐỒNG HÀNH */}
             <div className="absolute"
-              style={{ top: '58%', left: '50%', width: '22%' }}>
-              <h4 className="font-black text-[#1e3a8a] uppercase text-[1.8vw] md:text-[12px] lg:text-[14px] xl:text-[17px] mb-0.5 md:mb-1">Đồng hành</h4>
-              <p className="text-[#1e3a8a]/80 text-[1.3vw] md:text-[9.5px] lg:text-[11.5px] xl:text-[14px] leading-snug md:leading-relaxed font-semibold">
+              style={{ top: '56%', left: '50%', width: '22%' }}>
+              <h4 className="font-black text-[#1e3a8a] uppercase text-[1.6cqi] mb-[0.5cqi]">Đồng hành</h4>
+              <p className="text-[#1e3a8a]/80 text-[1.52cqi] leading-[1.3] font-semibold">
                 Giúp phụ huynh hiểu và đồng hành cùng con.
               </p>
             </div>
 
             {/* Value 4: MINH BẠCH */}
             <div className="absolute"
-              style={{ top: '82%', left: '39%', width: '22%' }}>
-              <h4 className="font-black text-[#1e3a8a] uppercase text-[1.8vw] md:text-[12px] lg:text-[14px] xl:text-[17px] mb-0.5 md:mb-1">Minh bạch</h4>
-              <p className="text-[#1e3a8a]/80 text-[1.3vw] md:text-[9.5px] lg:text-[11.5px] xl:text-[14px] leading-snug md:leading-relaxed font-semibold">
+              style={{ top: '81%', left: '39%', width: '22%' }}>
+              <h4 className="font-black text-[#1e3a8a] uppercase text-[1.6cqi] mb-[0.5cqi]">Minh bạch</h4>
+              <p className="text-[#1e3a8a]/80 text-[1.52cqi] leading-[1.3] font-semibold">
                 Tiến bộ được theo dõi, đánh giá minh bạch và tạo ra giá trị thật.
               </p>
             </div>

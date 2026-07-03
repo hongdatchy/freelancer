@@ -10,8 +10,8 @@ export default function Contact() {
 
           {/* Left Column: Contact Info */}
           <div className="flex-1 text-white flex flex-col justify-center">
-            <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-4xl xl:text-[42px] font-black text-[#ff791a] leading-tight uppercase mb-6 whitespace-nowrap lg:whitespace-normal">
-              LIÊN HỆ VỚI VIETSURE ENGLISH
+            <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-4xl xl:text-[42px] font-black text-white leading-tight uppercase mb-6 whitespace-nowrap lg:whitespace-normal">
+              LIÊN HỆ VỚI <span className="text-[#ff791a]">VIETSURE ENGLISH</span>
             </h1>
             <div className="space-y-4">
               <p className="section-desc !text-white">Thông tin liên hệ:</p>

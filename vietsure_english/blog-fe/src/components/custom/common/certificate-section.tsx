@@ -8,7 +8,7 @@ export default function CertificateSection() {
         {/* Left Column: Text Content */}
         <div className="w-full lg:w-[78%] z-10">
           <h2 className="section-title mb-6 lg:pr-32 text-center lg:text-left">
-            HỆ THỐNG BÀI GIẢNG <span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span>
+            HỆ THỐNG BÀI GIẢNG <br className="block md:hidden" /><span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span>
           </h2>
           <div className="bg-white rounded-[32px] brand-light-border p-4 lg:p-8 md:p-10 lg:pr-32 shadow-[0_10px_35px_rgba(96,165,250,0.08)]">
             <p className="text-[#2E357F] section-desc-justify font-bold text-base md:text-[17px] leading-relaxed text-center lg:text-left">

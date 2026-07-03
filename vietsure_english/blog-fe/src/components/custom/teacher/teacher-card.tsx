@@ -56,14 +56,8 @@ export default function TeacherCard({ teacher }: { teacher: TeacherDTO }) {
                             fontWeight="900"
                             letterSpacing="4"
                         >
-                            <textPath
-                                href={`#topArc-${teacher.id}`}
-                                startOffset="50%"
-                                textAnchor="middle"
-                              >
-                                  TEACHER
-                              </textPath>
-                          </text>
+                            <textPath href={`#topArc-${teacher.id}`} startOffset="50%" textAnchor="middle">TEACHER</textPath>
+                        </text>
                     </svg>
 
                 </div>

@@ -24,8 +24,8 @@ export default async function TeacherDetailPage(props: {
       {/* Teacher info */}
       <TeacherDetailClient teacher={teacher} avatar={avatar} />
 
-      {/* Schedule RIGHT BELOW */}
-      <TeacherScheduleView teacherId={Number(teacher.id)} />
+      {/* Schedule RIGHT BELOW - Removed by request */}
+      {/* <TeacherScheduleView teacherId={Number(teacher.id)} /> */}
 
       <div>
         <TrialSection />

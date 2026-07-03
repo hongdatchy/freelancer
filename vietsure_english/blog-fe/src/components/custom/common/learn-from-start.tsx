@@ -13,7 +13,7 @@ export default function LearnFromStart() {
                             Học đúng ngay từ đầu
                         </h2>
 
-                        <p className="section-desc section-desc-justify mt-4 w-full mx-auto text-center max-w-7xl">
+                        <p className="section-desc mt-4 w-full mx-auto text-center md:text-justify md:[text-align-last:center] max-w-7xl">
                             Chương trình được phát triển từ kinh nghiệm giảng dạy trong môi trường quốc tế, giúp trẻ hiểu - phản xạ - giao tiếp tự nhiên, không học thuộc. Phụ huynh lựa chọn Vietsure English không chỉ vì kết quả, mà vì cách học đúng ngay từ đầu và lộ trình phát triển lâu dài cho con.
                         </p>
                     </div>

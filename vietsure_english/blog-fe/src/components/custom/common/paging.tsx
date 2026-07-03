@@ -39,6 +39,7 @@ export default function Paging<T>({
               {page - 1 >= 1 && (
                 <PaginationPrevious
                   href={`?page=${page - 2}&&pageSize=${pageSize}`}
+                  scroll={false}
                 />
               )}
             </PaginationItem>
@@ -48,6 +49,7 @@ export default function Paging<T>({
                 <PaginationLink
                   isActive={p === page}
                   href={`?page=${p - 1}&&pageSize=${pageSize}`}
+                  scroll={false}
                 >
                   {p}
                 </PaginationLink>
@@ -58,6 +60,7 @@ export default function Paging<T>({
               {page + 1 <= pageCount && (
                 <PaginationNext
                   href={`?page=${page}&&pageSize=${pageSize}`}
+                  scroll={false}
                 />
               )}
             </PaginationItem>

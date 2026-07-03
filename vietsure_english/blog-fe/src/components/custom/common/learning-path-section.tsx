@@ -25,7 +25,7 @@ export default function LearningPathSection() {
 
           {/* Left Content: Diagram Image with Overlaid Text */}
           <div className="w-full lg:w-[52%] flex justify-center">
-            <div className="relative w-full px-[10px] md:px-0 max-w-[850px] aspect-[580/460]">
+            <div className="relative w-full px-[10px] md:px-0 max-w-[850px] aspect-[580/460]" style={{ containerType: 'inline-size' }}>
               {/* Background Diagram Image */}
               <Image
                 src="/images/learning-path-diagram.png"
@@ -37,48 +37,48 @@ export default function LearningPathSection() {
               />
 
               {/* Overlaid text: LỘ TRÌNH HỌC */}
-              <div className="absolute left-[8%] sm:left-[10%] lg:left-[6%] top-[60%] -translate-y-1/2 w-max text-center pointer-events-none select-none flex flex-col items-center justify-center">
-                <span className="text-[#2E357F] font-black text-[8px] sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-tight uppercase whitespace-nowrap">
+              <div className="absolute left-[7%] top-[60%] -translate-y-1/2 w-max text-center pointer-events-none select-none flex flex-col items-center justify-center">
+                <span className="text-[#2E357F] font-black leading-tight uppercase whitespace-nowrap" style={{ fontSize: '3.3cqi' }}>
                   LỘ TRÌNH HỌC
                 </span>
               </div>
 
               {/* Overlaid text: Card 1 */}
-              <div className="absolute left-[38%] top-[5%] w-[55%] text-left">
-                <h4 className="font-extrabold text-[#2E357F] text-[9px] sm:text-xs md:text-base lg:text-sm xl:text-base uppercase leading-tight">
+              <div className="absolute left-[42%] top-[6%] w-[55%] text-left">
+                <h4 className="font-extrabold text-[#2E357F] uppercase leading-tight" style={{ fontSize: '2.5cqi' }}>
                   TIẾNG ANH MẪU GIÁO
                 </h4>
-                <p className="text-[8px] sm:text-[10px] md:text-sm lg:text-[11px] xl:text-xs font-bold text-[#2E357F]/80">
+                <p className="font-bold text-[#2E357F]/80" style={{ fontSize: '1.8cqi' }}>
                   (Từ 4-5 tuổi)
                 </p>
               </div>
 
               {/* Overlaid text: Card 2 */}
-              <div className="absolute left-[56%] top-[30%] w-[38%] text-left">
-                <h4 className="font-extrabold text-[#3b82f6] text-[9px] sm:text-xs md:text-base lg:text-sm xl:text-base uppercase leading-tight">
+              <div className="absolute left-[58%] top-[32%] w-[38%] text-left">
+                <h4 className="font-extrabold text-[#3b82f6] uppercase leading-tight" style={{ fontSize: '2.5cqi' }}>
                   TIẾNG ANH THIẾU NHI
                 </h4>
-                <p className="text-[8px] sm:text-[10px] md:text-sm lg:text-[11px] xl:text-xs font-bold text-[#3b82f6]/80">
+                <p className="font-bold text-[#3b82f6]/80" style={{ fontSize: '1.8cqi' }}>
                   (Từ 6 tuổi trở lên)
                 </p>
               </div>
 
               {/* Overlaid text: Card 3 */}
-              <div className="absolute left-[58%] top-[59.5%] w-[38%] text-left">
-                <h4 className="font-extrabold text-[#38bdf8] text-[9px] sm:text-xs md:text-base lg:text-sm xl:text-base uppercase leading-tight">
+              <div className="absolute left-[60%] top-[61%] w-[38%] text-left">
+                <h4 className="font-extrabold text-[#38bdf8] uppercase leading-tight" style={{ fontSize: '2.5cqi' }}>
                   TIẾNG ANH THIẾU NIÊN
                 </h4>
-                <p className="text-[8px] sm:text-[10px] md:text-sm lg:text-[11px] xl:text-xs font-bold text-[#38bdf8]/80">
+                <p className="font-bold text-[#38bdf8]/80" style={{ fontSize: '1.8cqi' }}>
                   (Từ 11 tuổi trở lên)
                 </p>
               </div>
 
               {/* Overlaid text: Card 4 */}
-              <div className="absolute left-[45%] top-[85%] w-[46%] text-left">
-                <h4 className="font-extrabold text-[#78a5db] text-[9px] sm:text-xs md:text-base lg:text-sm xl:text-base uppercase leading-tight">
+              <div className="absolute left-[45%] top-[87%] w-[46%] text-left">
+                <h4 className="font-extrabold text-[#78a5db] uppercase leading-tight" style={{ fontSize: '2.5cqi' }}>
                   IELTS
                 </h4>
-                <p className="text-[8px] sm:text-[10px] md:text-sm lg:text-[11px] xl:text-xs font-bold text-[#78a5db]/80">
+                <p className="font-bold text-[#78a5db]/80" style={{ fontSize: '1.8cqi' }}>
                   (Từ 13 tuổi trở lên)
                 </p>
               </div>

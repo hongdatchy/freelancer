@@ -33,7 +33,7 @@ export default function BrandAmbassadorPage() {
 
       {/* 1. HERO BANNER SECTION */}
       <section className="lg:py-0 py-10 relative bg-gradient-to-b from-[#E2F0FF] to-white pb-16 overflow-hidden">
-        <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12 relative z-10">
+        <div className="mx-auto w-full max-w-[1440px] lg:px-6 md:px-10 lg:px-12 relative z-10">
           <div className="grid items-center xl:gap-12 xl:grid-cols-[3fr_8fr]">
 
             {/* Left side: Banner composite image */}
@@ -53,11 +53,11 @@ export default function BrandAmbassadorPage() {
             {/* Right side: Introduction content */}
             <div className="flex flex-col items-center lg:items-end text-center lg:text-right order-1 lg:order-2 w-full">
               <h1 className="section-title mb-3">
-                GIỚI THIỆU KHÓA HỌC <span className="text-[#ff791a]">CHẤT LƯỢNG CAO</span>
+                GIỚI THIỆU KHÓA HỌC <br className="block min-[500px]:hidden" /><span className="text-[#ff791a]">CHẤT LƯỢNG CAO</span>
               </h1>
 
               <h2 className="section-subtitle mb-8">
-                VỪA TẠO GIÁ TRỊ, VỪA NHẬN THƯỞNG TIỀN TRIỆU
+                VỪA TẠO GIÁ TRỊ VỪA NHẬN THƯỞNG TIỀN TRIỆU
               </h2>
 
               <ul className="mb-8 space-y-4 max-w-lg w-full flex flex-col items-center lg:items-end">

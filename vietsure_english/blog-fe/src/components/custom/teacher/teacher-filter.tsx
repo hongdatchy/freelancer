@@ -113,7 +113,6 @@ export default function TeacherFilter({ regions }: FilterProps) {
       */}
 
       {/* Gender Filter */}
-      {/* 
       <div className="relative">
         <button
           onClick={() => setShowGenderDropdown(!showGenderDropdown)}
@@ -141,7 +140,6 @@ export default function TeacherFilter({ regions }: FilterProps) {
           </div>
         )}
       </div>
-      */}
 
       {/* Time Slot Filter */}
       <div className="relative">

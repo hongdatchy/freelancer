@@ -5,6 +5,7 @@
 import { factories } from '@strapi/strapi';
 
 interface FiltersUser {
+  isShowPortal?: boolean;
   fullName?: { $containsi: string };
   gender?: "Male" | "Female" | "Other";
   region?: {
@@ -29,7 +30,9 @@ export default factories.createCoreController('plugin::users-permissions.user', 
       const { fullName, gender, region, schedule } = ctx.request.body;
       const paginationQuery = ctx.query.pagination as Pagination;
 
-      const filters: FiltersUser = {};
+      const filters: FiltersUser = {
+        isShowPortal: true,
+      };
       if (fullName) {
         filters.fullName = { $containsi: fullName as string };
       }

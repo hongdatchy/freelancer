@@ -141,14 +141,8 @@ export function TeacherDetailClient({
                             fontWeight="900"
                             letterSpacing="4"
                         >
-                            <textPath
-                                href={`#topArc-detail-${teacher.id}`}
-                                startOffset="50%"
-                                textAnchor="middle"
-                              >
-                                  TEACHER
-                              </textPath>
-                          </text>
+                            <textPath href={`#topArc-detail-${teacher.id}`} startOffset="50%" textAnchor="middle">TEACHER</textPath>
+                        </text>
                     </svg>
 
                 </div>

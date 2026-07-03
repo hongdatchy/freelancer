@@ -1226,6 +1226,7 @@ export interface PluginUsersPermissionsUser
     experiences: Schema.Attribute.Integer;
     fullName: Schema.Attribute.String;
     gender: Schema.Attribute.Enumeration<['Male', 'Female', 'Other']>;
+    isShowPortal: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',

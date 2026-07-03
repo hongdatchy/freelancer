@@ -121,6 +121,10 @@
       "type": "component",
       "component": "teacher.score",
       "repeatable": true
+    },
+    "isShowPortal": {
+      "type": "boolean",
+      "default": true
     }
   }
 }

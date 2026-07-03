@@ -9,7 +9,10 @@ export default function BrandStats() {
   ];
 
   return (
-    <div className="w-full bg-white border-2 border-blue-200 rounded-[24px] py-6 px-4 md:px-6 grid grid-cols-2 md:flex items-center justify-between gap-y-6 gap-x-2 md:gap-0">
+    <div className="relative w-full bg-white border-2 border-blue-200 rounded-[24px] py-6 px-4 md:px-6 grid grid-cols-2 md:flex items-center justify-between gap-y-6 gap-x-2 md:gap-0">
+      {/* Vạch kẻ giữa cho mobile */}
+      <div className="absolute left-1/2 top-6 bottom-6 w-[2px] -translate-x-1/2 bg-blue-100 md:hidden" aria-hidden="true" />
+      
       {stats.map((stat, idx) => (
         <React.Fragment key={idx}>
           <div className="text-center w-full">

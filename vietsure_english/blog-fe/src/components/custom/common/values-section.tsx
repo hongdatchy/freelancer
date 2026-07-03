@@ -13,10 +13,10 @@ export default function ValuesSection() {
           
           {/* Card 1: Header/Intro info */}
           <div className="text-center bg-[#3F489A] rounded-[24px] border-4 border-white p-6 text-white shadow-lg">
-            <p className="text-xs font-semibold opacity-95 leading-relaxed">
-              Con không chỉ giỏi tiếng Anh, mà còn là một em bé:
+            <p className="-mx-5 text-[15px] font-semibold opacity-95 leading-relaxed tracking-tight">
+              Con không chỉ giỏi tiếng Anh, mà còn là 1 người:
             </p>
-            <p className="text-sm font-extrabold text-yellow-300 mt-2 uppercase">
+            <p className="-mx-5 text-sm font-extrabold text-yellow-300 mt-2 uppercase tracking-tight">
               “Tự tin - Tử tế - Chủ động - Hội nhập”
             </p>
           </div>
@@ -36,7 +36,7 @@ export default function ValuesSection() {
               <h4 className="text-xs font-black text-yellow-300 uppercase tracking-wide">
                 Phát triển Tiếng Anh toàn diện
               </h4>
-              <p className="text-[10px] font-medium opacity-90 mt-1 leading-relaxed">
+              <p className="text-[15px] font-semibold opacity-90 mt-1 leading-relaxed">
                 Tự tin giao tiếp tiếng Anh và sẵn sàng hội nhập từ sớm
               </p>
             </div>
@@ -48,7 +48,7 @@ export default function ValuesSection() {
               <h4 className="text-xs font-black text-yellow-300 uppercase tracking-wide">
                 Trưởng thành tính cách & kỹ năng
               </h4>
-              <p className="text-[10px] font-medium opacity-90 mt-1 leading-relaxed">
+              <p className="text-[15px] font-semibold opacity-90 mt-1 leading-relaxed">
                 Sở hữu những phẩm chất tốt để phát triển tương lai
               </p>
             </div>
@@ -72,7 +72,7 @@ export default function ValuesSection() {
             <div className="space-y-8 md:space-y-10">
               <div>
                 <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-[26px] font-semibold opacity-95 leading-relaxed tracking-widest">
-                  Con không chỉ giỏi tiếng Anh, mà còn là một em bé:
+                  Con không chỉ giỏi tiếng Anh, mà còn là 1 người:
                 </p>
                 <p className="text-base sm:text-lg md:text-2xl lg:text-3xl xl:text-[34px] font-extrabold text-yellow-300 mt-2.5">
                   “Tự tin - Tử tế - Chủ động - Hội nhập”

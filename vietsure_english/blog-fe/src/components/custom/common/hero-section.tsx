@@ -63,7 +63,7 @@ export default function HeroSection({
           {/* RightContent - Typography and CTA */}
           <div className="w-full lg:w-[51%] flex flex-col items-center lg:items-start text-center lg:text-left space-y-4 md:space-y-6 px-6 lg:px-0">
             <div className="space-y-2 md:space-y-4" data-purpose="heading-group">
-              <h2 className="text-2xl sm:text-3xl md:text-lg lg:text-2xl xl:text-4xl font-black text-[#3F489A] tracking-wide uppercase">
+              <h2 className="w-full text-center lg:text-left text-2xl sm:text-3xl md:text-lg lg:text-2xl xl:text-4xl font-black text-[#3F489A] tracking-wide uppercase">
                 TIẾNG ANH PHẢN XẠ ONLINE QUỐC TẾ
               </h2>
               <h1
@@ -85,7 +85,7 @@ export default function HeroSection({
               >
                 {ROTATING_TITLES[titleIndex]}
               </h1>
-              <p className="text-xs sm:text-sm md:text-lg lg:text-2xl xl:text-4xl font-black text-[#3F489A] opacity-90 uppercase">
+              <p className="text-2xl sm:text-3xl md:text-lg lg:text-2xl xl:text-4xl font-black text-[#3F489A] opacity-90 uppercase">
                 CHO TRẺ 4 - 12+ TẠI VIỆT NAM
               </p>
             </div>

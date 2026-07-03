@@ -45,7 +45,7 @@ export default function FloatingContact() {
           <img
             src="/images/icons8-zalo-480.png"
             alt="Zalo"
-            className="w-11 h-11 object-contain drop-shadow-sm"
+            className="w-[50px] h-[50px] object-contain drop-shadow-sm"
           />
         </a>
       </div>

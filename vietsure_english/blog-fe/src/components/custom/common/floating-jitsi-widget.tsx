@@ -458,7 +458,7 @@ export default function FloatingJitsiWidget() {
           <div
             onMouseDown={handleResizeStart}
             onTouchStart={handleTouchResizeStart}
-            className="absolute top-0 left-0 w-6 h-6 cursor-nw-resize z-[10000] flex items-center justify-center text-white/30 hover:text-white transition-colors"
+            className="absolute top-1 left-1 w-6 h-6 cursor-nw-resize z-[10000] flex items-center justify-center text-white/30 hover:text-white transition-colors"
             title="Kéo để thay đổi kích thước"
           >
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" className="pointer-events-none">
@@ -509,9 +509,9 @@ export default function FloatingJitsiWidget() {
             {/* Header Bar */}
             <div className={`items-center justify-between px-4 py-2.5 bg-[#1d285c] border-b border-white/10 select-none cursor-default ${isPipActive ? 'hidden' : 'flex'}`}>
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-[#FF6B00] flex items-center justify-center">
+                {/* <div className="w-6 h-6 rounded-full bg-[#FF6B00] flex items-center justify-center">
                   <span className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse" />
-                </div>
+                </div> */}
                 <div>
                   <p className="text-white font-bold text-xs leading-none">VIETSURE ENGLISH</p>
                   <p className="text-white/60 text-[10px]">Phòng: {roomName}</p>

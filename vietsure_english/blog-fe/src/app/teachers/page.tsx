@@ -61,7 +61,7 @@ export default async function Teachers(props: {
                 alt="Giáo viên Vietsure English"
                 width={600}
                 height={500}
-                className="object-contain w-full max-w-[500px]"
+                className="object-contain w-full max-w-[500px] translate-x-[30px] md:translate-x-0"
                 priority
               />
             </div>
@@ -118,7 +118,7 @@ export default async function Teachers(props: {
             </h2>
           </div>
 
-          <TeacherFilter regions={regions} />
+          {/* <TeacherFilter regions={regions} /> */}
           <Paging
             data={teachers}
             pageCount={responseUser.meta.pagination.pageCount}
