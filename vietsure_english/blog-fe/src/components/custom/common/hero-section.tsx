@@ -86,7 +86,8 @@ export default function HeroSection({
                 {ROTATING_TITLES[titleIndex]}
               </h1>
               <p className="text-2xl sm:text-3xl md:text-lg lg:text-2xl xl:text-4xl font-black text-[#3F489A] opacity-90 uppercase">
-                CHO TRẺ 4 - 12+ TẠI VIỆT NAM
+                <span className="hidden md:inline">CHO TRẺ 4 - 12+ TẠI VIỆT NAM</span>
+                <span className="md:hidden">CHO TRẺ 4 - 12+ TẠI VN</span>
               </p>
             </div>
             

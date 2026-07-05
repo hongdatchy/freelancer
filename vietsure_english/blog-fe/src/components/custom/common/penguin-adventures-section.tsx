@@ -11,10 +11,10 @@ export default function PenguinAdventuresSection() {
             KHÁC BIỆT TỪ SERIES PHIM NGẮN TIẾNG ANH
           </h2>
           <h2 className="section-title  text-[#FF6B00] tracking-wider mt-2">
-            &quot;PENGUIN ADVENTURES&quot;
+            &quot;THE HOPE SEED: A PENGUIN ADVENTURE&quot;
           </h2>
           <p className="section-desc mt-4 max-w-7xl mx-auto text-center md:text-justify md:[text-align-last:center]">
-            Penguin Adventures được thiết kế theo từng giai đoạn học gắn liền with những giá trị văn hóa người Việt Nam, giúp trẻ hứng thú học tập và chuyển từ &quot;học tiếng Anh&quot; sang &quot;sử dụng tiếng Anh&quot; một cách tự nhiên, chủ động.
+            Series được thiết kế và lồng ghép theo từng chương trình học gắn liền với những giá trị văn hóa người Việt Nam như lòng biết ơn, sự hiếu thảo, lễ phép, kiên nhẫn, bảo vệ môi trường,... thông qua việc hoàn thành nhiệm vụ ở từng trạm năng lực gắn với các tỉnh thành lớn của VN từ Nam đến Bắc (Cần Thơ, HCM, Đăk Lăk, Đà Nẵng, Hải Phòng và Hà Nội) giúp bé phát triển tính cách để trở thành 1 người có ích và hứng thú học tập, sử dụng tiếng Anh một cách tự nhiên.
           </p>
         </div>
 
@@ -74,7 +74,7 @@ export default function PenguinAdventuresSection() {
             <div className="w-full max-w-[370px] lg:max-w-[420px] aspect-[420/580] lg:aspect-auto lg:h-full relative select-none pointer-events-none filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] rounded-2xl overflow-hidden hover:scale-[1.02] transition-transform duration-300 border-4 border-[#2E357F]">
               <Image
                 src="/images/penguin.png"
-                alt="Poster Penguin Adventures Series Phim Ngắn Tiếng Anh"
+                alt="Poster The Hope Seed: A Penguin Adventure Series Phim Ngắn Tiếng Anh"
                 fill
                 className="object-cover"
                 priority

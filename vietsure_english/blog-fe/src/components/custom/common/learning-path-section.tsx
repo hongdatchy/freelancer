@@ -48,37 +48,37 @@ export default function LearningPathSection() {
                 <h4 className="font-extrabold text-[#2E357F] uppercase leading-tight" style={{ fontSize: '2.5cqi' }}>
                   TIẾNG ANH MẪU GIÁO
                 </h4>
-                <p className="font-bold text-[#2E357F]/80" style={{ fontSize: '1.8cqi' }}>
+                <p className="font-bold text-[#2E357F]/80" style={{ fontSize: '2.4cqi' }}>
                   (Từ 4-5 tuổi)
                 </p>
               </div>
 
               {/* Overlaid text: Card 2 */}
-              <div className="absolute left-[58%] top-[32%] w-[38%] text-left">
+              <div className="absolute left-[58%] top-[31%] w-[38%] text-left">
                 <h4 className="font-extrabold text-[#3b82f6] uppercase leading-tight" style={{ fontSize: '2.5cqi' }}>
                   TIẾNG ANH THIẾU NHI
                 </h4>
-                <p className="font-bold text-[#3b82f6]/80" style={{ fontSize: '1.8cqi' }}>
+                <p className="font-bold text-[#3b82f6]/80" style={{ fontSize: '2.4cqi' }}>
                   (Từ 6 tuổi trở lên)
                 </p>
               </div>
 
               {/* Overlaid text: Card 3 */}
-              <div className="absolute left-[60%] top-[61%] w-[38%] text-left">
+              <div className="absolute left-[60%] top-[60%] w-[38%] text-left">
                 <h4 className="font-extrabold text-[#38bdf8] uppercase leading-tight" style={{ fontSize: '2.5cqi' }}>
                   TIẾNG ANH THIẾU NIÊN
                 </h4>
-                <p className="font-bold text-[#38bdf8]/80" style={{ fontSize: '1.8cqi' }}>
+                <p className="font-bold text-[#38bdf8]/80" style={{ fontSize: '2.4cqi' }}>
                   (Từ 11 tuổi trở lên)
                 </p>
               </div>
 
               {/* Overlaid text: Card 4 */}
-              <div className="absolute left-[45%] top-[87%] w-[46%] text-left">
+              <div className="absolute left-[45%] top-[86%] w-[46%] text-left">
                 <h4 className="font-extrabold text-[#78a5db] uppercase leading-tight" style={{ fontSize: '2.5cqi' }}>
                   IELTS
                 </h4>
-                <p className="font-bold text-[#78a5db]/80" style={{ fontSize: '1.8cqi' }}>
+                <p className="font-bold text-[#78a5db]/80" style={{ fontSize: '2.4cqi' }}>
                   (Từ 13 tuổi trở lên)
                 </p>
               </div>

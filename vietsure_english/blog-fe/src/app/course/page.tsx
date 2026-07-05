@@ -41,7 +41,7 @@ export default function Course() {
                 className="text-[26px] sm:text-[32px] lg:text-[36px] tracking-wide text-white uppercase mb-2 xl:mb-4 text-center xl:text-left"
                 style={{ lineHeight: '1.4', fontWeight: 800, textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}
               >
-                KHÓA HỌC TIẾNG ANH ONLINE<br />
+                KHÓA HỌC TIẾNG ANH ONLINE <br className='hidden lg:block'/>
                 QUỐC TẾ <span className="text-[#ff791a]" style={{ fontWeight: 800 }}>CHẤT LƯỢNG CAO</span>
               </h1>
               {/* Spacer on desktop to give height so background kids are fully visible */}
