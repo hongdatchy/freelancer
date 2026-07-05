@@ -1251,6 +1251,13 @@ export interface PluginUsersPermissionsUser
       'oneToMany',
       'api::teacher-schedule.teacher-schedule'
     >;
+    type: Schema.Attribute.Enumeration<
+      [
+        'Gi\u00E1o vi\u00EAn d\u1EA1y',
+        'Gi\u00E1o vi\u00EAn testing',
+        'Gi\u00E1o vi\u00EAn n\u01B0\u1EDBc ngo\u00E0i',
+      ]
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

@@ -2,13 +2,9 @@ net stop winnat
 net start winnat
 
 npx strapi export --no-encrypt -f exports/data.tar.gz
-
 docker compose exec strapi pnpm strapi import -f exports/export_data.tar.gz --force
 
 
-Chạy dev local: pnpm dev:local
-Chạy dev prod (nối API cloudcamera): pnpm dev:prod
-Build local: pnpm build:local
-Build prod: pnpm build:prod
+docker compose up db2 -d
 
 chmod 777 filename

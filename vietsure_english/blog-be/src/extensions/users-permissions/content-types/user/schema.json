@@ -125,6 +125,14 @@
     "isShowPortal": {
       "type": "boolean",
       "default": true
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "Giáo viên dạy",
+        "Giáo viên testing",
+        "Giáo viên nước ngoài"
+      ]
     }
   }
 }

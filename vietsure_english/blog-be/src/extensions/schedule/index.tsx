@@ -64,6 +64,7 @@ export default function SchedulePage() {
     const [loading, setLoading] = useState(false);
     
     const [selectedSlot, setSelectedSlot] = useState<{day: string, slot: string} | null>(null);
+    const [selectedSlotForView, setSelectedSlotForView] = useState<{day: string, slot: string} | null>(null);
     const [popupBookingType, setPopupBookingType] = useState<'VSE' | 'OTHER'>('VSE');
     const [popupClassCode, setPopupClassCode] = useState('');
 
@@ -106,6 +107,20 @@ export default function SchedulePage() {
         const key = `${day}_${slot}`;
 
         if (schedule[key]) {
+            setSelectedSlotForView({ day, slot });
+        } else {
+            setSelectedSlot({ day, slot });
+            setPopupBookingType('VSE');
+            setPopupClassCode('');
+        }
+    };
+
+    const deleteSchedule = async () => {
+        if (!selectedSlotForView) return;
+        const { day, slot } = selectedSlotForView;
+        const key = `${day}_${slot}`;
+        
+        try {
             await fetch(`/content-manager/collection-types/api::teacher-schedule.teacher-schedule/${schedule[key].id}`, {
                 method: 'DELETE',
                 headers: authHeaders(),
@@ -115,11 +130,10 @@ export default function SchedulePage() {
                 delete s[key];
                 return s;
             });
-        } else {
-            setSelectedSlot({ day, slot });
-            setPopupBookingType('VSE');
-            setPopupClassCode('');
+        } catch(err) {
+            console.error(err);
         }
+        setSelectedSlotForView(null);
     };
 
     const confirmBooking = async () => {
@@ -307,8 +321,8 @@ export default function SchedulePage() {
                             onClick={() => setPopupBookingType('VSE')}
                             style={{
                                 flex: 1, padding: '10px 0', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer',
-                                border: popupBookingType === 'VSE' ? '2px solid #f50e40' : '2px solid #ddd',
-                                background: popupBookingType === 'VSE' ? '#f50e40' : 'white',
+                                border: popupBookingType === 'VSE' ? '2px solid #3F489A' : '2px solid #ddd',
+                                background: popupBookingType === 'VSE' ? '#3F489A' : 'white',
                                 color: popupBookingType === 'VSE' ? 'white' : '#666'
                             }}
                         >
@@ -318,9 +332,9 @@ export default function SchedulePage() {
                             onClick={() => setPopupBookingType('OTHER')}
                             style={{
                                 flex: 1, padding: '10px 0', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer',
-                                border: popupBookingType === 'OTHER' ? '2px solid #e8d5f5' : '2px solid #ddd',
-                                background: popupBookingType === 'OTHER' ? '#e8d5f5' : 'white',
-                                color: popupBookingType === 'OTHER' ? '#666' : '#666'
+                                border: popupBookingType === 'OTHER' ? '2px solid #8B5CF6' : '2px solid #ddd',
+                                background: popupBookingType === 'OTHER' ? '#8B5CF6' : 'white',
+                                color: popupBookingType === 'OTHER' ? 'white' : '#666'
                             }}
                         >
                             Trung tâm khác
@@ -359,11 +373,65 @@ export default function SchedulePage() {
                         <button
                             onClick={confirmBooking}
                             style={{
-                                padding: '8px 16px', borderRadius: 6, border: 'none', background: '#f50e40',
+                                padding: '8px 16px', borderRadius: 6, border: 'none', background: '#FF6B00',
                                 cursor: 'pointer', fontWeight: 'bold', color: 'white'
                             }}
                         >
                             Xác nhận
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {selectedSlotForView && (
+            <div style={{
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999,
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+                <div style={{
+                    background: 'white', padding: 24, borderRadius: 8, width: 400,
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
+                }}>
+                    <div style={{ marginBottom: 16, textAlign: 'center', fontWeight: 'bold', fontSize: 18, color: '#333' }}>
+                        Lịch đã đặt
+                    </div>
+                    <div style={{ marginBottom: 24, textAlign: 'center', color: '#666' }}>
+                        {(() => {
+                            const key = `${selectedSlotForView.day}_${selectedSlotForView.slot}`;
+                            const item = schedule[key];
+                            return (
+                                <span>
+                                    {selectedSlotForView.slot} ({selectedSlotForView.day})
+                                    {item?.student_name ? ` — ${item.student_name}` : ''}
+                                </span>
+                            );
+                        })()}
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <button
+                            onClick={deleteSchedule}
+                            style={{
+                                padding: '12px', borderRadius: 6, border: '2px solid #fecaca', background: '#fef2f2',
+                                cursor: 'pointer', fontWeight: 'bold', color: '#dc2626', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8
+                            }}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4h6v2" />
+                            </svg>
+                            Xóa lịch học
+                        </button>
+
+                        <button
+                            onClick={() => setSelectedSlotForView(null)}
+                            style={{
+                                padding: '10px', borderRadius: 6, border: 'none', background: '#f0f0f0',
+                                cursor: 'pointer', fontWeight: 'bold', color: '#666'
+                            }}
+                        >
+                            Đóng
                         </button>
                     </div>
                 </div>
