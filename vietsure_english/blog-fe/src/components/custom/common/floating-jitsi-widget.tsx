@@ -210,7 +210,7 @@ export default function FloatingJitsiWidget() {
             'etherpad', 'feedback', 'filmstrip', 'fullscreen', 'hangup',
             'help', 'highlight', 'invite', 'livestreaming', 'microphone',
             'mute-everyone', 'mute-video-everyone', 'participants-pane',
-            'profile', 'raisehand', 'recording', 'select-background',
+            'profile', 'raisehand', 'select-background',
             'settings', 'shareaudio', 'sharedvideo', 'stats', 'tileview',
             'toggle-camera', 'videoquality', 'whiteboard', 'polls'
           ],
@@ -228,16 +228,20 @@ export default function FloatingJitsiWidget() {
           participantsRef.current.push(event.id);
         }
         if (!!userRef.current && bgImageRef.current) {
-          // Delay sending by 2 seconds to ensure the Jitsi WebRTC Bridge Channel is fully open
+          // Delay sending by 5 seconds to ensure the Jitsi WebRTC Bridge Channel is fully open
           setTimeout(() => {
             if (apiRef.current && bgImageRef.current) {
               console.log("📤 Delay-sending current whiteboard background to participant:", event.id);
-              apiRef.current.executeCommand('sendEndpointTextMessage', event.id, JSON.stringify({
-                type: 'SET_WHITEBOARD_BACKGROUND',
-                imageUrl: bgImageRef.current
-              }));
+              try {
+                apiRef.current.executeCommand('sendEndpointTextMessage', event.id, JSON.stringify({
+                  type: 'SET_WHITEBOARD_BACKGROUND',
+                  imageUrl: bgImageRef.current
+                }));
+              } catch (e) {
+                console.warn("Could not send whiteboard background (Bridge Channel might not be open yet)", e);
+              }
             }
-          }, 2000);
+          }, 5000);
         }
       });
 
@@ -258,14 +262,20 @@ export default function FloatingJitsiWidget() {
 
       // Push background image state to Jitsi iframe when conference joins
       apiRef.current.addEventListener('videoConferenceJoined', () => {
-        if (bgImage && apiRef.current) {
-          const iframe = containerRef.current?.querySelector('iframe');
-          if (iframe) {
-            iframe.contentWindow?.postMessage({
-              type: 'SET_WHITEBOARD_BACKGROUND',
-              imageUrl: bgImage
-            }, '*');
+        // Auto-start recording
+        setTimeout(() => {
+          if (apiRef.current) {
+            apiRef.current.executeCommand('startRecording', {
+              mode: 'file'
+            });
           }
+        }, 1000);
+
+        if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
+          apiRef.current.getIFrame().contentWindow.postMessage({
+            type: 'SET_WHITEBOARD_BACKGROUND',
+            imageUrl: bgImageRef.current
+          }, '*');
         }
       });
 

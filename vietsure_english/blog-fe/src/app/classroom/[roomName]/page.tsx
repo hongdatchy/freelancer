@@ -167,6 +167,15 @@ export default function ClassroomPage() {
     });
 
     apiRef.current.addEventListener('videoConferenceJoined', () => {
+      // Auto-start recording
+      setTimeout(() => {
+        if (apiRef.current) {
+          apiRef.current.executeCommand('startRecording', {
+            mode: 'file'
+          });
+        }
+      }, 1000);
+
       if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
         apiRef.current.getIFrame().contentWindow.postMessage({
           type: 'SET_WHITEBOARD_BACKGROUND',
