@@ -62,20 +62,55 @@ export default {
             // Filename format: YYYY-MM-DD-HH-mm-ss.mp4
             const timestamp = filename.replace('.mp4', '');
             
-            // Format timestamp into date and time
-            // Example: 2026-07-05-05-35-46
-            const datePart = timestamp.substring(0, 10); // 2026-07-05
-            const timePart = timestamp.substring(11).replace(/-/g, ':'); // 05:35:46
+            // Parse UTC parts
+            const year = parseInt(timestamp.substring(0, 4));
+            const month = parseInt(timestamp.substring(5, 7)) - 1; // 0-indexed
+            const day = parseInt(timestamp.substring(8, 10));
+            const hour = parseInt(timestamp.substring(11, 13));
+            const minute = parseInt(timestamp.substring(14, 16));
+            const second = parseInt(timestamp.substring(17, 19));
+            
+            // Create UTC Date object
+            const utcDate = new Date(Date.UTC(year, month, day, hour, minute, second));
+            
+            // Convert to Vietnam Time (UTC+7)
+            let localDateStr = '';
+            let localTimeStr = '';
+            try {
+              const formatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Asia/Ho_Chi_Minh',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+              });
+              const parts = formatter.formatToParts(utcDate);
+              const y = parts.find(p => p.type === 'year')?.value;
+              const m = parts.find(p => p.type === 'month')?.value;
+              const d = parts.find(p => p.type === 'day')?.value;
+              const hr = parts.find(p => p.type === 'hour')?.value;
+              const min = parts.find(p => p.type === 'minute')?.value;
+              const sec = parts.find(p => p.type === 'second')?.value;
+              
+              localDateStr = `${y}-${m}-${d}`;
+              localTimeStr = `${hr}:${min}:${sec}`;
+            } catch (e) {
+              // Fallback if formatting fails
+              localDateStr = timestamp.substring(0, 10);
+              localTimeStr = timestamp.substring(11).replace(/-/g, ':');
+            }
             
             // Build the download/stream URL
-            // MinIO port is 9000. If Strapi is running locally, we can point to http://localhost:9000
             const url = `${process.env.MINIO_ENDPOINT || 'http://127.0.0.1:9000'}/${BUCKET}/${key}`;
 
             return {
               filename,
               timestamp,
-              date: datePart,
-              time: timePart,
+              date: localDateStr,
+              time: localTimeStr,
               size: item.Size,
               url,
             };

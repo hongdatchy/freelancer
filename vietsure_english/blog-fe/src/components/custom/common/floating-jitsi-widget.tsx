@@ -524,7 +524,7 @@ export default function FloatingJitsiWidget() {
                 </div> */}
                 <div>
                   <p className="text-white font-bold text-xs leading-none">VIETSURE ENGLISH</p>
-                  <p className="text-white/60 text-[10px]">Phòng: {roomName}</p>
+                  <p className="text-white/60 text-[10px]">Phòng: {roomName.split('_GV_')[0]}</p>
                 </div>
               </div>
               <div className="flex items-center gap-1">

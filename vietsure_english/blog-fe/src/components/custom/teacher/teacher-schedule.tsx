@@ -69,6 +69,7 @@ export function TeacherScheduleView({ teacherId }: Props) {
 
   // Popup for viewing/acting on an existing booked slot
   const [selectedSlotForView, setSelectedSlotForView] = useState<{ day: string, slot: string } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const canEdit = !teacherId && !!user;
 
@@ -407,24 +408,47 @@ export function TeacherScheduleView({ teacherId }: Props) {
 
               if (item?.isVietSureEnglish) {
                 return (
-                  <button
-                    onClick={() => {
-                      if (!selectedSlotForView) return;
-                      const cleanClass = (item?.class_code?.trim()
-                        ? item.class_code.trim()
-                        : `${selectedSlotForView.day}-${selectedSlotForView.slot}`).replace(/\s+/g, '_');
-                      const teacherSuffix = resolvedTeacherId ? `_GV_${resolvedTeacherId}` : '';
-                      const roomName = `${cleanClass}${teacherSuffix}`;
-                      setSelectedSlotForView(null);
-                      startMeeting(roomName);
-                    }}
-                    className="w-full py-3 rounded-xl text-sm font-bold bg-[#3F489A] text-white hover:bg-[#2E357F] transition-all shadow-md flex items-center justify-center gap-2"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M15 10l5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" />
-                    </svg>
-                    Vào dạy học
-                  </button>
+                  <>
+                    <button
+                      onClick={() => {
+                        if (!selectedSlotForView) return;
+                        const cleanClass = (item?.class_code?.trim()
+                          ? item.class_code.trim()
+                          : `${selectedSlotForView.day}-${selectedSlotForView.slot}`).replace(/\s+/g, '_');
+                        const teacherSuffix = resolvedTeacherId ? `_GV_${resolvedTeacherId}` : '';
+                        const roomName = `${cleanClass}${teacherSuffix}`;
+                        setSelectedSlotForView(null);
+                        startMeeting(roomName);
+                      }}
+                      className="w-full py-3 rounded-xl text-sm font-bold bg-[#3F489A] text-white hover:bg-[#2E357F] transition-all shadow-md flex items-center justify-center gap-2"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M15 10l5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" />
+                      </svg>
+                      Vào dạy học
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (!selectedSlotForView) return;
+                        const cleanClass = (item?.class_code?.trim()
+                          ? item.class_code.trim()
+                          : `${selectedSlotForView.day}-${selectedSlotForView.slot}`).replace(/\s+/g, '_');
+                        const teacherSuffix = resolvedTeacherId ? `_GV_${resolvedTeacherId}` : '';
+                        const roomName = `${cleanClass}${teacherSuffix}`;
+                        const link = `${window.location.origin}/classroom/${roomName}`;
+                        navigator.clipboard.writeText(link);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                      className="w-full py-3 rounded-xl text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-md flex items-center justify-center gap-2"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                      </svg>
+                      {copied ? 'Đã copy link học viên!' : 'Copy link gửi học viên'}
+                    </button>
+                  </>
                 );
               }
               return null;

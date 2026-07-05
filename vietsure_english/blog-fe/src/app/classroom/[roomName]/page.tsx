@@ -134,6 +134,8 @@ export default function ClassroomPage() {
     // Only generate Jitsi JWT for host (teacher). Students join as standard guest without JWT.
     const token = isHost ? await generateJitsiJWT() : undefined;
 
+    const cleanDisplayRoomName = roomName.split('_GV_')[0];
+
     apiRef.current = new window.JitsiMeetExternalAPI(JITSI_SERVER, {
       roomName,
       ...(token ? { jwt: token } : {}),
@@ -149,6 +151,7 @@ export default function ClassroomPage() {
         startWithVideoMuted: false,
         disableDeepLinking: true,
         prejoinPageEnabled: false,
+        subject: cleanDisplayRoomName, // Hide technical room name inside Jitsi
         whiteboard: {
           enabled: true,
         },
@@ -159,7 +162,8 @@ export default function ClassroomPage() {
           'microphone', 'camera', 'closedcaptions', 'desktop',
           'fullscreen', 'fodeviceselection', 'hangup', 'chat',
           'settings', 'raisehand', 'videoquality', 'filmstrip',
-          'tileview', 'download', 'help', 'whiteboard', 'localrecording'
+          'tileview', 'download', 'help', 'whiteboard',
+          ...(isHost ? ['localrecording'] : [])
         ],
       },
       interfaceConfigOverwrite: {
@@ -170,14 +174,16 @@ export default function ClassroomPage() {
     });
 
     apiRef.current.addEventListener('videoConferenceJoined', () => {
-      // Auto-start recording
-      setTimeout(() => {
-        if (apiRef.current) {
-          apiRef.current.executeCommand('startRecording', {
-            mode: 'file'
-          });
-        }
-      }, 1000);
+      // Auto-start recording only for the teacher/host
+      if (isHost) {
+        setTimeout(() => {
+          if (apiRef.current) {
+            apiRef.current.executeCommand('startRecording', {
+              mode: 'file'
+            });
+          }
+        }, 1000);
+      }
 
       if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
         apiRef.current.getIFrame().contentWindow.postMessage({
@@ -211,7 +217,7 @@ export default function ClassroomPage() {
           </div>
           <div>
             <p className="text-white font-black text-sm tracking-wide">VIETSURE ENGLISH</p>
-            <p className="text-white/60 text-xs">Phòng: {roomName}</p>
+            <p className="text-white/60 text-xs">Phòng: {roomName.split('_GV_')[0]}</p>
           </div>
         </div>
 
