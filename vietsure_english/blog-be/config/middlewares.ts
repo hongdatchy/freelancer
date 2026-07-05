@@ -8,6 +8,7 @@ export default [
         useDefaults: true,
         directives: {
           'frame-ancestors': ["'self'", 'http://localhost:3000'],
+          'media-src': ["'self'", 'data:', 'blob:', 'http://127.0.0.1:9000', 'http://localhost:9000', process.env.MINIO_ENDPOINT].filter(Boolean),
         },
       },
     },

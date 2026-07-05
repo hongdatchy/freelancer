@@ -152,14 +152,17 @@ export default function ClassroomPage() {
         whiteboard: {
           enabled: true,
         },
-      },
-      interfaceConfigOverwrite: {
-        TOOLBAR_BUTTONS: [
+        localRecording: {
+          enabled: true,
+        },
+        toolbarButtons: [
           'microphone', 'camera', 'closedcaptions', 'desktop',
           'fullscreen', 'fodeviceselection', 'hangup', 'chat',
           'settings', 'raisehand', 'videoquality', 'filmstrip',
-          'tileview', 'download', 'help', 'whiteboard',
+          'tileview', 'download', 'help', 'whiteboard', 'localrecording'
         ],
+      },
+      interfaceConfigOverwrite: {
         SHOW_JITSI_WATERMARK: false,
         SHOW_WATERMARK_FOR_GUESTS: false,
         DEFAULT_BACKGROUND: '#1d285c',

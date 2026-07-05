@@ -28,6 +28,21 @@ export default {
       },
       permissions: [],
     });
+
+    // Thêm tab Quản lý Bản ghi vào sidebar
+    app.addMenuLink({
+      to: '/class-record',
+      icon: () => '📹',
+      intlLabel: {
+        id: 'class-record.label',
+        defaultMessage: 'Class Recordings',
+      },
+      Component: async () => {
+        const { default: ClassRecordPage } = await import('../extensions/class-record');
+        return { default: ClassRecordPage };
+      },
+      permissions: [],
+    });
   },
 
   register(app: StrapiApp) {

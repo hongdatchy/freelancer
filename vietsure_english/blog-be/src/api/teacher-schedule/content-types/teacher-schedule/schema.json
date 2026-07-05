@@ -17,7 +17,7 @@
     "time_slot": {
       "type": "string"
     },
-    "student_name": {
+    "class_code": {
       "type": "string"
     },
     "users_permissions_user": {

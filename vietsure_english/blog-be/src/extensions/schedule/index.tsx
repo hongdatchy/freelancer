@@ -40,7 +40,7 @@ interface User {
 interface ScheduleMap {
     [key: string]: {
         id: string;
-        student_name?: string;
+        class_code?: string;
         isVietSureEnglish?: boolean;
     };
 }
@@ -62,9 +62,9 @@ export default function SchedulePage() {
     const [selectedUser, setSelectedUser] = useState<string>('');
     const [schedule, setSchedule] = useState<ScheduleMap>({});
     const [loading, setLoading] = useState(false);
-    
-    const [selectedSlot, setSelectedSlot] = useState<{day: string, slot: string} | null>(null);
-    const [selectedSlotForView, setSelectedSlotForView] = useState<{day: string, slot: string} | null>(null);
+
+    const [selectedSlot, setSelectedSlot] = useState<{ day: string, slot: string } | null>(null);
+    const [selectedSlotForView, setSelectedSlotForView] = useState<{ day: string, slot: string } | null>(null);
     const [popupBookingType, setPopupBookingType] = useState<'VSE' | 'OTHER'>('VSE');
     const [popupClassCode, setPopupClassCode] = useState('');
 
@@ -93,7 +93,7 @@ export default function SchedulePage() {
                     const key = `${item.day}_${item.time_slot}`;
                     map[key] = {
                         id: item.documentId,
-                        student_name: item.student_name || '',
+                        class_code: item.class_code || '',
                         isVietSureEnglish: item.isVietSureEnglish || false,
                     };
                 });
@@ -119,7 +119,7 @@ export default function SchedulePage() {
         if (!selectedSlotForView) return;
         const { day, slot } = selectedSlotForView;
         const key = `${day}_${slot}`;
-        
+
         try {
             await fetch(`/content-manager/collection-types/api::teacher-schedule.teacher-schedule/${schedule[key].id}`, {
                 method: 'DELETE',
@@ -130,7 +130,7 @@ export default function SchedulePage() {
                 delete s[key];
                 return s;
             });
-        } catch(err) {
+        } catch (err) {
             console.error(err);
         }
         setSelectedSlotForView(null);
@@ -140,7 +140,7 @@ export default function SchedulePage() {
         if (!selectedSlot) return;
         const { day, slot } = selectedSlot;
         const key = `${day}_${slot}`;
-        
+
         const isVSE = popupBookingType === 'VSE';
         const studentName = isVSE ? popupClassCode : '';
 
@@ -150,7 +150,7 @@ export default function SchedulePage() {
             body: JSON.stringify({
                 day,
                 time_slot: slot,
-                student_name: studentName,
+                class_code: studentName,
                 isVietSureEnglish: isVSE,
                 users_permissions_user: {
                     connect: [{ id: Number(selectedUser), isTemporary: true }],
@@ -166,9 +166,9 @@ export default function SchedulePage() {
 
         setSchedule(prev => ({
             ...prev,
-            [key]: { id: newItem.data.documentId, student_name: studentName, isVietSureEnglish: isVSE },
+            [key]: { id: newItem.data.documentId, class_code: studentName, isVietSureEnglish: isVSE },
         }));
-        
+
         setSelectedSlot(null);
     };
 
@@ -176,267 +176,267 @@ export default function SchedulePage() {
 
     return (
         <>
-        <Box padding={8}>
-            <Typography variant="alpha" style={{ marginBottom: 24, display: 'block', fontSize: '2rem' }}>
-                Thời khoá biểu của giáo viên VietSure English !
-            </Typography>
+            <Box padding={8}>
+                <Typography variant="alpha" style={{ marginBottom: 24, display: 'block', fontSize: '2rem' }}>
+                    Thời khoá biểu của giáo viên VietSure English !
+                </Typography>
 
-            <Box style={{ marginBottom: 24, maxWidth: 320 }}>
-                <SingleSelect
-                    placeholder="-- Choose Teacher --"
-                    value={selectedUser}
-                    onChange={(val: string) => setSelectedUser(val)}
-                >
-                    {users.map(u => (
-                        <SingleSelectOption key={u.id} value={String(u.id)}>
-                            {getUserLabel(u)}
-                        </SingleSelectOption>
-                    ))}
-                </SingleSelect>
+                <Box style={{ marginBottom: 24, maxWidth: 320 }}>
+                    <SingleSelect
+                        placeholder="-- Choose Teacher --"
+                        value={selectedUser}
+                        onChange={(val: string) => setSelectedUser(val)}
+                    >
+                        {users.map(u => (
+                            <SingleSelectOption key={u.id} value={String(u.id)}>
+                                {getUserLabel(u)}
+                            </SingleSelectOption>
+                        ))}
+                    </SingleSelect>
+                </Box>
+
+                {/* Removed Toggle */}
+
+                {loading && <Loader>Đang tải lịch...</Loader>}
+
+                {selectedUser && !loading && (
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                            <thead>
+                                <tr>
+                                    <th style={{ ...thStyle, background: 'white', border: '1px solid #e0f2fe', color: '#3F489A', textAlign: 'left' }}>
+                                        <div style={{ fontWeight: 'bold', fontSize: 12 }}>ĐÃ CÓ LỊCH</div>
+                                    </th>
+                                    {DAYS.map(d => (
+                                        <th key={d} style={thStyle}>{d}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {TIME_SLOTS.map(slot => (
+                                    <tr key={slot}>
+                                        <td style={{ ...tdStyle, fontWeight: 700, background: 'white', color: '#3F489A', textAlign: 'left', paddingLeft: 12, border: '1px solid #e0f2fe' }}>
+                                            {slot}
+                                        </td>
+                                        {DAYS.map(day => {
+                                            const key = `${day}_${slot}`;
+                                            const item = schedule[key];
+                                            const active = !!item;
+                                            const isVSE = item?.isVietSureEnglish;
+
+                                            return (
+                                                <td
+                                                    key={day}
+                                                    onClick={() => handleCellClick(day, slot)}
+                                                    style={{
+                                                        ...tdStyle,
+                                                        height: 42,
+                                                        padding: 4,
+                                                        background: active ? '#3F489A' : '#F5F7FC',
+                                                        cursor: 'pointer',
+                                                        textAlign: 'center',
+                                                        userSelect: 'none',
+                                                        transition: 'background 0.15s',
+                                                        verticalAlign: 'middle',
+                                                        border: '2px solid white', // creates spacing effect
+                                                    }}
+                                                >
+                                                    {active ? (
+                                                        <div style={{
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            height: '100%',
+                                                            width: '100%'
+                                                        }}>
+                                                            {isVSE ? (
+                                                                <div style={{
+                                                                    width: '80%',
+                                                                    height: '75%',
+                                                                    boxSizing: 'border-box',
+                                                                    fontSize: 10,
+                                                                    padding: '2px 4px',
+                                                                    borderRadius: 3,
+                                                                    textAlign: 'center',
+                                                                    color: '#3F489A',
+                                                                    fontWeight: 'bold',
+                                                                    background: 'rgba(255, 255, 255, 0.95)',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    overflow: 'hidden',
+                                                                    textOverflow: 'ellipsis',
+                                                                    whiteSpace: 'nowrap'
+                                                                }}>
+                                                                    {schedule[key].class_code || 'VSE'}
+                                                                </div>
+                                                            ) : (
+                                                                <div style={{
+                                                                    width: '80%',
+                                                                    height: '75%',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    color: 'white',
+                                                                    fontSize: 10,
+                                                                    fontWeight: 'bold',
+                                                                    lineHeight: '1.2'
+                                                                }}>Trung tâm<br />khác</div>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <span style={{ color: '#8E9AD5', fontWeight: 600, fontSize: 14 }}>x</span>
+                                                    )}
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </Box>
 
-            {/* Removed Toggle */}
+            {selectedSlot && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                    <div style={{
+                        background: 'white', padding: 24, borderRadius: 8, width: 400,
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
+                    }}>
+                        <div style={{ marginBottom: 16, textAlign: 'center', fontWeight: 'bold', fontSize: 18, color: '#333' }}>
+                            Đăng ký lịch trống
+                        </div>
+                        <div style={{ marginBottom: 24, textAlign: 'center', color: '#666' }}>
+                            Lịch: {selectedSlot.slot} ({selectedSlot.day})
+                        </div>
 
-            {loading && <Loader>Đang tải lịch...</Loader>}
+                        <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
+                            <button
+                                onClick={() => setPopupBookingType('VSE')}
+                                style={{
+                                    flex: 1, padding: '10px 0', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer',
+                                    border: popupBookingType === 'VSE' ? '2px solid #3F489A' : '2px solid #ddd',
+                                    background: popupBookingType === 'VSE' ? '#3F489A' : 'white',
+                                    color: popupBookingType === 'VSE' ? 'white' : '#666'
+                                }}
+                            >
+                                VietSure English
+                            </button>
+                            <button
+                                onClick={() => setPopupBookingType('OTHER')}
+                                style={{
+                                    flex: 1, padding: '10px 0', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer',
+                                    border: popupBookingType === 'OTHER' ? '2px solid #8B5CF6' : '2px solid #ddd',
+                                    background: popupBookingType === 'OTHER' ? '#8B5CF6' : 'white',
+                                    color: popupBookingType === 'OTHER' ? 'white' : '#666'
+                                }}
+                            >
+                                Trung tâm khác
+                            </button>
+                        </div>
 
-            {selectedUser && !loading && (
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                        <thead>
-                            <tr>
-                                <th style={{...thStyle, background: 'white', border: '1px solid #e0f2fe', color: '#3F489A', textAlign: 'left'}}>
-                                    <div style={{ fontWeight: 'bold', fontSize: 12 }}>ĐÃ CÓ LỊCH</div>
-                                </th>
-                                {DAYS.map(d => (
-                                    <th key={d} style={thStyle}>{d}</th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {TIME_SLOTS.map(slot => (
-                                <tr key={slot}>
-                                    <td style={{ ...tdStyle, fontWeight: 700, background: 'white', color: '#3F489A', textAlign: 'left', paddingLeft: 12, border: '1px solid #e0f2fe' }}>
-                                        {slot}
-                                    </td>
-                                    {DAYS.map(day => {
-                                        const key = `${day}_${slot}`;
-                                        const item = schedule[key];
-                                        const active = !!item;
-                                        const isVSE = item?.isVietSureEnglish;
+                        {popupBookingType === 'VSE' && (
+                            <div style={{ marginBottom: 20 }}>
+                                <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold', fontSize: 14, color: '#333' }}>
+                                    Mã lớp học <span style={{ color: 'red' }}>*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={popupClassCode}
+                                    onChange={(e) => setPopupClassCode(e.target.value)}
+                                    placeholder="Nhập mã lớp..."
+                                    autoFocus
+                                    style={{
+                                        width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #ddd',
+                                        fontSize: 14, boxSizing: 'border-box'
+                                    }}
+                                />
+                            </div>
+                        )}
 
-                                        return (
-                                            <td
-                                                key={day}
-                                                onClick={() => handleCellClick(day, slot)}
-                                                style={{
-                                                    ...tdStyle,
-                                                    height: 42,
-                                                    padding: 4,
-                                                    background: active ? '#3F489A' : '#F5F7FC',
-                                                    cursor: 'pointer',
-                                                    textAlign: 'center',
-                                                    userSelect: 'none',
-                                                    transition: 'background 0.15s',
-                                                    verticalAlign: 'middle',
-                                                    border: '2px solid white', // creates spacing effect
-                                                }}
-                                            >
-                                                {active ? (
-                                                    <div style={{
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        height: '100%',
-                                                        width: '100%'
-                                                    }}>
-                                                        {isVSE ? (
-                                                            <div style={{
-                                                                width: '80%',
-                                                                height: '75%',
-                                                                boxSizing: 'border-box',
-                                                                fontSize: 10,
-                                                                padding: '2px 4px',
-                                                                borderRadius: 3,
-                                                                textAlign: 'center',
-                                                                color: '#3F489A',
-                                                                fontWeight: 'bold',
-                                                                background: 'rgba(255, 255, 255, 0.95)',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                overflow: 'hidden',
-                                                                textOverflow: 'ellipsis',
-                                                                whiteSpace: 'nowrap'
-                                                            }}>
-                                                                {schedule[key].student_name || 'VSE'}
-                                                            </div>
-                                                        ) : (
-                                                            <div style={{
-                                                                width: '80%',
-                                                                height: '75%',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                color: 'white',
-                                                                fontSize: 10,
-                                                                fontWeight: 'bold',
-                                                                lineHeight: '1.2'
-                                                            }}>Trung tâm<br/>khác</div>
-                                                        )}
-                                                    </div>
-                                                ) : (
-                                                    <span style={{ color: '#8E9AD5', fontWeight: 600, fontSize: 14 }}>x</span>
-                                                )}
-                                            </td>
-                                        );
-                                    })}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                        <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 30 }}>
+                            <button
+                                onClick={() => setSelectedSlot(null)}
+                                style={{
+                                    padding: '8px 16px', borderRadius: 6, border: 'none', background: '#f0f0f0',
+                                    cursor: 'pointer', fontWeight: 'bold', color: '#666'
+                                }}
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                onClick={confirmBooking}
+                                style={{
+                                    padding: '8px 16px', borderRadius: 6, border: 'none', background: '#FF6B00',
+                                    cursor: 'pointer', fontWeight: 'bold', color: 'white'
+                                }}
+                            >
+                                Xác nhận
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
-        </Box>
 
-        {selectedSlot && (
-            <div style={{
-                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999,
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
+            {selectedSlotForView && (
                 <div style={{
-                    background: 'white', padding: 24, borderRadius: 8, width: 400,
-                    boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                    <div style={{ marginBottom: 16, textAlign: 'center', fontWeight: 'bold', fontSize: 18, color: '#333' }}>
-                        Đăng ký lịch trống
-                    </div>
-                    <div style={{ marginBottom: 24, textAlign: 'center', color: '#666' }}>
-                        Lịch: {selectedSlot.slot} ({selectedSlot.day})
-                    </div>
-                    
-                    <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
-                        <button
-                            onClick={() => setPopupBookingType('VSE')}
-                            style={{
-                                flex: 1, padding: '10px 0', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer',
-                                border: popupBookingType === 'VSE' ? '2px solid #3F489A' : '2px solid #ddd',
-                                background: popupBookingType === 'VSE' ? '#3F489A' : 'white',
-                                color: popupBookingType === 'VSE' ? 'white' : '#666'
-                            }}
-                        >
-                            VietSure English
-                        </button>
-                        <button
-                            onClick={() => setPopupBookingType('OTHER')}
-                            style={{
-                                flex: 1, padding: '10px 0', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer',
-                                border: popupBookingType === 'OTHER' ? '2px solid #8B5CF6' : '2px solid #ddd',
-                                background: popupBookingType === 'OTHER' ? '#8B5CF6' : 'white',
-                                color: popupBookingType === 'OTHER' ? 'white' : '#666'
-                            }}
-                        >
-                            Trung tâm khác
-                        </button>
-                    </div>
-
-                    {popupBookingType === 'VSE' && (
-                        <div style={{ marginBottom: 20 }}>
-                            <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold', fontSize: 14, color: '#333' }}>
-                                Mã lớp học <span style={{ color: 'red' }}>*</span>
-                            </label>
-                            <input
-                                type="text"
-                                value={popupClassCode}
-                                onChange={(e) => setPopupClassCode(e.target.value)}
-                                placeholder="Nhập mã lớp..."
-                                autoFocus
-                                style={{
-                                    width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #ddd',
-                                    fontSize: 14, boxSizing: 'border-box'
-                                }}
-                            />
+                    <div style={{
+                        background: 'white', padding: 24, borderRadius: 8, width: 400,
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
+                    }}>
+                        <div style={{ marginBottom: 16, textAlign: 'center', fontWeight: 'bold', fontSize: 18, color: '#333' }}>
+                            Lịch đã đặt
                         </div>
-                    )}
+                        <div style={{ marginBottom: 24, textAlign: 'center', color: '#666' }}>
+                            {(() => {
+                                const key = `${selectedSlotForView.day}_${selectedSlotForView.slot}`;
+                                const item = schedule[key];
+                                return (
+                                    <span>
+                                        {selectedSlotForView.slot} ({selectedSlotForView.day})
+                                        {item?.class_code ? ` — ${item.class_code}` : ''}
+                                    </span>
+                                );
+                            })()}
+                        </div>
 
-                    <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 30 }}>
-                        <button
-                            onClick={() => setSelectedSlot(null)}
-                            style={{
-                                padding: '8px 16px', borderRadius: 6, border: 'none', background: '#f0f0f0',
-                                cursor: 'pointer', fontWeight: 'bold', color: '#666'
-                            }}
-                        >
-                            Hủy
-                        </button>
-                        <button
-                            onClick={confirmBooking}
-                            style={{
-                                padding: '8px 16px', borderRadius: 6, border: 'none', background: '#FF6B00',
-                                cursor: 'pointer', fontWeight: 'bold', color: 'white'
-                            }}
-                        >
-                            Xác nhận
-                        </button>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <button
+                                onClick={deleteSchedule}
+                                style={{
+                                    padding: '12px', borderRadius: 6, border: '2px solid #fecaca', background: '#fef2f2',
+                                    cursor: 'pointer', fontWeight: 'bold', color: '#dc2626', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8
+                                }}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4h6v2" />
+                                </svg>
+                                Xóa lịch học
+                            </button>
+
+                            <button
+                                onClick={() => setSelectedSlotForView(null)}
+                                style={{
+                                    padding: '10px', borderRadius: 6, border: 'none', background: '#f0f0f0',
+                                    cursor: 'pointer', fontWeight: 'bold', color: '#666'
+                                }}
+                            >
+                                Đóng
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        )}
-
-        {selectedSlotForView && (
-            <div style={{
-                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999,
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-                <div style={{
-                    background: 'white', padding: 24, borderRadius: 8, width: 400,
-                    boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
-                }}>
-                    <div style={{ marginBottom: 16, textAlign: 'center', fontWeight: 'bold', fontSize: 18, color: '#333' }}>
-                        Lịch đã đặt
-                    </div>
-                    <div style={{ marginBottom: 24, textAlign: 'center', color: '#666' }}>
-                        {(() => {
-                            const key = `${selectedSlotForView.day}_${selectedSlotForView.slot}`;
-                            const item = schedule[key];
-                            return (
-                                <span>
-                                    {selectedSlotForView.slot} ({selectedSlotForView.day})
-                                    {item?.student_name ? ` — ${item.student_name}` : ''}
-                                </span>
-                            );
-                        })()}
-                    </div>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        <button
-                            onClick={deleteSchedule}
-                            style={{
-                                padding: '12px', borderRadius: 6, border: '2px solid #fecaca', background: '#fef2f2',
-                                cursor: 'pointer', fontWeight: 'bold', color: '#dc2626', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8
-                            }}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4h6v2" />
-                            </svg>
-                            Xóa lịch học
-                        </button>
-
-                        <button
-                            onClick={() => setSelectedSlotForView(null)}
-                            style={{
-                                padding: '10px', borderRadius: 6, border: 'none', background: '#f0f0f0',
-                                cursor: 'pointer', fontWeight: 'bold', color: '#666'
-                            }}
-                        >
-                            Đóng
-                        </button>
-                    </div>
-                </div>
-            </div>
-        )}
+            )}
         </>
     );
 }

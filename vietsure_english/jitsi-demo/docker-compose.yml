@@ -614,6 +614,24 @@ services:
         networks:
             meet.jitsi:
 
+    minio-mc:
+        image: minio/mc
+        depends_on:
+            - minio
+        environment:
+            - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+            - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+            - MINIO_BUCKET=${MINIO_BUCKET:-jitsi-recordings}
+        entrypoint: >
+            /bin/sh -c "
+            until /usr/bin/mc alias set myminio http://minio:9000 $MINIO_ACCESS_KEY $MINIO_SECRET_KEY; do echo 'Waiting for MinIO...'; sleep 1; done;
+            /usr/bin/mc mb --ignore-existing myminio/$MINIO_BUCKET;
+            /usr/bin/mc anonymous set download myminio/$MINIO_BUCKET;
+            exit 0;
+            "
+        networks:
+            meet.jitsi:
+
 # Custom network so all services can communicate using a FQDN
 networks:
     meet.jitsi:

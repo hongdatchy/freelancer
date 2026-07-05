@@ -694,6 +694,7 @@ export interface ApiTeacherScheduleTeacherSchedule
     draftAndPublish: true;
   };
   attributes: {
+    class_code: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -706,7 +707,6 @@ export interface ApiTeacherScheduleTeacherSchedule
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
-    student_name: Schema.Attribute.String;
     time_slot: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
