@@ -13,6 +13,12 @@ COPY . .
 
 RUN pnpm build
 
+# Chuyển quyền sở hữu thư mục app cho user node (tránh lỗi file sinh ra bị quyền root)
+RUN chown -R node:node /app
+
+# Chuyển sang chạy bằng user node thay vì root
+USER node
+
 EXPOSE 1337
 
 CMD ["pnpm", "start"]
