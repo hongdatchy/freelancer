@@ -104,7 +104,8 @@ export default {
             }
             
             // Build the download/stream URL
-            const url = `${process.env.MINIO_ENDPOINT || 'http://127.0.0.1:9000'}/${BUCKET}/${key}`;
+            const externalEndpoint = process.env.MINIO_EXTERNAL_ENDPOINT || process.env.MINIO_ENDPOINT || 'http://127.0.0.1:9000';
+            const url = `${externalEndpoint}/${BUCKET}/${key}`;
 
             return {
               filename,
