@@ -153,7 +153,7 @@ export default function About() {
                 style={{ bottom: -170, right: -0, width: 190, height: 190 }} />
 
               <div className="flex items-center justify-center h-full">
-                <Image src="/images/Vietsure English_Logo-15.png" alt="logo" width={290} height={290} className="select-none pointer-events-none object-contain" />
+                <img src="/images/Vietsure English_Logo-15.png" alt="logo" width={290} height={290} className="select-none pointer-events-none object-contain" />
               </div>
             </div>
           </div>
@@ -163,7 +163,7 @@ export default function About() {
 
             {/* Logo giữa */}
             <div className="flex items-center justify-center mb-4">
-              <Image src="/images/Vietsure English_Logo-15.png" alt="logo" width={160} height={160} className="object-contain" />
+              <img src="/images/Vietsure English_Logo-15.png" alt="logo" width={160} height={160} className="object-contain" />
             </div>
 
             {/* Stacked cards (Mobile layout like the image) */}
@@ -357,7 +357,7 @@ export default function About() {
             {/* Row 2: SUE */}
             <div className="bg-white rounded-[32px] p-8 border-2 border-sky-200 shadow-sm flex items-center relative overflow-hidden h-72 hover:shadow-md transition-shadow">
               <div className="w-1/2 h-full flex items-center justify-center select-none pt-4">
-                <Image
+                <img
                   src="/images/character-sue.png"
                   alt="SUE"
                   width={160}

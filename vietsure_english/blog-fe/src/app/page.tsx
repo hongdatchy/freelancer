@@ -144,6 +144,7 @@ export default async function Home() {
                   width={155}
                   height={155}
                   className="w-full h-auto filter saturate-[8.0] contrast-[1.8] brightness-[0.9]"
+                  style={{ height: 'auto' }}
                 />
               </div>
 

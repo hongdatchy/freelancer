@@ -58,6 +58,8 @@ export default function CourseCard({ course }: { course: CourseDTO }) {
               src={process.env.NEXT_PUBLIC_BE_HOST + thumbnail}
               alt={course.name}
               fill
+              priority
+              loading="eager"
               className="object-cover object-center transition-transform duration-500 group-hover:scale-103"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
             />

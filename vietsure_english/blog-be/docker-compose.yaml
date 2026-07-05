@@ -33,6 +33,7 @@ services:
       - "127.0.0.1:1337:1337"
     volumes:
       - ./public:/app/public
+      - ./exports:/app/exports
     depends_on:
       - db2
     networks:

@@ -16,6 +16,7 @@ if (typeof Promise.withResolvers === 'undefined') {
 const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
+    qualities: [100, 75],
     remotePatterns: [
       {
         protocol: "https",

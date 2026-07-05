@@ -41,6 +41,7 @@ export default function CommitmentsSection() {
                     width={130}
                     height={130}
                     className="w-full h-auto filter saturate-[8.0] contrast-[1.8] brightness-[0.9] mix-blend-multiply"
+                    style={{ height: 'auto' }}
                   />
                 </div>
               )}

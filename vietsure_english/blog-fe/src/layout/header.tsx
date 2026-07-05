@@ -39,13 +39,12 @@ export default function Header() {
 
   const Logo = () => (
     <Link href="/" className="shrink-0 flex items-center">
-      <Image
+      <img
         src="/images/Vietsure English_Logo-15.png"
         alt="VietSure English Logo"
         width={200}
         height={60}
         className="h-14 md:h-16 w-auto object-contain"
-        priority
       />
     </Link>
   );

@@ -96,8 +96,9 @@ export function HeaderMenu({ onChange, user }: Props) {
             )}
 
             {item.subItems.length === 0 && (
-              <Link href={item.href} legacyBehavior passHref>
-                <NavigationMenuLink
+              <NavigationMenuLink asChild>
+                <Link
+                  href={item.href}
                   onClick={() => handleItemClick(item)}
                   className={cn(
                     'text-[18px] font-extrabold transition-all duration-200 px-6 py-2 rounded-full inline-block select-none cursor-pointer',
@@ -107,8 +108,8 @@ export function HeaderMenu({ onChange, user }: Props) {
                   )}
                 >
                   {item.title}
-                </NavigationMenuLink>
-              </Link>
+                </Link>
+              </NavigationMenuLink>
             )}
           </NavigationMenuItem>
         ))}

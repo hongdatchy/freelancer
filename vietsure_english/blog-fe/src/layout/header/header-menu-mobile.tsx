@@ -95,7 +95,7 @@ export function HeaderMenuMobile({ onChange, user }: Props) {
           {/* Drawer Top Header with Logo and Close Button */}
           <div className="flex justify-between items-center px-5 pt-6 pb-4 border-b border-slate-100">
             <div className="flex items-center">
-              <Image
+              <img
                 src="/images/Vietsure English_Logo-15.png"
                 alt="Vietsure English Logo"
                 width={120}

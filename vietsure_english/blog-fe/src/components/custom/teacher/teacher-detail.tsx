@@ -119,6 +119,7 @@ export function TeacherDetailClient({
                             src={avatarUrl}
                             alt={teacher.fullName}
                             fill
+                            priority
                             className="w-full h-full object-cover"
                         />
                     </div>

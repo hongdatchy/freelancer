@@ -93,6 +93,7 @@ export default function TrialSection({ isPopup = false, onSuccess }: { isPopup?:
                                 width={isPopup ? 260 : 310}
                                 height={isPopup ? 260 : 310}
                                 className="object-contain translate-y-1 md:translate-y-2 select-none"
+                                priority
                             />
                         </div>
                     </div>

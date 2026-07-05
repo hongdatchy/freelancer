@@ -32,7 +32,7 @@ export default async function CourseDetailPage(props: {
           <div className="mb-10 relative">
             {/* Top-Centered Logo Badge overlapping top border */}
             <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-5 py-2.5 rounded-2xl border-2 border-[#3F489A] shadow-md z-10 flex items-center justify-center">
-              <Image
+              <img
                 src="/images/Vietsure English_Logo-15.png"
                 alt="Vietsure English Logo"
                 width={120}
@@ -47,6 +47,8 @@ export default async function CourseDetailPage(props: {
                   src={process.env.NEXT_PUBLIC_BE_HOST + thumbnail}
                   alt={course.name}
                   fill
+                  priority
+                  loading="eager"
                   className="w-full h-full object-cover"
                 />
               )}

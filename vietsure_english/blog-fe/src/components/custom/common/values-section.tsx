@@ -53,7 +53,7 @@ export default function ValuesSection() {
               </p>
             </div>
             <div className="w-[85px] shrink-0 select-none pointer-events-none">
-              <Image
+              <img
                 src="/images/character-sue.png"
                 alt="VietSure Student Girl"
                 width={120}
@@ -109,12 +109,13 @@ export default function ValuesSection() {
                 width={350}
                 height={530}
                 className="w-full h-auto object-contain select-none pointer-events-none filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.05)] scale-x-[-1]"
+                style={{ height: 'auto' }}
               />
             </div>
 
             {/* Girl Character (Right) */}
             <div className="w-[220px] md:w-[280px] 2xl:w-[350px] flex-shrink-0 2xl:absolute 2xl:right-0 2xl:top-[80px] 2xl:z-30 2xl:pointer-events-auto animate-float-down">
-              <Image
+              <img
                 src="/images/character-sue.png"
                 alt="VietSure Student Girl"
                 width={350}

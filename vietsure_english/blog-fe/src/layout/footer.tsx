@@ -54,12 +54,12 @@ export default function Footer() {
         {/* Logo row below horizontal line, left-aligned */}
         <div className="flex justify-start mb-4 mt-8">
           <Link href="/" onClick={() => handleFooterLinkClick('Home', '/')}>
-            <Image
+            <img
               src="/images/Vietsure English_Logo-15.png"
               alt="Vietsure English"
               width={180}
               height={56}
-              className="h-auto w-[170px]"
+              className="w-[170px] h-auto"
             />
           </Link>
         </div>
@@ -192,6 +192,7 @@ export default function Footer() {
                   width={90}
                   height={34}
                   className="h-[34px] w-auto rounded"
+                  style={{ width: 'auto' }}
                 />
 
                 <a
@@ -201,13 +202,12 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Image
+                  <img
                     src="https://images.dmca.com/Badges/dmca_protected_sml_120j.png?ID=e685908c-9b2d-4137-a267-1c1636e19ab9"
                     alt="DMCA.com Protection Status"
                     width={120}
                     height={34}
-                    className="h-[34px] w-auto rounded"
-                    unoptimized
+                    className="rounded"
                   />
                 </a>
               </div>

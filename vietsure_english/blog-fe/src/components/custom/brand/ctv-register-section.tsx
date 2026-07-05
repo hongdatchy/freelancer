@@ -85,6 +85,7 @@ export default function CtvRegisterSection() {
                                 width={480} 
                                 height={480} 
                                 className="object-contain translate-y-1 lg:translate-y-4 select-none"
+                                priority
                             />
                         </div>
 
