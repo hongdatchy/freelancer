@@ -204,7 +204,10 @@ export default function FloatingJitsiWidget() {
           prejoinPageEnabled: false,
           disablePolls: false,
           whiteboard: { enabled: true },
-          localRecording: { enabled: true },
+          localRecording: {
+            enabled: true,
+            disableSelfRecording: false,
+          },
           toolbarButtons: [
             'camera', 'chat', 'closedcaptions', 'desktop', 'download',
             'etherpad', 'feedback', 'filmstrip', 'fullscreen', 'hangup',
@@ -212,7 +215,7 @@ export default function FloatingJitsiWidget() {
             'mute-everyone', 'mute-video-everyone', 'participants-pane',
             'profile', 'raisehand', 'select-background',
             'settings', 'shareaudio', 'sharedvideo', 'stats', 'tileview',
-            'toggle-camera', 'videoquality', 'whiteboard', 'polls', 'localrecording'
+            'toggle-camera', 'videoquality', 'whiteboard', 'polls', 'recording', 'localrecording'
           ],
         },
         interfaceConfigOverwrite: {

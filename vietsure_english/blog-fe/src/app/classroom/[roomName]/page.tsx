@@ -75,8 +75,13 @@ export default function ClassroomPage() {
   const initJitsi = async () => {
     if (!containerRef.current || !window.JitsiMeetExternalAPI) return;
 
-    const displayName = isHost ? (clientUser?.fullName || clientUser?.username || 'Giáo viên') : 'Học viên';
-    const email = isHost ? (clientUser?.email || '') : '';
+    // Get fresh user state directly from store to avoid React stale closures/race conditions
+    const storeState = useUserLoginStore.getState();
+    const currentUser = storeState.user;
+    const isHostUser = !!currentUser;
+
+    const displayName = isHostUser ? (currentUser?.fullName || currentUser?.username || 'Giáo viên') : 'Học viên';
+    const email = isHostUser ? (currentUser?.email || '') : '';
 
     // Generate JWT Token using Web Crypto API (Only for Hosts/Teachers)
     const generateJitsiJWT = async () => {
@@ -86,8 +91,8 @@ export default function ClassroomPage() {
         context: {
           user: { name: displayName, email: email },
           features: { 
-            recording: isHost, 
-            livestreaming: isHost 
+            recording: isHostUser, 
+            livestreaming: isHostUser 
           }
         },
         aud: "vietsure_app",
@@ -101,6 +106,7 @@ export default function ClassroomPage() {
       
       const base64UrlEncode = (obj: any) => {
         const str = JSON.stringify(obj);
+        // Encode UTF-8 characters safely for btoa
         const encoded = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, 
           (match, p1) => String.fromCharCode(parseInt(p1, 16))
         );
@@ -132,7 +138,7 @@ export default function ClassroomPage() {
     };
 
     // Only generate Jitsi JWT for host (teacher). Students join as standard guest without JWT.
-    const token = isHost ? await generateJitsiJWT() : undefined;
+    const token = isHostUser ? await generateJitsiJWT() : undefined;
 
     const cleanDisplayRoomName = roomName.split('_GV_')[0];
 
@@ -157,13 +163,17 @@ export default function ClassroomPage() {
         },
         localRecording: {
           enabled: true,
+          disableSelfRecording: false,
+        },
+        recordingService: {
+          enabled: false,
         },
         toolbarButtons: [
           'microphone', 'camera', 'closedcaptions', 'desktop',
           'fullscreen', 'fodeviceselection', 'hangup', 'chat',
           'settings', 'raisehand', 'videoquality', 'filmstrip',
           'tileview', 'download', 'help', 'whiteboard',
-          ...(isHost ? ['localrecording'] : [])
+          ...(isHostUser ? ['recording', 'localrecording'] : [])
         ],
       },
       interfaceConfigOverwrite: {
@@ -175,7 +185,7 @@ export default function ClassroomPage() {
 
     apiRef.current.addEventListener('videoConferenceJoined', () => {
       // Auto-start recording only for the teacher/host
-      if (isHost) {
+      if (isHostUser) {
         setTimeout(() => {
           if (apiRef.current) {
             apiRef.current.executeCommand('startRecording', {
