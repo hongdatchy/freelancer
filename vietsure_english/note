@@ -3,8 +3,7 @@ net start winnat
 
 npx strapi export --no-encrypt -f exports/data.tar.gz
 
-npx strapi import -f export_20260621144456.tar.gz
-docker compose exec strapi pnpm strapi import -f export_20260621144456.tar.gz
+docker compose exec strapi pnpm strapi import -f exports/data.tar.gz --force
 
 
 Chạy dev local: pnpm dev:local
