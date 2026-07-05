@@ -547,7 +547,7 @@ services:
         restart: ${RESTART_POLICY:-unless-stopped}
         volumes:
             - ${CONFIG}/jibri:/config:Z
-            - ./jibri/finalize_recording.sh:/config/finalize_recording.sh:ro
+            - ./jibri/finalize_recording.sh:/config/finalize_recording.sh
         shm_size: '2gb'
         cap_add:
             - SYS_ADMIN
