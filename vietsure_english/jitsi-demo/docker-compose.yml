@@ -609,6 +609,7 @@ services:
             - MINIO_BUCKET
         extra_hosts:
             - "localhost:host-gateway"
+            - "meet.cloudcamera.online:host-gateway"
         depends_on:
             - jicofo
         networks:
