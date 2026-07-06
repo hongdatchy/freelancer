@@ -39,26 +39,23 @@ export default function TeacherCard({ teacher }: { teacher: TeacherDTO }) {
                     </div>
 
                     {/* TEXT CONG */}
-                    <svg
-                        viewBox="0 0 172 172"
-                        className="absolute inset-[-14px] pointer-events-none z-20 rotate-[24deg] origin-center"
-                        style={{ transformOrigin: 'center' }}
-                    >
-                        <defs>
-                            <path
-                                id={`topArc-${teacher.id}`}
-                                d="M 10 86 A 76 76 0 0 1 162 86"
-                            />
-                        </defs>
-
-                        <text
-                            fill="#2E357F"
-                            fontSize="13.5"
-                            fontWeight="900"
-                        >
-                            <textPath href={`#topArc-${teacher.id}`} startOffset="50%" textAnchor="middle">T E A C H E R</textPath>
-                        </text>
-                    </svg>
+                    <div className="absolute inset-[-14px] pointer-events-none z-20 rotate-[24deg]">
+                        <svg viewBox="0 0 172 172" className="w-full h-full">
+                            <defs>
+                                <path
+                                    id={`topArc-${teacher.id}`}
+                                    d="M 10 86 A 76 76 0 0 1 162 86"
+                                />
+                            </defs>
+                            <text
+                                fill="#2E357F"
+                                fontSize="13.5"
+                                fontWeight="900"
+                            >
+                                <textPath href={`#topArc-${teacher.id}`} startOffset="50%" textAnchor="middle">T E A C H E R</textPath>
+                            </text>
+                        </svg>
+                    </div>
 
                 </div>
 
