@@ -100,32 +100,23 @@ export default function TeacherSection() {
                                                     </div>
 
                                                     {/* TEXT CONG */}
-                                                    <svg
-                                                        viewBox="0 0 160 160"
-                                                        className="absolute inset-[-16px] pointer-events-none z-20 rotate-[24deg]"
-                                                    >
-                                                        <defs>
-                                                            <path
-                                                                id={`topArc-${index}`}
-                                                                d="M 10 80 A 70 70 0 0 1 150 80"
-                                                            />
-                                                        </defs>
-
-                                                        <text
-                                                            fill="#2E357F"
-                                                            fontSize="11"
-                                                            fontWeight="900"
-                                                            letterSpacing="3"
-                                                        >
-                                                            <textPath
-                                                                href={`#topArc-${index}`}
-                                                                startOffset="50%"
-                                                                textAnchor="middle"
+                                                    <div className="absolute inset-[-16px] pointer-events-none z-20 rotate-[24deg]">
+                                                        <svg viewBox="0 0 160 160" className="w-full h-full">
+                                                            <defs>
+                                                                <path
+                                                                    id={`topArc-${index}`}
+                                                                    d="M 10 80 A 70 70 0 0 1 150 80"
+                                                                />
+                                                            </defs>
+                                                            <text
+                                                                fill="#2E357F"
+                                                                fontSize="11"
+                                                                fontWeight="900"
                                                             >
-                                                                TEACHER
-                                                            </textPath>
-                                                        </text>
-                                                    </svg>
+                                                                <textPath href={`#topArc-${index}`} startOffset="50%" textAnchor="middle">T E A C H E R</textPath>
+                                                            </text>
+                                                        </svg>
+                                                    </div>
 
                                                 </div>
 
