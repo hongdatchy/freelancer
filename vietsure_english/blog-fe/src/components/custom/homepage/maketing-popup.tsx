@@ -34,7 +34,7 @@ export default function MarketingPopup() {
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent className="max-w-4xl w-[calc(100%-40px)] md:w-[calc(100%-64px)] p-0 overflow-y-auto max-h-[95vh] rounded-[32px] bg-[#badeff] brand-light-border shadow-2xl">
+            <DialogContent className="max-w-4xl w-[calc(100%-40px)] max-[400px]:w-full max-[400px]:max-w-full max-[400px]:rounded-none max-[400px]:border-none md:w-[calc(100%-64px)] p-0 overflow-y-auto max-h-[95vh] max-[400px]:max-h-[100dvh] rounded-[32px] bg-[#badeff] brand-light-border shadow-2xl">
                 <DialogTitle className="sr-only">Đăng ký học thử</DialogTitle>
                 
                 {/* 
@@ -44,13 +44,14 @@ export default function MarketingPopup() {
                 <div className="
                     [&_input]:!h-[40px] [&_input]:md:!h-[46px] 
                     [&_form]:!gap-2 [&_form]:md:!gap-3 
-                    [&_form]:!p-4 [&_form]:md:!p-5 
+                    [&_form]:!p-4 max-[400px]:[&_form]:!px-2 [&_form]:md:!p-5 
                     [&_button[type=submit]]:!h-[42px] [&_button[type=submit]]:md:!h-[48px]
                     [&_img.select-none]:!w-[140px] [&_img.select-none]:!h-[140px] 
+                    max-[400px]:[&_img.select-none]:!w-[110px] max-[400px]:[&_img.select-none]:!h-[110px]
                     [&_img.select-none]:md:!w-[200px] [&_img.select-none]:md:!h-[200px]
-                    [&_.min-h-\[380px\]]:!min-h-[140px] [&_.min-h-\[380px\]]:md:!min-h-[200px]
+                    [&_.min-h-\[380px\]]:!min-h-[140px] max-[400px]:[&_.min-h-\[380px\]]:!min-h-[110px] [&_.min-h-\[380px\]]:md:!min-h-[200px]
                     [&_.md\:pt-10]:md:!pt-6 [&_.md\:px-8]:md:!px-4
-                    [&_h3]:!text-[15px] [&_h3]:md:!text-[18px] [&_h3]:lg:!text-[20px]
+                    [&_h3]:!text-[15px] max-[400px]:[&_h3]:!text-[13px] [&_h3]:md:!text-[18px] [&_h3]:lg:!text-[20px]
                 ">
                     <TrialSection isPopup={true} onSuccess={() => setOpen(false)} />
                 </div>

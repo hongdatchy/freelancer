@@ -16,8 +16,8 @@ export default function LearningPathSection() {
           <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold text-[#2E357F] mt-2">
             (CHUẨN CEFR & CAMBRIDGE)
           </h3>
-          <p className="section-desc section-desc-justify mt-4 max-w-7xl mx-auto text-center">
-            Từ kinh nghiệm dạy online cho trẻ em Việt sinh ra tại nước ngoài chỉ biết tiếng Anh học tiếng mẹ đẻ. Vietsure tiếp tục xây dựng lộ trình học tiếng Anh cho trẻ em Việt Nam từ &quot;Nền tảng - Theo 1 lộ trình học liền mạch, cá nhân hóa - Dùng cả đời&quot; giúp trẻ tiến bộ, tự tin phản xạ tiếng Anh trong cuộc sống như trẻ em nước ngoài và chuẩn chương trình Cambridge.
+          <p className="section-desc mt-4 max-w-7xl mx-auto text-center">
+            Từ kinh nghiệm dạy online cho trẻ em Việt Nam sinh ra tại nước ngoài chỉ biết tiếng Anh học tiếng mẹ đẻ. Vietsure tiếp tục xây dựng lộ trình học tiếng Anh cho trẻ em Việt Nam từ &quot;Nền tảng - Theo 1 lộ trình học liền mạch, cá nhân hóa - Dùng cả đời&quot; giúp trẻ tiến bộ, tự tin phản xạ tiếng Anh trong cuộc sống như trẻ em nước ngoài, trưởng thành tính cách tốt và chuẩn chương trình Cambridge.
           </p>
         </div>
 

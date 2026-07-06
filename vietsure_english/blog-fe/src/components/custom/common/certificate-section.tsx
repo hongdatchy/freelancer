@@ -11,8 +11,8 @@ export default function CertificateSection() {
             HỆ THỐNG BÀI GIẢNG <br className="block md:hidden" /><span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span>
           </h2>
           <div className="bg-white rounded-[32px] brand-light-border p-4 lg:p-8 md:p-10 lg:pr-32 shadow-[0_10px_35px_rgba(96,165,250,0.08)]">
-            <p className="text-[#2E357F] section-desc-justify font-bold text-base md:text-[17px] leading-relaxed text-center lg:text-left">
-              Đội ngũ Vietsure English đã được chứng nhận chuyên môn bởi đơn vị đào tạo thiết kế bài giảng hàng đầu Việt Nam. Vietsure English sẽ mang đến &quot;Hệ thống chương trình bài giảng đạt tiêu chuẩn cao&quot; trực quan, khoa học, sinh động, hoạt hình 3D và nội dung tương tác giúp trẻ hứng thú, ghi nhớ nhanh và chủ động học tập.
+            <p className="text-[#2E357F] font-bold text-base md:text-[17px] leading-relaxed text-center lg:text-left">
+              Vietsure English đã được chứng nhận chuyên môn bởi đơn vị đào tạo thiết kế bài giảng hàng đầu Việt Nam. Vietsure English sẽ mang đến &quot;Hệ thống chương trình bài giảng đạt tiêu chuẩn cao&quot; trực quan, khoa học, sinh động, hoạt hình 3D và nội dung tương tác giúp trẻ hứng thú, ghi nhớ nhanh và chủ động học tập.
             </p>
           </div>
         </div>
