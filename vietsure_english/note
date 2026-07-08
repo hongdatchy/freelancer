@@ -11,3 +11,10 @@ docker compose up db2 -d
 docker compose --env-file .env.prod up -d
 
 chmod 777 filename
+
+
+
+docker exec jitsi-demo-prosody-1 prosodyctl --config /config/prosody.cfg.lua register jibri auth.meet.jitsi t9R1p2Wm8Kz5Bs9Y
+
+
+docker exec jitsi-demo-prosody-1 prosodyctl --config /config/prosody.cfg.lua register recorder auth.meet.jitsi c0CR3Tu2mwNwENoi

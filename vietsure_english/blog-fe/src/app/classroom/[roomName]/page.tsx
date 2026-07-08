@@ -140,8 +140,6 @@ export default function ClassroomPage() {
     // Only generate Jitsi JWT for host (teacher). Students join as standard guest without JWT.
     const token = isHostUser ? await generateJitsiJWT() : undefined;
 
-    const cleanDisplayRoomName = roomName.split('_GV_')[0];
-
     apiRef.current = new window.JitsiMeetExternalAPI(JITSI_SERVER, {
       roomName,
       ...(token ? { jwt: token } : {}),
@@ -157,7 +155,11 @@ export default function ClassroomPage() {
         startWithVideoMuted: false,
         disableDeepLinking: true,
         prejoinPageEnabled: false,
-        subject: cleanDisplayRoomName, // Hide technical room name inside Jitsi
+        defaultLanguage: 'vi',
+        settingsSections: ['devices', 'moderator', 'profile', 'calendar', 'sounds'],
+        disableSelfViewSettings: true,
+        isStudent: !isHostUser,
+        subject: roomName, // Hide technical room name inside Jitsi
         whiteboard: {
           enabled: true,
         },
@@ -170,16 +172,17 @@ export default function ClassroomPage() {
         },
         toolbarButtons: [
           'microphone', 'camera', 'closedcaptions', 'desktop',
-          'fullscreen', 'fodeviceselection', 'hangup', 'chat',
+          'fullscreen', 'fodeviceselection', 'chat',
           'settings', 'raisehand', 'videoquality', 'filmstrip',
           'tileview', 'download', 'help', 'whiteboard',
-          ...(isHostUser ? ['recording', 'localrecording'] : [])
+          ...(isHostUser ? ['hangup'] : [])
         ],
       },
       interfaceConfigOverwrite: {
         SHOW_JITSI_WATERMARK: false,
         SHOW_WATERMARK_FOR_GUESTS: false,
-        DEFAULT_BACKGROUND: '#1d285c',
+        DEFAULT_BACKGROUND: '#F0F7FF',
+        SETTINGS_SECTIONS: ['devices', 'moderator', 'profile', 'calendar', 'sounds'],
       },
     });
 
@@ -216,32 +219,45 @@ export default function ClassroomPage() {
   }, [isMounted]);
 
   return (
-    <div className="fixed inset-0 bg-[#1d285c] flex flex-col z-50">
+    <div className="fixed inset-0 bg-gradient-to-b from-white to-[#F0F7FF] flex flex-col z-50">
       {/* Top bar */}
       <div className="flex items-center justify-between px-5 py-3 bg-[#1d285c] border-b border-white/10 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-[#FF6B00] flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 10l5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-white font-black text-sm tracking-wide">VIETSURE ENGLISH</p>
-            <p className="text-white/60 text-xs">Phòng: {roomName.split('_GV_')[0]}</p>
+        <div className="flex items-center gap-3 shrink-0">
+          {isHost && (
+            <div className="w-8 h-8 rounded-full bg-[#FF6B00] flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 10l5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" />
+              </svg>
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <img
+              src="/images/Vietsure English_Logo-15.png"
+              alt="VietSure English"
+              className="h-7 w-auto object-contain"
+            />
+            <p className="text-white/60 text-xs">| Phòng: {roomName}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 text-white/70 hover:text-white text-sm font-semibold transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-            Thoát lớp
-          </button>
-        </div>
+        {/* Central banner text */}
+        <p className="hidden md:block text-white/95 text-xs font-black tracking-wider uppercase text-center flex-1 mx-6 truncate">
+          HỆ THỐNG GIÁO DỤC ONLINE CHẤT LƯỢNG CAO CHO TRẺ EM TRONG VÀ NGOÀI NƯỚC
+        </p>
+
+        {isHost && (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-2 text-white/70 hover:text-white text-sm font-semibold transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+              Thoát lớp
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Jitsi container */}

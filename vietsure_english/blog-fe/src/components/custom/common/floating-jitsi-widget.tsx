@@ -9,6 +9,7 @@ const JITSI_SERVER = process.env.NEXT_PUBLIC_JITSI_SERVER;
 export default function FloatingJitsiWidget() {
   const { roomName, isOpen, isMinimized, closeMeeting, setMinimized } = useJitsiStore();
   const { user } = useUserLoginStore();
+  const isHost = !!user;
   const containerRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<any>(null);
   const [position, setPosition] = useState({ x: 20, y: 20 });
@@ -203,6 +204,10 @@ export default function FloatingJitsiWidget() {
           disableDeepLinking: true,
           prejoinPageEnabled: false,
           disablePolls: false,
+          defaultLanguage: 'vi',
+          settingsSections: ['devices', 'moderator', 'profile', 'calendar', 'sounds'],
+          disableSelfViewSettings: true,
+          isStudent: true,
           whiteboard: { enabled: true },
           localRecording: {
             enabled: true,
@@ -210,18 +215,20 @@ export default function FloatingJitsiWidget() {
           },
           toolbarButtons: [
             'camera', 'chat', 'closedcaptions', 'desktop', 'download',
-            'etherpad', 'feedback', 'filmstrip', 'fullscreen', 'hangup',
+            'etherpad', 'feedback', 'filmstrip', 'fullscreen',
             'help', 'highlight', 'invite', 'livestreaming', 'microphone',
             'mute-everyone', 'mute-video-everyone', 'participants-pane',
             'profile', 'raisehand', 'select-background',
             'settings', 'shareaudio', 'sharedvideo', 'stats', 'tileview',
-            'toggle-camera', 'videoquality', 'whiteboard', 'polls', 'recording', 'localrecording'
+            'toggle-camera', 'videoquality', 'whiteboard', 'polls',
+            ...(isHost ? ['hangup'] : [])
           ],
         },
         interfaceConfigOverwrite: {
           SHOW_JITSI_WATERMARK: false,
           SHOW_WATERMARK_FOR_GUESTS: false,
-          DEFAULT_BACKGROUND: '#1d285c',
+          DEFAULT_BACKGROUND: '#F0F7FF',
+          SETTINGS_SECTIONS: ['devices', 'moderator', 'profile', 'calendar', 'sounds'],
         },
       });
 
@@ -394,6 +401,7 @@ export default function FloatingJitsiWidget() {
       const pipWin = await (window as any).documentPictureInPicture.requestWindow({
         width: size.width,
         height: size.height,
+        disallowReturnToOpener: true,
       });
       pipWindowRef.current = pipWin;
 
@@ -462,7 +470,7 @@ export default function FloatingJitsiWidget() {
         className={`${
           isMinimized
             ? 'transition-all duration-300 w-16 h-16 rounded-full bg-[#FF6B00] shadow-2xl hover:scale-105 cursor-move flex items-center justify-center border-2 border-white'
-            : 'bg-[#1d285c] rounded-2xl overflow-hidden shadow-2xl border border-white/10 flex flex-col'
+            : 'bg-gradient-to-b from-white to-[#F0F7FF] rounded-2xl overflow-hidden shadow-2xl border border-blue-200/50 flex flex-col'
         }`}
         onMouseDown={isMinimized ? handleMouseDown : undefined}
       >
@@ -521,15 +529,17 @@ export default function FloatingJitsiWidget() {
           >
             {/* Header Bar */}
             <div className={`items-center justify-between px-4 py-2.5 bg-[#1d285c] border-b border-white/10 select-none cursor-default ${isPipActive ? 'hidden' : 'flex'}`}>
-              <div className="flex items-center gap-2">
-                {/* <div className="w-6 h-6 rounded-full bg-[#FF6B00] flex items-center justify-center">
-                  <span className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse" />
-                </div> */}
-                <div>
-                  <p className="text-white font-bold text-xs leading-none">VIETSURE ENGLISH</p>
-                  <p className="text-white/60 text-[10px]">Phòng: {roomName.split('_GV_')[0]}</p>
-                </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <img
+                  src="/images/Vietsure English_Logo-15.png"
+                  alt="VietSure English"
+                  className="h-6 w-auto object-contain"
+                />
+                <p className="text-white/60 text-[10px]">| Phòng: {roomName}</p>
               </div>
+              <p className="hidden sm:block text-white/95 text-[9px] md:text-[10px] font-black tracking-wider uppercase text-center flex-1 mx-4 truncate">
+                HỆ THỐNG GIÁO DỤC ONLINE CHẤT LƯỢNG CAO CHO TRẺ EM TRONG VÀ NGOÀI NƯỚC
+              </p>
               <div className="flex items-center gap-1">
                 {/* PiP button */}
                 <button
@@ -554,28 +564,10 @@ export default function FloatingJitsiWidget() {
                     </svg>
                   </button>
                 )}
-                {/* Close meeting */}
-                <button
-                  onClick={() => {
-                    if (apiRef.current) {
-                      const participants = apiRef.current.getParticipantsInfo();
-                      participants.forEach((p: any) => {
-                        apiRef.current.executeCommand('sendEndpointTextMessage', p.participantId, JSON.stringify({ action: 'END_MEETING' }));
-                      });
-                    }
-                    closeMeeting();
-                  }}
-                  className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                  title="Thoát lớp"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 6L6 18M6 6l12 12" />
-                  </svg>
-                </button>
               </div>
             </div>
             {/* Jitsi Call Frame (Always remains mounted to prevent connection teardown) */}
-            <div ref={containerRef} className="flex-1 w-full bg-[#151b3d]" />
+            <div ref={containerRef} className="flex-1 w-full bg-[#F0F7FF]" />
           </div>
         </div>
       </div>

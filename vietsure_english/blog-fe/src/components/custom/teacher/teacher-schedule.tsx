@@ -415,8 +415,7 @@ export function TeacherScheduleView({ teacherId }: Props) {
                         const cleanClass = (item?.class_code?.trim()
                           ? item.class_code.trim()
                           : `${selectedSlotForView.day}-${selectedSlotForView.slot}`).replace(/\s+/g, '_');
-                        const teacherSuffix = resolvedTeacherId ? `_GV_${resolvedTeacherId}` : '';
-                        const roomName = `${cleanClass}${teacherSuffix}`;
+                        const roomName = cleanClass;
                         setSelectedSlotForView(null);
                         startMeeting(roomName);
                       }}
@@ -433,8 +432,7 @@ export function TeacherScheduleView({ teacherId }: Props) {
                         const cleanClass = (item?.class_code?.trim()
                           ? item.class_code.trim()
                           : `${selectedSlotForView.day}-${selectedSlotForView.slot}`).replace(/\s+/g, '_');
-                        const teacherSuffix = resolvedTeacherId ? `_GV_${resolvedTeacherId}` : '';
-                        const roomName = `${cleanClass}${teacherSuffix}`;
+                        const roomName = cleanClass;
                         const link = `${window.location.origin}/classroom/${roomName}`;
                         navigator.clipboard.writeText(link);
                         setCopied(true);

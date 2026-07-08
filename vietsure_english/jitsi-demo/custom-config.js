@@ -1,5 +1,8 @@
 // Custom configuration appended to config.js inside the Jitsi container
 config.hideLoginButton = true;
+config.defaultLanguage = 'vi';
+config.settingsSections = ['devices', 'moderator', 'profile', 'calendar', 'sounds'];
+config.disableSelfViewSettings = true;
 
 // Suppress the "Error uploading files to backend" console.error spam.
 (function() {
@@ -416,3 +419,97 @@ if (typeof CanvasRenderingContext2D !== 'undefined') {
         return originalFillRect.apply(this, arguments);
     };
 }
+
+// Hide 3-dots menu buttons on video tiles for students
+if (typeof window !== 'undefined') {
+    setInterval(() => {
+        try {
+            if (window.APP && window.APP.store) {
+                const state = window.APP.store.getState();
+                const participantsState = state['features/base/participants'];
+                let isStudent = false;
+                
+                if (participantsState) {
+                    if (Array.isArray(participantsState)) {
+                        const local = participantsState.find(p => p.local);
+                        if (local && local.name === 'Học viên') {
+                            isStudent = true;
+                        }
+                    } else {
+                        for (const id in participantsState) {
+                            const p = participantsState[id];
+                            if (p && p.local && p.name === 'Học viên') {
+                                isStudent = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (isStudent) {
+                    if (!document.getElementById('custom-hide-student-menu-css')) {
+                        const style = document.createElement('style');
+                        style.id = 'custom-hide-student-menu-css';
+                        style.textContent = `
+                            .videocontainer button,
+                            .localvideocontainer button,
+                            .popover-trigger,
+                            .local-participant-menu-trigger,
+                            .remote-video-menu-trigger,
+                            button[aria-haspopup="true"],
+                            .indicator-container,
+                            [data-testid*="-menu-trigger"],
+                            [aria-label*="control"],
+                            [aria-label*="option"],
+                            [aria-label*="tùy chọn"],
+                            [aria-label*="kiểm soát"] {
+                                display: none !important;
+                                opacity: 0 !important;
+                                visibility: hidden !important;
+                                pointer-events: none !important;
+                            }
+                        `;
+                        document.head.appendChild(style);
+                        console.log("🎓 Student screen: Hidden all video tile 3-dots buttons.");
+                    }
+                } else {
+                    const existing = document.getElementById('custom-hide-student-menu-css');
+                    if (existing) {
+                        existing.remove();
+                    }
+                }
+            }
+        } catch (err) {}
+    }, 1000);
+}
+
+// Style overrides to make Jitsi background bright (like homepage banner)
+if (typeof window !== 'undefined') {
+    const applyBrightTheme = () => {
+        try {
+            if (!document.getElementById('custom-bright-bg-css')) {
+                const style = document.createElement('style');
+                style.id = 'custom-bright-bg-css';
+                style.textContent = `
+                    #react,
+                    #videospace,
+                    #videoconference_page,
+                    .large-video-background,
+                    .filmstrip,
+                    .avatar-container,
+                    #largeVideoBackgroundContainer {
+                        background: linear-gradient(to bottom, #ffffff 0%, #F0F7FF 100%) !important;
+                        background-color: #F0F7FF !important;
+                    }
+                `;
+                document.head.appendChild(style);
+                console.log("🎨 Applied bright layout background theme.");
+            }
+        } catch (err) {}
+    };
+    
+    // Run immediately and periodically
+    applyBrightTheme();
+    setInterval(applyBrightTheme, 2000);
+}
+
