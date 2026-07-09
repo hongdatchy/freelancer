@@ -725,5 +725,69 @@ if (typeof window !== 'undefined') {
     }, 1000);
 }
 
+// Listen to postMessage from parent application to dynamically hide/show notifications container
+if (typeof window !== 'undefined') {
+    window.addEventListener('message', (event) => {
+        try {
+            if (event.data && event.data.type === 'HIDE_TIMER_NOTIF') {
+                console.log('[Jitsi custom-config] HIDE_TIMER_NOTIF message received');
+                const notifContainer = document.getElementById('notifications-container') || document.querySelector('.css-gckfkq-container');
+                if (notifContainer) {
+                    notifContainer.style.display = 'none';
+                    console.log('[Jitsi custom-config] Successfully set notifications container display to none');
+                }
+            } else if (event.data && event.data.type === 'SHOW_TIMER_NOTIF') {
+                console.log('[Jitsi custom-config] SHOW_TIMER_NOTIF message received');
+                const notifContainer = document.getElementById('notifications-container') || document.querySelector('.css-gckfkq-container');
+                if (notifContainer) {
+                    notifContainer.style.display = '';
+                    console.log('[Jitsi custom-config] Successfully restored notifications container display');
+                }
+            }
+        } catch (err) {
+            console.error('[Jitsi custom-config] Error in message listener:', err);
+        }
+    });
+
+    // MutationObserver to automatically intercept and remove any notification containing __TIMER__ or TIMER_ACTION
+    const setupNotificationObserver = () => {
+        const notifContainer = document.getElementById('notifications-container') || document.querySelector('.css-gckfkq-container');
+        if (notifContainer) {
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === 1) { // ELEMENT_NODE
+                            const text = node.textContent || '';
+                            const html = node.innerHTML || '';
+                            if (
+                                text.includes('__TIMER__') || 
+                                text.includes('TIMER_ACTION') || 
+                                html.includes('__TIMER__') || 
+                                html.includes('TIMER_ACTION')
+                            ) {
+                                node.style.setProperty('display', 'none', 'important');
+                                console.log('[Jitsi custom-config] MutationObserver suppressed timer notification toast via display:none');
+                            }
+                        }
+                    });
+                });
+            });
+            observer.observe(notifContainer, { childList: true, subtree: true });
+            console.log('[Jitsi custom-config] MutationObserver successfully attached to notifications-container');
+            return true;
+        }
+        return false;
+    };
+
+    // Try to setup immediately, or retry if DOM is not ready
+    if (!setupNotificationObserver()) {
+        const interval = setInterval(() => {
+            if (setupNotificationObserver()) {
+                clearInterval(interval);
+            }
+        }, 1000);
+    }
+}
+
 
 

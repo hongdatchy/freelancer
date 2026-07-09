@@ -1,0 +1,311 @@
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+
+interface TimerWidgetProps {
+  apiRef: React.MutableRefObject<any>;
+  isHost: boolean;
+  apiReady?: boolean;
+  inTopBar?: boolean;
+}
+
+type TimerAction = 'OPEN' | 'START' | 'PAUSE' | 'RESET' | 'CLOSE';
+
+interface TimerPayload {
+  type: 'TIMER_ACTION';
+  action: TimerAction;
+  startTimestamp?: number;
+  elapsed?: number;
+}
+
+export default function TimerWidget({
+  apiRef,
+  isHost,
+  apiReady = false,
+  inTopBar = false,
+}: TimerWidgetProps) {
+  const [time, setTime]         = useState(0);
+  const [isActive, setIsActive] = useState(false);
+  const [isOpen, setIsOpen]     = useState(false);
+
+  const startTsRef      = useRef<number | null>(null);
+  const participantIds  = useRef<Set<string>>(new Set());
+
+  // ── Send to every participant by their specific ID ─────────────────────────
+  const broadcast = (payload: TimerPayload) => {
+    const api = apiRef.current;
+    if (!api) return;
+    const strPayload = JSON.stringify(payload);
+    const ids = [...participantIds.current].filter(Boolean);
+    console.log('[Timer] Broadcasting via ChatMessage to', ids.length, 'participants:', ids, '| payload:', strPayload);
+
+    ids.forEach((id) => {
+      try {
+        api.executeCommand('sendChatMessage', `__TIMER__:${strPayload}`, id);
+        console.log('[Timer] Sent ChatMessage command to:', id);
+      } catch (e) {
+        console.warn('[Timer] sendChatMessage failed for', id, e);
+      }
+    });
+  };
+
+  const buildPayload = (action: TimerAction): TimerPayload => {
+    const payload: TimerPayload = { type: 'TIMER_ACTION', action };
+    if (action === 'START') {
+      const elapsed = time;
+      const ts = Date.now() - elapsed * 1000;
+      startTsRef.current = ts;
+      payload.startTimestamp = ts;
+      payload.elapsed = elapsed;
+    } else if (action === 'PAUSE') {
+      payload.elapsed = time;
+    }
+    return payload;
+  };
+
+  // ── Local tick interval ────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isActive) return;
+    const id = setInterval(() => {
+      if (startTsRef.current !== null) {
+        setTime(Math.max(0, Math.round((Date.now() - startTsRef.current) / 1000)));
+      } else {
+        setTime((t) => t + 1);
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [isActive]);
+
+  // ── Apply incoming timer action payload ────────────────────────────────────
+  const applyTimerPayload = (payload: TimerPayload) => {
+    if (!payload || payload.type !== 'TIMER_ACTION') return;
+    console.log('[Timer] ✅ Received action:', payload.action);
+
+    switch (payload.action) {
+      case 'OPEN':
+        setIsOpen(true);
+        break;
+      case 'START': {
+        const ts = payload.startTimestamp!;
+        startTsRef.current = ts;
+        setTime(Math.max(0, Math.round((Date.now() - ts) / 1000)));
+        setIsActive(true);
+        setIsOpen(true);
+        break;
+      }
+      case 'PAUSE':
+        startTsRef.current = null;
+        setIsActive(false);
+        setTime(payload.elapsed ?? 0);
+        break;
+      case 'RESET':
+        startTsRef.current = null;
+        setIsActive(false);
+        setTime(0);
+        break;
+      case 'CLOSE':
+        startTsRef.current = null;
+        setIsActive(false);
+        setIsOpen(false);
+        setTime(0);
+        break;
+    }
+  };
+
+  // ── Set up Jitsi External API event listeners (teacher + student) ──────────
+  useEffect(() => {
+    const api = apiRef.current;
+    if (!api || !apiReady) return;
+
+    // ── Seed participantIds with ALREADY-JOINED participants ───────────────
+    try {
+      const existing = api.getParticipantsInfo() as Array<{ participantId: string }>;
+      existing.forEach((p) => {
+        participantIds.current.add(p.participantId);
+      });
+      console.log('[Timer] Seeded participants:', [...participantIds.current]);
+    } catch (e) {
+      console.warn('[Timer] getParticipantsInfo failed:', e);
+    }
+
+    // ── Track participants joining / leaving ──────────────────────────────
+    const onJoined = (event: any) => {
+      participantIds.current.add(event.id);
+      console.log('[Timer] participantJoined:', event.id, 'total:', participantIds.current.size);
+
+      // Sync state to the new participant if timer is already running
+      if (isHost && isOpen) {
+        const ts = startTsRef.current ?? (Date.now() - time * 1000);
+        const syncPayload: TimerPayload = {
+          type: 'TIMER_ACTION',
+          action: isActive ? 'START' : 'PAUSE',
+          startTimestamp: ts,
+          elapsed: time,
+        };
+        try {
+          const str = JSON.stringify(syncPayload);
+          api.executeCommand('sendChatMessage', `__TIMER__:${str}`, event.id);
+          console.log('[Timer] Synced state to late-joiner:', event.id);
+        } catch (e) {}
+      }
+    };
+    const onLeft = (event: any) => {
+      participantIds.current.delete(event.id);
+      console.log('[Timer] participantLeft:', event.id);
+    };
+
+    // ── Receive timer commands via XMPP ChatMessage (__TIMER__:) ────────
+    const onIncomingChat = (event: any) => {
+      const msg = event?.message;
+      if (typeof msg === 'string' && msg.startsWith('__TIMER__:')) {
+        const jsonStr = msg.slice('__TIMER__:'.length);
+        try {
+          applyTimerPayload(JSON.parse(jsonStr));
+        } catch (e) {
+          console.warn('[Timer] Failed to parse chat timer payload:', e);
+        }
+
+        // Tạm thời ẩn container thông báo pop-up khi nhận lệnh đồng hồ
+        try {
+          const iframe = api.getIFrame();
+          if (iframe && iframe.contentWindow) {
+            console.log('[Timer] Sending HIDE_TIMER_NOTIF postMessage to Jitsi iframe');
+            iframe.contentWindow.postMessage({ type: 'HIDE_TIMER_NOTIF' }, '*');
+            setTimeout(() => {
+              console.log('[Timer] Sending SHOW_TIMER_NOTIF postMessage to Jitsi iframe');
+              iframe.contentWindow.postMessage({ type: 'SHOW_TIMER_NOTIF' }, '*');
+            }, 3500);
+          }
+        } catch (e) {
+          console.warn('[Timer] postMessage failed:', e);
+        }
+      }
+    };
+
+    api.addEventListener('participantJoined', onJoined);
+    api.addEventListener('participantLeft', onLeft);
+    api.addEventListener('incomingMessage', onIncomingChat);
+
+    return () => {
+      api.removeEventListener('participantJoined', onJoined);
+      api.removeEventListener('participantLeft', onLeft);
+      api.removeEventListener('incomingMessage', onIncomingChat);
+    };
+  // Run ONCE when apiReady becomes true — NOT on every time tick
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiReady]);
+
+  // ── Teacher controls ───────────────────────────────────────────────────────
+  const onStartPause = () => {
+    if (isActive) {
+      setIsActive(false);
+      broadcast(buildPayload('PAUSE'));
+    } else {
+      setIsActive(true);
+      broadcast(buildPayload('START'));
+    }
+  };
+  const onReset = () => {
+    startTsRef.current = null; setIsActive(false); setTime(0);
+    broadcast(buildPayload('RESET'));
+  };
+  const onOpen = () => {
+    setIsOpen(true);
+    if (isHost) broadcast(buildPayload('OPEN'));
+  };
+  const onClose = () => {
+    startTsRef.current = null; setIsActive(false); setIsOpen(false); setTime(0);
+    if (isHost) broadcast(buildPayload('CLOSE'));
+  };
+
+  const fmt = (s: number) =>
+    `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+
+  // ── Shared timer card UI ───────────────────────────────────────────────────
+  const TimerCard = ({ dropDown = false }: { dropDown?: boolean }) => (
+    <div className={`flex flex-col items-center bg-slate-900/95 text-white rounded-2xl p-4 w-52 shadow-2xl border border-slate-700 backdrop-blur-md ${dropDown ? 'absolute right-0 top-full mt-2 z-[9999]' : ''}`}>
+      <div className="flex w-full items-center justify-between pb-2 mb-2 border-b border-slate-700">
+        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">⏱️ Đồng hồ</span>
+        {isHost && (
+          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" title="Đóng">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        )}
+      </div>
+
+      <div className={`text-4xl font-mono font-bold tracking-widest py-3 tabular-nums transition-colors ${isActive ? 'text-green-400' : 'text-amber-400'}`}>
+        {fmt(time)}
+      </div>
+
+      <div className="flex items-center gap-1.5 mb-3">
+        <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-green-400 animate-pulse' : 'bg-slate-500'}`}/>
+        <span className="text-[10px] text-slate-400">{isActive ? 'Đang chạy' : 'Tạm dừng'}</span>
+      </div>
+
+      {isHost && (
+        <div className="flex items-center gap-3 w-full justify-center">
+          <button onClick={onStartPause}
+            className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all hover:scale-105 active:scale-95 shadow-md ${isActive ? 'bg-amber-500 hover:bg-amber-400' : 'bg-green-600 hover:bg-green-500'}`}
+            title={isActive ? 'Tạm dừng' : 'Bắt đầu'}>
+            {isActive
+              ? <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"/></svg>
+              : <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd"/></svg>
+            }
+          </button>
+          <button onClick={onReset}
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-all hover:scale-105 active:scale-95 shadow-md"
+            title="Đặt lại">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18"/>
+            </svg>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  // ════════ RENDER MODE A: Teacher — inline in top bar ════════════════════════
+  if (inTopBar && isHost) {
+    return (
+      <div className="relative">
+        <button onClick={() => isOpen ? onClose() : onOpen()} title="Đồng hồ bấm giờ"
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all ${isOpen ? 'bg-white/20 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span className={`font-mono text-xs tabular-nums ${isActive ? 'text-green-400' : ''}`}>
+            {isActive ? fmt(time) : 'Timer'}
+          </span>
+        </button>
+        {isOpen && <TimerCard dropDown />}
+      </div>
+    );
+  }
+
+  // ════════ RENDER MODE B: Teacher — floating button over Jitsi ═══════════════
+  if (!inTopBar && isHost) {
+    return (
+      <div className="absolute top-4 left-4 z-[9999] select-none">
+        {!isOpen
+          ? <button onClick={onOpen} title="Bật đồng hồ bấm giờ"
+              className="w-11 h-11 flex items-center justify-center bg-slate-900/80 hover:bg-slate-900 text-white rounded-full shadow-lg border border-slate-700 backdrop-blur-sm transition-all hover:scale-105 active:scale-95">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </button>
+          : <TimerCard />
+        }
+      </div>
+    );
+  }
+
+  // ════════ RENDER MODE C: Student — overlay, shows only when teacher opens ══
+  if (!isOpen) return null;
+  return (
+    <div className="absolute top-4 left-4 z-[9999]">
+      <TimerCard />
+    </div>
+  );
+}

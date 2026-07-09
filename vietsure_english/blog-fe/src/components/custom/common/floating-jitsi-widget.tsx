@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import useJitsiStore from '@/state-manager/jitsi-store';
 import useUserLoginStore from '@/state-manager/user-login-store';
+import TimerWidget from '@/components/custom/common/timer-widget';
 
 const JITSI_SERVER = process.env.NEXT_PUBLIC_JITSI_SERVER;
 
@@ -106,6 +107,7 @@ export default function FloatingJitsiWidget() {
   }, [user, closeMeeting]);
 
   const [bgImage, setBgImage] = useState<string | null>(null);
+  const [apiReady, setApiReady] = useState(false);
   const participantsRef = useRef<string[]>([]);
 
   // Jitsi meeting should be initialized exactly ONCE when the meeting starts
@@ -115,6 +117,7 @@ export default function FloatingJitsiWidget() {
       if (apiRef.current) {
         apiRef.current.dispose();
         apiRef.current = null;
+        setApiReady(false);
       }
       return;
     }
@@ -272,6 +275,7 @@ export default function FloatingJitsiWidget() {
 
       // Push background image state to Jitsi iframe when conference joins
       apiRef.current.addEventListener('videoConferenceJoined', () => {
+        setApiReady(true);
         if (isHost) {
           setTimeout(() => {
             if (apiRef.current) {
@@ -316,6 +320,7 @@ export default function FloatingJitsiWidget() {
       if (apiRef.current) {
         apiRef.current.dispose();
         apiRef.current = null;
+        setApiReady(false);
       }
     };
   }, [isOpen, roomName]);
@@ -568,7 +573,10 @@ export default function FloatingJitsiWidget() {
               </div>
             </div>
             {/* Jitsi Call Frame (Always remains mounted to prevent connection teardown) */}
-            <div ref={containerRef} className="flex-1 w-full bg-[#F0F7FF]" />
+            <div className="flex-1 w-full bg-[#F0F7FF] relative">
+              <div ref={containerRef} className="w-full h-full" />
+              <TimerWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} />
+            </div>
           </div>
         </div>
       </div>

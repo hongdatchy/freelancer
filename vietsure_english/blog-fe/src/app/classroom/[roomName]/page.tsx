@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import useUserLoginStore from '@/state-manager/user-login-store';
+import TimerWidget from '@/components/custom/common/timer-widget';
 
 const JITSI_SERVER = process.env.NEXT_PUBLIC_JITSI_SERVER;
 
@@ -22,6 +23,7 @@ export default function ClassroomPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [clientUser, setClientUser] = useState<any>(null);
   const [bgImage, setBgImage] = useState<string | null>(null);
+  const [apiReady, setApiReady] = useState(false);
   const bgImageRef = useRef<string | null>(null);
   const isHost = !!clientUser;
 
@@ -181,6 +183,8 @@ export default function ClassroomPage() {
     });
 
     apiRef.current.addEventListener('videoConferenceJoined', () => {
+      setApiReady(true);
+
       if (isHostUser) {
         setTimeout(() => {
           if (apiRef.current) {
@@ -240,7 +244,8 @@ export default function ClassroomPage() {
         </p>
 
         {isHost && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <TimerWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} inTopBar />
             <button
               onClick={() => router.back()}
               className="flex items-center gap-2 text-white/70 hover:text-white text-sm font-semibold transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10"
@@ -254,8 +259,11 @@ export default function ClassroomPage() {
         )}
       </div>
 
-      {/* Jitsi container */}
-      <div ref={containerRef} className="flex-1 w-full" />
+      {/* Jitsi container + student timer overlay */}
+      <div className="flex-1 w-full relative">
+        <div ref={containerRef} className="w-full h-full" />
+        {!isHost && <TimerWidget apiRef={apiRef} isHost={false} apiReady={apiReady} />}
+      </div>
     </div>
   );
 }
