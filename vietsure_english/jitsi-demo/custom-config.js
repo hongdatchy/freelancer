@@ -36,6 +36,17 @@ if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
 
 // Inject transparency and layout styles directly to the main Jitsi document
 if (typeof document !== 'undefined') {
+    // Check immediately if this is the student from the URL/hash to hide elements instantly
+    const isUrlStudent = decodeURIComponent(window.location.href).includes('Học viên');
+    if (isUrlStudent) {
+        if (document.documentElement) {
+            document.documentElement.classList.add('is-student');
+        }
+        if (document.body) {
+            document.body.classList.add('is-student');
+        }
+    }
+
     const style = document.createElement('style');
     style.id = 'jitsi-whiteboard-custom-style';
     style.textContent = `
@@ -83,6 +94,19 @@ if (typeof document !== 'undefined') {
         label[title*="Bàn tay"],
         [aria-label*="Hand"],
         [aria-label*="Bàn tay"] {
+            display: none !important;
+        }
+        
+        /* Hide whiteboard button in student's toolbar (on documentElement or body) */
+        .is-student [data-testid="toolbox-whiteboard"],
+        .is-student .toolbox-button[aria-label*="Whiteboard"],
+        .is-student .toolbox-button[aria-label*="Bảng trắng"],
+        .is-student .toolbox-button[aria-label*="Ẩn bảng"],
+        .is-student .toolbox-button[aria-label*="Hiện bảng"],
+        .is-student button[title*="Whiteboard"],
+        .is-student button[title*="Bảng trắng"],
+        .is-student button[title*="Ẩn bảng"],
+        .is-student button[title*="Hiện bảng"] {
             display: none !important;
         }
     `;
@@ -182,7 +206,7 @@ if (typeof window !== 'undefined') {
                 const currentTrack = currentStream ? currentStream.getVideoTracks()[0] : null;
 
                 if (!currentTrack || currentTrack.id !== desktopTrack.id) {
-                    console.log("🖥️ Live screen share stream detected! Playing video behind canvas.");
+                    // console.log("🖥️ Live screen share stream detected! Playing video behind canvas.");
                     const newStream = new MediaStream([desktopTrack]);
                     window.videoBgElement.srcObject = newStream;
                     window.videoBgElement.play().catch(err => console.error("Error playing video:", err));
@@ -193,7 +217,7 @@ if (typeof window !== 'undefined') {
                 }
             } else {
                 if (window.videoBgElement.srcObject) {
-                    console.log("🖥️ Screen share stopped. Clearing video.");
+                    // console.log("🖥️ Screen share stopped. Clearing video.");
                     window.videoBgElement.srcObject = null;
                     document.body.classList.remove('whiteboard-screenshare-active');
                 }
@@ -449,4 +473,76 @@ if (typeof window !== 'undefined') {
     applyBrightTheme();
     setInterval(applyBrightTheme, 2000);
 }
+
+// Screenshare change detection and whiteboard state sync logic for students (runs on student screen)
+if (typeof window !== 'undefined') {
+    let lastActiveScreenshare = false;
+    let lastWhiteboardOpen = false;
+    
+    setInterval(() => {
+        try {
+            if (window.APP && window.APP.store) {
+                const state = window.APP.store.getState();
+                const participantsState = state['features/base/participants'] || {};
+                let isStudent = false;
+                
+                // Find local participant role
+                for (const id in participantsState) {
+                    const p = participantsState[id];
+                    if (p && p.local && p.name === 'Học viên') {
+                        isStudent = true;
+                        break;
+                    }
+                }
+                
+                if (isStudent) {
+                    if (document.documentElement && !document.documentElement.classList.contains('is-student')) {
+                        document.documentElement.classList.add('is-student');
+                    }
+                    if (document.body && !document.body.classList.contains('is-student')) {
+                        document.body.classList.add('is-student');
+                    }
+                    
+                    const whiteboardState = state['features/whiteboard'];
+                    const isWhiteboardOpen = !!(whiteboardState && whiteboardState.isOpen);
+                    
+                    if (isWhiteboardOpen !== lastWhiteboardOpen) {
+                        lastWhiteboardOpen = isWhiteboardOpen;
+                        console.log("📢📢📢 [HỌC VIÊN] Trạng thái Bảng trắng thay đổi: isOpen =", isWhiteboardOpen);
+                        
+                        // Force student whiteboard view to follow the teacher's state
+                        window.APP.store.dispatch({
+                            type: 'SET_WHITEBOARD_OPEN',
+                            isOpen: isWhiteboardOpen
+                        });
+                    }
+                    
+                    // Detect screenshare changes
+                    const tracks = state['features/base/tracks'] || [];
+                    const hasActiveScreenshare = tracks.some(t => {
+                        const isDesktop = t.videoType === 'desktop' || (t.jitsiTrack && t.jitsiTrack.videoType === 'desktop');
+                        const isMuted = !!t.muted;
+                        return isDesktop && !isMuted;
+                    });
+                    
+                    if (hasActiveScreenshare !== lastActiveScreenshare) {
+                        lastActiveScreenshare = hasActiveScreenshare;
+                        console.log("🖥️🖥️🖥️ [HỌC VIÊN] Giáo viên thay đổi trạng thái chia sẻ màn hình! hasActiveScreenshare =", hasActiveScreenshare);
+                        
+                        // If screenshare starts/stops and whiteboard is active, force open/show whiteboard
+                        if (isWhiteboardOpen) {
+                            console.log("✏️ [HỌC VIÊN] Giáo viên thay đổi share. Bắt buộc hiển thị lại Bảng trắng.");
+                            window.APP.store.dispatch({
+                                type: 'SET_WHITEBOARD_OPEN',
+                                isOpen: true
+                            });
+                        }
+                    }
+                }
+            }
+        } catch (err) {}
+    }, 1000);
+}
+
+
 
