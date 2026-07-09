@@ -762,8 +762,10 @@ if (typeof window !== 'undefined') {
                             if (
                                 text.includes('__TIMER__') || 
                                 text.includes('TIMER_ACTION') || 
+                                text.includes('__CLK__') ||
                                 html.includes('__TIMER__') || 
-                                html.includes('TIMER_ACTION')
+                                html.includes('TIMER_ACTION') ||
+                                html.includes('__CLK__')
                             ) {
                                 node.style.setProperty('display', 'none', 'important');
                                 console.log('[Jitsi custom-config] MutationObserver suppressed timer notification toast via display:none');
@@ -786,6 +788,49 @@ if (typeof window !== 'undefined') {
                 clearInterval(interval);
             }
         }, 1000);
+    }
+
+    // Helper function to scan the DOM and hide any timer-related chat messages
+    const hideTimerMessages = () => {
+        const wrappers = document.querySelectorAll('[class*="-chatMessageWrapper"]');
+        wrappers.forEach((wrapper) => {
+            const text = wrapper.textContent || '';
+            if (text.includes('__TIMER__') || text.includes('__CLK__')) {
+                if (wrapper.style.display !== 'none') {
+                    wrapper.style.setProperty('display', 'none', 'important');
+                    console.log('[Jitsi custom-config] ChatObserver hidden timer chat message wrapper');
+                }
+            }
+        });
+    };
+
+    // DOM MutationObserver to detect and hide timer messages in the chat pane UI on any DOM changes
+    const setupChatObserver = () => {
+        if (!document.body) return;
+        const observer = new MutationObserver(() => {
+            hideTimerMessages();
+        });
+        observer.observe(document.body, { 
+            childList: true, 
+            subtree: true, 
+            characterData: true 
+        });
+        console.log('[Jitsi custom-config] ChatObserver successfully attached to document.body');
+        
+        // Execute immediately
+        hideTimerMessages();
+    };
+
+    // Initialize the Chat observer as soon as document.body is available
+    if (document.body) {
+        setupChatObserver();
+    } else {
+        const bodyInterval = setInterval(() => {
+            if (document.body) {
+                clearInterval(bodyInterval);
+                setupChatObserver();
+            }
+        }, 100);
     }
 }
 
