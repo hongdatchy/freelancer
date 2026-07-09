@@ -168,8 +168,8 @@ export default function ClassroomPage() {
           'microphone', 'camera', 'closedcaptions',
           'fullscreen', 'fodeviceselection', 'chat',
           'settings', 'raisehand', 'videoquality', 'filmstrip',
-          'download', 'help', 'whiteboard',
-          ...(isHostUser ? ['hangup', 'tileview', 'desktop'] : [])
+          'download', 'help', 'whiteboard', 'hangup',
+          ...(isHostUser ? ['tileview', 'desktop'] : [])
         ],
       },
       interfaceConfigOverwrite: {
@@ -189,12 +189,6 @@ export default function ClassroomPage() {
             });
           }
         }, 1000);
-      } else {
-        setTimeout(() => {
-          if (apiRef.current) {
-            apiRef.current.executeCommand('toggleFilmStrip');
-          }
-        }, 2000);
       }
 
       if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {

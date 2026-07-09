@@ -216,12 +216,12 @@ export default function FloatingJitsiWidget() {
           toolbarButtons: [
             'camera', 'chat', 'closedcaptions', 'download',
             'etherpad', 'feedback', 'filmstrip', 'fullscreen',
-            'help', 'highlight', 'invite', 'livestreaming', 'microphone',
+            'hangup', 'help', 'highlight', 'invite', 'livestreaming', 'microphone',
             'mute-everyone', 'mute-video-everyone', 'participants-pane',
             'profile', 'raisehand', 'select-background',
             'settings', 'shareaudio', 'sharedvideo', 'stats',
             'toggle-camera', 'videoquality', 'polls', 'whiteboard',
-            ...(isHost ? ['hangup', 'tileview', 'desktop'] : [])
+            ...(isHost ? ['tileview', 'desktop'] : [])
           ],
         },
         interfaceConfigOverwrite: {
@@ -280,12 +280,6 @@ export default function FloatingJitsiWidget() {
               });
             }
           }, 1000);
-        } else {
-          setTimeout(() => {
-            if (apiRef.current) {
-              apiRef.current.executeCommand('toggleFilmStrip');
-            }
-          }, 2000);
         }
 
         if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
