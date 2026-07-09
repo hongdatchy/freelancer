@@ -34,6 +34,77 @@ export default function TimerWidget({
   const [initialLimit, setInitialLimit] = useState(300); // 5 mins in seconds
   const [inputMinutes, setInputMinutes] = useState('5');
 
+  // Dragging support
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const widgetRef = useRef<HTMLDivElement | null>(null);
+  const initialLeftRef = useRef(0);
+  const initialTopRef = useRef(0);
+
+  const handleDragStart = (e: React.MouseEvent) => {
+    if (e.button !== 0) return; // Left click only
+    if ((e.target as HTMLElement).closest('button, input, select')) return;
+
+    const widgetEl = widgetRef.current;
+    if (!widgetEl) return;
+    const parentEl = widgetEl.parentElement;
+    if (!parentEl) return;
+
+    const parentRect = parentEl.getBoundingClientRect();
+    const widgetRect = widgetEl.getBoundingClientRect();
+
+    initialLeftRef.current = widgetRect.left - parentRect.left - dragOffset.x;
+    initialTopRef.current = widgetRect.top - parentRect.top - dragOffset.y;
+
+    setIsDragging(true);
+    dragStartRef.current = {
+      x: e.clientX - dragOffset.x,
+      y: e.clientY - dragOffset.y,
+    };
+    e.preventDefault();
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleDragMove = (e: MouseEvent) => {
+      const widgetEl = widgetRef.current;
+      if (!widgetEl) return;
+      const parentEl = widgetEl.parentElement;
+      if (!parentEl) return;
+
+      const parentRect = parentEl.getBoundingClientRect();
+      const widgetRect = widgetEl.getBoundingClientRect();
+
+      const rawX = e.clientX - dragStartRef.current.x;
+      const rawY = e.clientY - dragStartRef.current.y;
+
+      const proposedLeft = initialLeftRef.current + rawX;
+      const proposedTop = initialTopRef.current + rawY;
+
+      // Clamp coordinates to remain within parent boundaries
+      const clampedLeft = Math.max(0, Math.min(parentRect.width - widgetRect.width, proposedLeft));
+      const clampedTop = Math.max(0, Math.min(parentRect.height - widgetRect.height, proposedTop));
+
+      setDragOffset({
+        x: clampedLeft - initialLeftRef.current,
+        y: clampedTop - initialTopRef.current,
+      });
+    };
+
+    const handleDragEnd = () => {
+      setIsDragging(false);
+    };
+
+    window.addEventListener('mousemove', handleDragMove);
+    window.addEventListener('mouseup', handleDragEnd);
+    return () => {
+      window.removeEventListener('mousemove', handleDragMove);
+      window.removeEventListener('mouseup', handleDragEnd);
+    };
+  }, [isDragging]);
+
   const startTsRef      = useRef<number | null>(null);
   const participantIds  = useRef<Set<string>>(new Set());
 
@@ -246,7 +317,6 @@ export default function TimerWidget({
       api.removeEventListener('participantLeft', onLeft);
       api.removeEventListener('incomingMessage', onIncomingChat);
     };
-  // Run ONCE when apiReady becomes true — NOT on every time tick
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiReady]);
 
@@ -311,29 +381,29 @@ export default function TimerWidget({
 
   // ── Shared timer card UI ───────────────────────────────────────────────────
   const TimerCard = ({ dropDown = false }: { dropDown?: boolean }) => (
-    <div className={`flex flex-col items-center bg-slate-900/95 text-white rounded-2xl p-4 w-52 shadow-2xl border border-slate-700 backdrop-blur-md ${dropDown ? 'absolute right-0 top-full mt-2 z-[9999]' : ''}`}>
-      <div className="flex w-full items-center justify-between pb-2 mb-2 border-b border-slate-700">
-        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">⏱️ Đồng hồ</span>
+    <div className={`flex flex-col items-center bg-slate-900/95 text-white rounded-xl p-2.5 w-40 shadow-2xl border border-slate-700 backdrop-blur-md ${dropDown ? 'absolute right-0 top-full mt-2 z-[9999]' : ''}`}>
+      <div className="flex w-full items-center justify-between pb-1.5 mb-1.5 border-b border-slate-700">
+        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">⏱️ Đồng hồ</span>
         {isHost && (
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors" title="Đóng">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
         )}
       </div>
 
       {isHost && !isActive && (
-        <div className="flex gap-2 mb-2 w-full justify-center text-xs">
+        <div className="flex gap-1.5 mb-1.5 w-full justify-center text-xs">
           <button 
             onClick={() => handleModeChange('UP')}
-            className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${timerMode === 'UP' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+            className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-colors ${timerMode === 'UP' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
           >
             Tăng dần
           </button>
           <button 
             onClick={() => handleModeChange('DOWN')}
-            className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${timerMode === 'DOWN' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+            className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-colors ${timerMode === 'DOWN' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
           >
             Đếm ngược
           </button>
@@ -341,18 +411,18 @@ export default function TimerWidget({
       )}
 
       {isHost && !isActive && timerMode === 'DOWN' && (
-        <div className="flex items-center gap-1.5 mb-2 w-full justify-center">
-          <span className="text-[10px] text-slate-400">Số phút:</span>
+        <div className="flex items-center gap-1 mb-1.5 w-full justify-center">
+          <span className="text-[9px] text-slate-400">Số phút:</span>
           <input 
             type="text" 
             value={inputMinutes} 
             onChange={handleMinutesChange}
-            className="w-12 bg-slate-800 border border-slate-700 text-center text-xs font-mono rounded py-0.5 text-white focus:outline-none focus:border-blue-500"
+            className="w-10 bg-slate-800 border border-slate-700 text-center text-[10px] font-mono rounded py-0.5 text-white focus:outline-none focus:border-blue-500"
           />
         </div>
       )}
 
-      <div className={`text-4xl font-mono font-bold tracking-widest py-3 tabular-nums transition-colors ${
+      <div className={`text-2xl font-mono font-bold tracking-widest py-1.5 tabular-nums transition-colors ${
         timerMode === 'DOWN' && time === 0 
           ? 'text-red-500 animate-pulse' 
           : isActive 
@@ -362,25 +432,25 @@ export default function TimerWidget({
         {fmt(time)}
       </div>
 
-      <div className="flex items-center gap-1.5 mb-3">
-        <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-green-400 animate-pulse' : 'bg-slate-500'}`}/>
-        <span className="text-[10px] text-slate-400">{isActive ? 'Đang chạy' : 'Tạm dừng'}</span>
+      <div className="flex items-center gap-1 mb-2">
+        <span className={`w-1 h-1 rounded-full ${isActive ? 'bg-green-400 animate-pulse' : 'bg-slate-500'}`}/>
+        <span className="text-[9px] text-slate-400">{isActive ? 'Đang chạy' : 'Tạm dừng'}</span>
       </div>
 
       {isHost && (
-        <div className="flex items-center gap-3 w-full justify-center">
+        <div className="flex items-center gap-2.5 w-full justify-center">
           <button onClick={onStartPause}
-            className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all hover:scale-105 active:scale-95 shadow-md ${isActive ? 'bg-amber-500 hover:bg-amber-400' : 'bg-green-600 hover:bg-green-500'}`}
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-white transition-all hover:scale-105 active:scale-95 shadow-md ${isActive ? 'bg-amber-500 hover:bg-amber-400' : 'bg-green-600 hover:bg-green-500'}`}
             title={isActive ? 'Tạm dừng' : 'Bắt đầu'}>
             {isActive
-              ? <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"/></svg>
-              : <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd"/></svg>
+              ? <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"/></svg>
+              : <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd"/></svg>
             }
           </button>
           <button onClick={onReset}
-            className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-all hover:scale-105 active:scale-95 shadow-md"
+            className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-all hover:scale-105 active:scale-95 shadow-md"
             title="Đặt lại">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18"/>
             </svg>
           </button>
@@ -410,25 +480,41 @@ export default function TimerWidget({
   // ════════ RENDER MODE B: Teacher — floating button over Jitsi ═══════════════
   if (!inTopBar && isHost) {
     return (
-      <div className="absolute top-4 left-4 z-[9999] select-none">
-        {!isOpen
-          ? <button onClick={onOpen} title="Bật đồng hồ bấm giờ"
-              className="w-11 h-11 flex items-center justify-center bg-slate-900/80 hover:bg-slate-900 text-white rounded-full shadow-lg border border-slate-700 backdrop-blur-sm transition-all hover:scale-105 active:scale-95">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-            </button>
-          : <TimerCard />
-        }
-      </div>
+      <>
+        {isDragging && <div className="fixed inset-0 z-[9998] cursor-move bg-transparent" />}
+        <div 
+          ref={widgetRef}
+          style={{ transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)` }}
+          className="absolute top-4 left-4 z-[9999] select-none cursor-move"
+          onMouseDown={handleDragStart}
+        >
+          {!isOpen
+            ? <button onClick={onOpen} title="Bật đồng hồ bấm giờ"
+                className="w-11 h-11 flex items-center justify-center bg-slate-900/80 hover:bg-slate-900 text-white rounded-full shadow-lg border border-slate-700 backdrop-blur-sm transition-all hover:scale-105 active:scale-95 cursor-move">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </button>
+            : <TimerCard />
+          }
+        </div>
+      </>
     );
   }
 
   // ════════ RENDER MODE C: Student — overlay, shows only when teacher opens ══
   if (!isOpen) return null;
   return (
-    <div className="absolute top-4 left-4 z-[9999]">
-      <TimerCard />
-    </div>
+    <>
+      {isDragging && <div className="fixed inset-0 z-[9998] cursor-move bg-transparent" />}
+      <div 
+        ref={widgetRef}
+        style={{ transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)` }}
+        className="absolute top-4 left-4 z-[9999] cursor-move select-none"
+        onMouseDown={handleDragStart}
+      >
+        <TimerCard />
+      </div>
+    </>
   );
 }

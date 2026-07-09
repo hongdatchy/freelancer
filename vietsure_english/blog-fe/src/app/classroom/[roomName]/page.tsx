@@ -26,6 +26,30 @@ export default function ClassroomPage() {
   const [apiReady, setApiReady] = useState(false);
   const bgImageRef = useRef<string | null>(null);
   const isHost = !!clientUser;
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = () => {
+    const element = document.documentElement;
+    if (!document.fullscreenElement) {
+      element.requestFullscreen()
+        .then(() => setIsFullscreen(true))
+        .catch((err) => console.warn('[Fullscreen] Error entering fullscreen:', err));
+    } else {
+      document.exitFullscreen()
+        .then(() => setIsFullscreen(false))
+        .catch((err) => console.warn('[Fullscreen] Error exiting fullscreen:', err));
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   // Client-side mount check to prevent hydration mismatch and race conditions
   useEffect(() => {
@@ -168,7 +192,7 @@ export default function ClassroomPage() {
         },
         toolbarButtons: [
           'microphone', 'camera', 'closedcaptions',
-          'fullscreen', 'fodeviceselection', 'chat',
+          'fodeviceselection', 'chat',
           'settings', 'raisehand', 'videoquality', 'filmstrip',
           'download', 'help', 'whiteboard', 'hangup',
           ...(isHostUser ? ['tileview', 'desktop'] : [])
@@ -243,9 +267,29 @@ export default function ClassroomPage() {
           HỆ THỐNG GIÁO DỤC ONLINE CHẤT LƯỢNG CAO CHO TRẺ EM TRONG VÀ NGOÀI NƯỚC
         </p>
 
-        {isHost && (
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 shrink-0">
+          {isHost && (
             <TimerWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} inTopBar />
+          )}
+
+          {/* Fullscreen Toggle Button */}
+          <button
+            onClick={toggleFullscreen}
+            className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+            title={isFullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}
+          >
+            {isFullscreen ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" />
+              </svg>
+            )}
+          </button>
+
+          {isHost && (
             <button
               onClick={() => router.back()}
               className="flex items-center gap-2 text-white/70 hover:text-white text-sm font-semibold transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10"
@@ -255,8 +299,8 @@ export default function ClassroomPage() {
               </svg>
               Thoát lớp
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Jitsi container + student timer overlay */}

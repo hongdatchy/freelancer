@@ -218,7 +218,7 @@ export default function FloatingJitsiWidget() {
           },
           toolbarButtons: [
             'camera', 'chat', 'closedcaptions', 'download',
-            'etherpad', 'feedback', 'filmstrip', 'fullscreen',
+            'etherpad', 'feedback', 'filmstrip',
             'hangup', 'help', 'highlight', 'invite', 'livestreaming', 'microphone',
             'mute-everyone', 'mute-video-everyone', 'participants-pane',
             'profile', 'raisehand', 'select-background',
@@ -455,7 +455,31 @@ export default function FloatingJitsiWidget() {
       alert('Không thể mở PiP: ' + err.message);
     }
   };
-  // ────────────────────────────────────────────────────────────────────────
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = () => {
+    const element = widgetInnerRef.current;
+    if (!element) return;
+    if (!document.fullscreenElement) {
+      element.requestFullscreen()
+        .then(() => setIsFullscreen(true))
+        .catch((err) => console.warn('[Fullscreen] Error entering fullscreen:', err));
+    } else {
+      document.exitFullscreen()
+        .then(() => setIsFullscreen(false))
+        .catch((err) => console.warn('[Fullscreen] Error exiting fullscreen:', err));
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement && document.fullscreenElement === widgetInnerRef.current);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   if (!isOpen || !roomName) return null;
 
@@ -547,6 +571,24 @@ export default function FloatingJitsiWidget() {
                 HỆ THỐNG GIÁO DỤC ONLINE CHẤT LƯỢNG CAO CHO TRẺ EM TRONG VÀ NGOÀI NƯỚC
               </p>
               <div className="flex items-center gap-1">
+                {/* Fullscreen button */}
+                {!isPipActive && (
+                  <button
+                    onClick={toggleFullscreen}
+                    className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                    title={isFullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}
+                  >
+                    {isFullscreen ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7" />
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" />
+                      </svg>
+                    )}
+                  </button>
+                )}
                 {/* PiP button */}
                 <button
                   onClick={handlePiP}
