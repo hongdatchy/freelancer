@@ -10,12 +10,15 @@ interface TimerWidgetProps {
 }
 
 type TimerAction = 'OPEN' | 'START' | 'PAUSE' | 'RESET' | 'CLOSE';
+type TimerMode = 'UP' | 'DOWN';
 
 interface TimerPayload {
   type: 'TIMER_ACTION';
   action: TimerAction;
+  timerMode: TimerMode;
   startTimestamp?: number;
   elapsed?: number;
+  initialLimit?: number;
 }
 
 export default function TimerWidget({
@@ -27,6 +30,9 @@ export default function TimerWidget({
   const [time, setTime]         = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [isOpen, setIsOpen]     = useState(false);
+  const [timerMode, setTimerMode] = useState<TimerMode>('UP');
+  const [initialLimit, setInitialLimit] = useState(300); // 5 mins in seconds
+  const [inputMinutes, setInputMinutes] = useState('5');
 
   const startTsRef      = useRef<number | null>(null);
   const participantIds  = useRef<Set<string>>(new Set());
@@ -50,13 +56,23 @@ export default function TimerWidget({
   };
 
   const buildPayload = (action: TimerAction): TimerPayload => {
-    const payload: TimerPayload = { type: 'TIMER_ACTION', action };
+    const payload: TimerPayload = {
+      type: 'TIMER_ACTION',
+      action,
+      timerMode,
+      initialLimit
+    };
     if (action === 'START') {
-      const elapsed = time;
-      const ts = Date.now() - elapsed * 1000;
+      const elapsedOrRemaining = time;
+      let ts: number;
+      if (timerMode === 'DOWN') {
+        ts = Date.now() - (initialLimit - elapsedOrRemaining) * 1000;
+      } else {
+        ts = Date.now() - elapsedOrRemaining * 1000;
+      }
       startTsRef.current = ts;
       payload.startTimestamp = ts;
-      payload.elapsed = elapsed;
+      payload.elapsed = elapsedOrRemaining;
     } else if (action === 'PAUSE') {
       payload.elapsed = time;
     }
@@ -68,18 +84,44 @@ export default function TimerWidget({
     if (!isActive) return;
     const id = setInterval(() => {
       if (startTsRef.current !== null) {
-        setTime(Math.max(0, Math.round((Date.now() - startTsRef.current) / 1000)));
+        if (timerMode === 'DOWN') {
+          const remaining = Math.max(0, initialLimit - Math.round((Date.now() - startTsRef.current) / 1000));
+          setTime(remaining);
+          if (remaining <= 0) {
+            setIsActive(false);
+            startTsRef.current = null;
+          }
+        } else {
+          setTime(Math.max(0, Math.round((Date.now() - startTsRef.current) / 1000)));
+        }
       } else {
-        setTime((t) => t + 1);
+        if (timerMode === 'DOWN') {
+          setTime((t) => {
+            const next = Math.max(0, t - 1);
+            if (next <= 0) {
+              setIsActive(false);
+            }
+            return next;
+          });
+        } else {
+          setTime((t) => t + 1);
+        }
       }
     }, 1000);
     return () => clearInterval(id);
-  }, [isActive]);
+  }, [isActive, timerMode, initialLimit]);
 
   // ── Apply incoming timer action payload ────────────────────────────────────
   const applyTimerPayload = (payload: TimerPayload) => {
     if (!payload || payload.type !== 'TIMER_ACTION') return;
-    console.log('[Timer] ✅ Received action:', payload.action);
+    console.log('[Timer] ✅ Received action:', payload.action, '| mode:', payload.timerMode);
+
+    if (payload.timerMode) {
+      setTimerMode(payload.timerMode);
+    }
+    if (payload.initialLimit !== undefined) {
+      setInitialLimit(payload.initialLimit);
+    }
 
     switch (payload.action) {
       case 'OPEN':
@@ -87,8 +129,14 @@ export default function TimerWidget({
         break;
       case 'START': {
         const ts = payload.startTimestamp!;
+        const mode = payload.timerMode || 'UP';
+        const limit = payload.initialLimit ?? 300;
         startTsRef.current = ts;
-        setTime(Math.max(0, Math.round((Date.now() - ts) / 1000)));
+        if (mode === 'DOWN') {
+          setTime(Math.max(0, limit - Math.round((Date.now() - ts) / 1000)));
+        } else {
+          setTime(Math.max(0, Math.round((Date.now() - ts) / 1000)));
+        }
         setIsActive(true);
         setIsOpen(true);
         break;
@@ -101,13 +149,13 @@ export default function TimerWidget({
       case 'RESET':
         startTsRef.current = null;
         setIsActive(false);
-        setTime(0);
+        setTime(payload.timerMode === 'DOWN' ? (payload.initialLimit ?? 300) : 0);
         break;
       case 'CLOSE':
         startTsRef.current = null;
         setIsActive(false);
         setIsOpen(false);
-        setTime(0);
+        setTime(payload.timerMode === 'DOWN' ? (payload.initialLimit ?? 300) : 0);
         break;
     }
   };
@@ -135,10 +183,17 @@ export default function TimerWidget({
 
       // Sync state to the new participant if timer is already running
       if (isHost && isOpen) {
-        const ts = startTsRef.current ?? (Date.now() - time * 1000);
+        let ts: number;
+        if (timerMode === 'DOWN') {
+          ts = startTsRef.current ?? (Date.now() - (initialLimit - time) * 1000);
+        } else {
+          ts = startTsRef.current ?? (Date.now() - time * 1000);
+        }
         const syncPayload: TimerPayload = {
           type: 'TIMER_ACTION',
           action: isActive ? 'START' : 'PAUSE',
+          timerMode,
+          initialLimit,
           startTimestamp: ts,
           elapsed: time,
         };
@@ -206,7 +261,10 @@ export default function TimerWidget({
     }
   };
   const onReset = () => {
-    startTsRef.current = null; setIsActive(false); setTime(0);
+    startTsRef.current = null;
+    setIsActive(false);
+    const resetTime = timerMode === 'DOWN' ? initialLimit : 0;
+    setTime(resetTime);
     broadcast(buildPayload('RESET'));
   };
   const onOpen = () => {
@@ -214,8 +272,38 @@ export default function TimerWidget({
     if (isHost) broadcast(buildPayload('OPEN'));
   };
   const onClose = () => {
-    startTsRef.current = null; setIsActive(false); setIsOpen(false); setTime(0);
+    startTsRef.current = null;
+    setIsActive(false);
+    setIsOpen(false);
+    const resetTime = timerMode === 'DOWN' ? initialLimit : 0;
+    setTime(resetTime);
     if (isHost) broadcast(buildPayload('CLOSE'));
+  };
+
+  const handleModeChange = (mode: TimerMode) => {
+    if (isActive) return;
+    setTimerMode(mode);
+    if (mode === 'DOWN') {
+      const parsed = parseInt(inputMinutes, 10) || 5;
+      const seconds = parsed * 60;
+      setInitialLimit(seconds);
+      setTime(seconds);
+    } else {
+      setTime(0);
+    }
+  };
+
+  const handleMinutesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/[^0-9]/g, '');
+    setInputMinutes(val);
+    const parsed = parseInt(val, 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      const seconds = parsed * 60;
+      setInitialLimit(seconds);
+      if (!isActive) {
+        setTime(seconds);
+      }
+    }
   };
 
   const fmt = (s: number) =>
@@ -235,7 +323,42 @@ export default function TimerWidget({
         )}
       </div>
 
-      <div className={`text-4xl font-mono font-bold tracking-widest py-3 tabular-nums transition-colors ${isActive ? 'text-green-400' : 'text-amber-400'}`}>
+      {isHost && !isActive && (
+        <div className="flex gap-2 mb-2 w-full justify-center text-xs">
+          <button 
+            onClick={() => handleModeChange('UP')}
+            className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${timerMode === 'UP' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+          >
+            Tăng dần
+          </button>
+          <button 
+            onClick={() => handleModeChange('DOWN')}
+            className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${timerMode === 'DOWN' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+          >
+            Đếm ngược
+          </button>
+        </div>
+      )}
+
+      {isHost && !isActive && timerMode === 'DOWN' && (
+        <div className="flex items-center gap-1.5 mb-2 w-full justify-center">
+          <span className="text-[10px] text-slate-400">Số phút:</span>
+          <input 
+            type="text" 
+            value={inputMinutes} 
+            onChange={handleMinutesChange}
+            className="w-12 bg-slate-800 border border-slate-700 text-center text-xs font-mono rounded py-0.5 text-white focus:outline-none focus:border-blue-500"
+          />
+        </div>
+      )}
+
+      <div className={`text-4xl font-mono font-bold tracking-widest py-3 tabular-nums transition-colors ${
+        timerMode === 'DOWN' && time === 0 
+          ? 'text-red-500 animate-pulse' 
+          : isActive 
+            ? 'text-green-400' 
+            : 'text-amber-400'
+      }`}>
         {fmt(time)}
       </div>
 
@@ -275,7 +398,7 @@ export default function TimerWidget({
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          <span className={`font-mono text-xs tabular-nums ${isActive ? 'text-green-400' : ''}`}>
+          <span className={`font-mono text-xs tabular-nums ${timerMode === 'DOWN' && time === 0 ? 'text-red-500 animate-pulse' : isActive ? 'text-green-400' : ''}`}>
             {isActive ? fmt(time) : 'Timer'}
           </span>
         </button>
