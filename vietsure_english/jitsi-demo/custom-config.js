@@ -832,6 +832,62 @@ if (typeof window !== 'undefined') {
             }
         }, 100);
     }
+
+    // Intercept Canvas rendering to turn the 5th color (orange/yellow-orange) into a translucent highlighter
+    (function() {
+        if (typeof window === 'undefined' || !window.CanvasRenderingContext2D) return;
+
+        const originalStrokeStyleDescriptor = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'strokeStyle');
+        const originalFillStyleDescriptor = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'fillStyle');
+
+        const isFifthColor = (value) => {
+            if (typeof value !== 'string') return false;
+            const lowerVal = value.toLowerCase().replace(/\s+/g, '');
+            // Match typical 5th colors (yellow-orange / orange):
+            // #fab005, #f08c00, #fd7e14, #e67e22, rgb(250, 176, 5), rgb(240, 140, 0), rgb(253, 126, 20), rgb(230, 126, 34)
+            return (
+                lowerVal === '#fab005' || 
+                lowerVal === '#f08c00' || 
+                lowerVal === '#fd7e14' ||
+                lowerVal === '#e67e22' ||
+                lowerVal.includes('250,176,5') ||
+                lowerVal.includes('240,140,0') ||
+                lowerVal.includes('253,126,20') ||
+                lowerVal.includes('230,126,34')
+            );
+        };
+
+        if (originalStrokeStyleDescriptor && originalStrokeStyleDescriptor.set) {
+            Object.defineProperty(CanvasRenderingContext2D.prototype, 'strokeStyle', {
+                get: function() {
+                    return originalStrokeStyleDescriptor.get.call(this);
+                },
+                set: function(value) {
+                    let newValue = value;
+                    if (isFifthColor(value)) {
+                        newValue = 'rgba(250, 176, 5, 0.4)'; // 40% translucent orange/yellow-orange
+                    }
+                    originalStrokeStyleDescriptor.set.call(this, newValue);
+                }
+            });
+        }
+
+        if (originalFillStyleDescriptor && originalFillStyleDescriptor.set) {
+            Object.defineProperty(CanvasRenderingContext2D.prototype, 'fillStyle', {
+                get: function() {
+                    return originalFillStyleDescriptor.get.call(this);
+                },
+                set: function(value) {
+                    let newValue = value;
+                    if (isFifthColor(value)) {
+                        newValue = 'rgba(250, 176, 5, 0.4)';
+                    }
+                    originalFillStyleDescriptor.set.call(this, newValue);
+                }
+            });
+        }
+        console.log('[Jitsi custom-config] Canvas stroke/fill interceptors attached for 5th color highlighter');
+    })();
 }
 
 
