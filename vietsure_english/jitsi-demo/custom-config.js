@@ -97,6 +97,25 @@ if (typeof document !== 'undefined') {
             display: none !important;
         }
         
+        /* Hide Excalidraw Main Menu Button (Hamburger button) for both Teacher and Student */
+        .excalidraw button[data-testid="main-menu-trigger"],
+        .excalidraw button[aria-label*="Menu"],
+        .excalidraw button[aria-label*="menu"],
+        .excalidraw .App-menu__button,
+        .excalidraw .main-menu-trigger {
+            display: none !important;
+        }
+
+        /* Hide dominant speaker avatar overlay inside largeVideoContainer for both Teacher and Student */
+        #largeVideoContainer .avatar-container,
+        #largeVideoContainer .avatar,
+        #largeVideoContainer #dominantSpeakerAvatarContainer,
+        #largeVideoContainer #dominantSpeakerAvatar,
+        #largeVideoContainer .dominant-speaker-avatar,
+        #largeVideoContainer .presence-label-container {
+            display: none !important;
+        }
+        
         /* Hide whiteboard button in student's toolbar (on documentElement or body) */
         .is-student [data-testid="toolbox-whiteboard"],
         .is-student .toolbox-button[aria-label*="Whiteboard"],
@@ -108,6 +127,168 @@ if (typeof document !== 'undefined') {
         .is-student button[title*="Ẩn bảng"],
         .is-student button[title*="Hiện bảng"] {
             display: none !important;
+        }
+
+        /* Force Filmstrip to lay out horizontally at the TOP on Student screen (Highly specific selectors) */
+        html.is-student body.is-student div.filmstrip {
+            width: 100% !important;
+            max-width: none !important;
+            height: 90px !important;
+            min-height: 90px !important;
+            max-height: 90px !important;
+            padding: 5px 0 !important;
+            box-sizing: border-box !important;
+            flex-direction: row !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: auto !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            z-index: 10 !important;
+            background: #1e1e1e !important;
+        }
+
+        /* Remote videos container flex layout */
+        html.is-student body.is-student div#remoteVideos {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: center !important;
+            align-items: center !important;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: none !important;
+        }
+
+        /* Local video thumbnail container wrapper */
+        html.is-student body.is-student div#filmstripLocalVideo {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            height: 100% !important;
+            width: auto !important;
+            max-width: none !important;
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            margin: 0 5px 0 0 !important;
+            padding: 0 !important;
+        }
+
+        /* Remote videos virtual scroll parent container */
+        html.is-student body.is-student div.filmstrip__videos.remote-videos {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: flex-start !important;
+            align-items: center !important;
+            height: 100% !important;
+            width: auto !important;
+            max-width: none !important;
+            max-height: none !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* react-window virtual list container div inside remote-videos */
+        html.is-student body.is-student div.filmstrip__videos.remote-videos > div {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: flex-start !important;
+            align-items: center !important;
+            width: auto !important;
+            max-width: none !important;
+            height: 100% !important;
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* Local student video thumbnail span (Uses #localVideoContainer ID) */
+        html.is-student body.is-student span#localVideoContainer,
+        html.is-student body.is-student span#localVideoWrapper {
+            width: 120px !important;
+            height: 80px !important;
+            min-width: 120px !important;
+            min-height: 80px !important;
+            max-width: 120px !important;
+            max-height: 80px !important;
+            margin: 0 5px !important;
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            display: inline-block !important;
+            transform: none !important;
+        }
+
+        /* Remote participant video thumbnail span (Uses .videocontainer class) */
+        html.is-student body.is-student span.videocontainer {
+            width: 120px !important;
+            height: 80px !important;
+            min-width: 120px !important;
+            min-height: 80px !important;
+            max-width: 120px !important;
+            max-height: 80px !important;
+            margin: 0 5px !important;
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            display: inline-block !important;
+            transform: none !important;
+        }
+
+        /* Ensure local and remote video elements fill their containers */
+        html.is-student body.is-student span.videocontainer video,
+        html.is-student body.is-student span#localVideoContainer video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+        }
+
+        /* Ensure student avatar boxes are scaled nicely */
+        html.is-student body.is-student span.videocontainer div.avatar-container,
+        html.is-student body.is-student span.videocontainer div.avatar-container img,
+        html.is-student body.is-student span#localVideoContainer div.avatar-container,
+        html.is-student body.is-student span#localVideoContainer div.avatar-container img {
+            width: 50px !important;
+            height: 50px !important;
+        }
+
+        /* Ensure large video container shifts down by 90px and takes remaining screen space */
+        html.is-student body.is-student div#largeVideoContainer,
+        html.is-student body.is-student div#videoconference_page.vertical-filmstrip div#largeVideoContainer {
+            position: absolute !important;
+            top: 90px !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: calc(100% - 90px) !important;
+        }
+
+        /* Ensure whiteboard container and Excalidraw sub-containers fill the container */
+        html.is-student body.is-student div#largeVideoContainer div.whiteboard-container,
+        html.is-student body.is-student div#largeVideoContainer div.excalidraw-container,
+        html.is-student body.is-student div#largeVideoContainer iframe {
+            width: 100% !important;
+            height: 100% !important;
+            left: 0 !important;
+            top: 0 !important;
+            position: absolute !important;
         }
     `;
     document.head.appendChild(style);
