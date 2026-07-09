@@ -25,10 +25,6 @@
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "teacher_schedules"
-    },
-    "isVietSureEnglish": {
-      "type": "boolean",
-      "required": true
     }
   }
 }

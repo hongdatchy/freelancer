@@ -23,11 +23,7 @@ export default function ClassroomPage() {
   const [clientUser, setClientUser] = useState<any>(null);
   const [bgImage, setBgImage] = useState<string | null>(null);
   const bgImageRef = useRef<string | null>(null);
-
-  // Keep bgImageRef synced with bgImage state to prevent stale closures in Jitsi events
-  useEffect(() => {
-    bgImageRef.current = bgImage;
-  }, [bgImage]);
+  const isHost = !!clientUser;
 
   // Client-side mount check to prevent hydration mismatch and race conditions
   useEffect(() => {
@@ -35,8 +31,6 @@ export default function ClassroomPage() {
     const storeState = useUserLoginStore.getState();
     setClientUser(storeState.user);
   }, []);
-
-  const isHost = !!clientUser;
 
   const roomName = decodeURIComponent(params.roomName as string)
     // Sanitize: remove special chars to keep Jitsi happy
@@ -171,11 +165,11 @@ export default function ClassroomPage() {
           enabled: false,
         },
         toolbarButtons: [
-          'microphone', 'camera', 'closedcaptions', 'desktop',
+          'microphone', 'camera', 'closedcaptions',
           'fullscreen', 'fodeviceselection', 'chat',
           'settings', 'raisehand', 'videoquality', 'filmstrip',
-          'tileview', 'download', 'help', 'whiteboard',
-          ...(isHostUser ? ['hangup'] : [])
+          'download', 'help', 'whiteboard',
+          ...(isHostUser ? ['hangup', 'tileview', 'desktop'] : [])
         ],
       },
       interfaceConfigOverwrite: {
@@ -187,7 +181,6 @@ export default function ClassroomPage() {
     });
 
     apiRef.current.addEventListener('videoConferenceJoined', () => {
-      // Auto-start recording only for the teacher/host
       if (isHostUser) {
         setTimeout(() => {
           if (apiRef.current) {
@@ -196,6 +189,12 @@ export default function ClassroomPage() {
             });
           }
         }, 1000);
+      } else {
+        setTimeout(() => {
+          if (apiRef.current) {
+            apiRef.current.executeCommand('toggleFilmStrip');
+          }
+        }, 2000);
       }
 
       if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
@@ -210,6 +209,7 @@ export default function ClassroomPage() {
     apiRef.current.addEventListener('readyToClose', () => {
       router.back();
     });
+
   };
 
   // Set the transparent PNG Base64 placeholder as background to keep it blank by default

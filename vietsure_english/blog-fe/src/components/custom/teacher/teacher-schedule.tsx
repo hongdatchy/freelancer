@@ -43,52 +43,38 @@ interface ScheduleItem {
   day: string;
   time_slot: string;
   class_code?: string;
-  isVietSureEnglish?: boolean;
 }
 
 interface ScheduleMap {
   [key: string]: ScheduleItem;
 }
 
-interface Props {
-  teacherId?: number;
-}
-
 // ---- Component ----
-export function TeacherScheduleView({ teacherId }: Props) {
+export function TeacherScheduleView() {
   const { user } = useUserLoginStore();
   const router = useRouter();
   const startMeeting = useJitsiStore((state) => state.startMeeting);
-  const [resolvedTeacherId, setResolvedTeacherId] = useState<number | null>(null);
   const [scheduleMap, setScheduleMap] = useState<ScheduleMap>({});
   const [loading, setLoading] = useState(false);
 
   const [selectedSlotForBooking, setSelectedSlotForBooking] = useState<{ day: string, slot: string } | null>(null);
-  const [popupBookingType, setPopupBookingType] = useState<'VSE' | 'OTHER'>('VSE');
   const [popupClassCode, setPopupClassCode] = useState('');
 
   // Popup for viewing/acting on an existing booked slot
   const [selectedSlotForView, setSelectedSlotForView] = useState<{ day: string, slot: string } | null>(null);
+  const [editClassCode, setEditClassCode] = useState('');
   const [copied, setCopied] = useState(false);
 
-  const canEdit = !teacherId && !!user;
+  const canEdit = !!user;
 
   useEffect(() => {
-    if (teacherId) {
-      setResolvedTeacherId(teacherId);
-    } else if (user?.id) {
-      setResolvedTeacherId(user.id);
-    }
-  }, [teacherId, user]);
-
-  useEffect(() => {
-    if (!resolvedTeacherId) return;
+    if (!user?.id) return;
 
     const fetchSchedule = async () => {
       setLoading(true);
       try {
         const res = await getData(
-          `api/teacher-schedules?filters[users_permissions_user][id][$eq]=${resolvedTeacherId}&pagination[pageSize]=500`
+          `api/teacher-schedules?filters[users_permissions_user][id][$eq]=${user.id}&pagination[pageSize]=500`
         );
 
         const map: ScheduleMap = {};
@@ -99,7 +85,6 @@ export function TeacherScheduleView({ teacherId }: Props) {
             day: item.day,
             time_slot: item.time_slot,
             class_code: item.class_code || '',
-            isVietSureEnglish: item.isVietSureEnglish || false,
           };
         });
 
@@ -111,19 +96,19 @@ export function TeacherScheduleView({ teacherId }: Props) {
     };
 
     fetchSchedule();
-  }, [resolvedTeacherId]);
+  }, [user?.id]);
 
   const handleCellClick = (day: string, slot: string) => {
     if (!canEdit) return;
 
     const key = `${day}_${slot}`;
+    const item = scheduleMap[key];
 
-    if (scheduleMap[key]) {
-      // Open view popup instead of deleting directly
+    if (item) {
       setSelectedSlotForView({ day, slot });
+      setEditClassCode(item.class_code || '');
     } else {
       setSelectedSlotForBooking({ day, slot });
-      setPopupBookingType('VSE');
       setPopupClassCode('');
     }
   };
@@ -155,8 +140,7 @@ export function TeacherScheduleView({ teacherId }: Props) {
 
     const { day, slot } = selectedSlotForBooking;
     const key = `${day}_${slot}`;
-    const isVSE = popupBookingType === 'VSE';
-    const studentName = isVSE ? popupClassCode : '';
+    const studentName = popupClassCode;
 
     try {
       const res = await postData(`api/teacher-schedules`, {
@@ -164,8 +148,7 @@ export function TeacherScheduleView({ teacherId }: Props) {
           day,
           time_slot: slot,
           class_code: studentName,
-          isVietSureEnglish: isVSE,
-          users_permissions_user: resolvedTeacherId,
+          users_permissions_user: user?.id,
         },
       });
 
@@ -178,7 +161,6 @@ export function TeacherScheduleView({ teacherId }: Props) {
             day,
             time_slot: slot,
             class_code: studentName,
-            isVietSureEnglish: isVSE,
           },
         }));
       }
@@ -189,20 +171,32 @@ export function TeacherScheduleView({ teacherId }: Props) {
     setSelectedSlotForBooking(null);
   };
 
-  const handleStudentNameBlur = async (day: string, slot: string) => {
-    if (!canEdit) return;
+  const updateClassCode = async () => {
+    if (!selectedSlotForView || !canEdit) return;
+    const { day, slot } = selectedSlotForView;
     const key = `${day}_${slot}`;
     const item = scheduleMap[key];
     if (!item) return;
 
-    await putData(`api/teacher-schedules/${item.id}`, {
-      data: {
-        day,
-        time_slot: slot,
-        class_code: item.class_code,
-        isVietSureEnglish: item.isVietSureEnglish,
-      },
-    });
+    try {
+      await putData(`api/teacher-schedules/${item.id}`, {
+        data: {
+          day,
+          time_slot: slot,
+          class_code: editClassCode,
+        },
+      });
+
+      setScheduleMap(prev => ({
+        ...prev,
+        [key]: {
+          ...prev[key],
+          class_code: editClassCode,
+        },
+      }));
+    } catch (err) {
+      console.error('Update error:', err);
+    }
   };
 
   if (loading) {
@@ -273,11 +267,7 @@ export function TeacherScheduleView({ teacherId }: Props) {
                 {DAYS_CONFIG.map(dayInfo => {
                   const key = `${dayInfo.dayKey}_${slot}`;
                   const item = scheduleMap[key];
-                  const teacherHasClass = !!item;
-                  const isVSE = item?.isVietSureEnglish;
-
-                  // Invert logic for student (if canEdit is false)
-                  const visualActive = canEdit ? teacherHasClass : !teacherHasClass;
+                  const visualActive = !!item;
 
                   return (
                     <td
@@ -286,28 +276,13 @@ export function TeacherScheduleView({ teacherId }: Props) {
                       className={`h-[42px] align-middle text-center rounded transition-all select-none duration-150 p-1 ${canEdit ? 'cursor-pointer hover:ring-2 hover:ring-[#FF6B00]/50 hover:ring-inset' : 'cursor-default'
                         } ${visualActive
                           ? 'bg-[#3F489A]'
-                          : 'bg-[#F5F7FC]'
+                          : 'bg-[#FEE2E2]'
                         }`}
                     >
                       {visualActive ? (
-                        <div className="flex flex-col items-center justify-center h-full w-full">
-                          {/* Inner text/block */}
-                          <div className={`w-full h-full rounded-[2px] flex items-center justify-center overflow-hidden`}>
-                            {canEdit && (
-                              isVSE ? (
-                                <div className={`w-[80%] h-[75%] flex items-center justify-center text-center text-[10px] bg-white/95 text-[#3F489A] font-bold rounded-[3px] px-1 py-0.5 shadow-sm overflow-hidden`}>
-                                  <span className="truncate">{scheduleMap[key].class_code || 'VSE'}</span>
-                                </div>
-                              ) : (
-                                <div className="w-[80%] h-[75%] flex items-center justify-center text-white text-[10px] font-bold leading-tight">
-                                  Trung tâm<br />khác
-                                </div>
-                              )
-                            )}
-                          </div>
-                        </div>
+                        <span className="text-white font-black text-base">V</span>
                       ) : (
-                        <span className="text-[#8E9AD5] font-semibold text-sm">x</span>
+                        <span className="text-red-500 font-semibold text-sm">x</span>
                       )}
                     </td>
                   );
@@ -327,42 +302,19 @@ export function TeacherScheduleView({ teacherId }: Props) {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-5 py-4">
-            <div className="flex items-center gap-4 justify-center">
-              <button
-                onClick={() => setPopupBookingType('VSE')}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-bold border-2 transition-all ${popupBookingType === 'VSE'
-                    ? 'border-[#3F489A] bg-[#3F489A] text-white shadow-md'
-                    : 'border-slate-200 bg-white text-slate-500 hover:border-[#3F489A]/50'
-                  }`}
-              >
-                VietSure English
-              </button>
-              <button
-                onClick={() => setPopupBookingType('OTHER')}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-bold border-2 transition-all ${popupBookingType === 'OTHER'
-                    ? 'border-[#8B5CF6] bg-[#8B5CF6] text-white shadow-md'
-                    : 'border-slate-200 bg-white text-slate-500 hover:border-[#8B5CF6]/50'
-                  }`}
-              >
-                Trung tâm khác
-              </button>
+            <div className="mt-2">
+              <label className="text-sm font-bold text-[#2E357F] mb-2 block">
+                Mã lớp học
+              </label>
+              <input
+                type="text"
+                value={popupClassCode}
+                onChange={(e) => setPopupClassCode(e.target.value)}
+                placeholder="Nhập mã lớp..."
+                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] transition-colors"
+                autoFocus
+              />
             </div>
-
-            {popupBookingType === 'VSE' && (
-              <div className="mt-2">
-                <label className="text-sm font-bold text-[#2E357F] mb-2 block">
-                  Mã lớp học <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={popupClassCode}
-                  onChange={(e) => setPopupClassCode(e.target.value)}
-                  placeholder="Nhập mã lớp..."
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] transition-colors"
-                  autoFocus
-                />
-              </div>
-            )}
           </div>
           <DialogFooter className="sm:justify-between flex-row gap-3">
             <button
@@ -401,20 +353,18 @@ export function TeacherScheduleView({ teacherId }: Props) {
           </DialogHeader>
 
           <div className="grid gap-3 py-4">
-            {/* Option 1: Enter class (Only for VietSure English) */}
             {(() => {
               const key = selectedSlotForView ? `${selectedSlotForView.day}_${selectedSlotForView.slot}` : '';
               const item = scheduleMap[key];
+              const hasClassCode = !!(item?.class_code && item.class_code.trim());
 
-              if (item?.isVietSureEnglish) {
+              if (hasClassCode) {
                 return (
                   <>
                     <button
                       onClick={() => {
                         if (!selectedSlotForView) return;
-                        const cleanClass = (item?.class_code?.trim()
-                          ? item.class_code.trim()
-                          : `${selectedSlotForView.day}-${selectedSlotForView.slot}`).replace(/\s+/g, '_');
+                        const cleanClass = item!.class_code!.trim().replace(/\s+/g, '_');
                         const roomName = cleanClass;
                         setSelectedSlotForView(null);
                         startMeeting(roomName);
@@ -429,9 +379,7 @@ export function TeacherScheduleView({ teacherId }: Props) {
                     <button
                       onClick={() => {
                         if (!selectedSlotForView) return;
-                        const cleanClass = (item?.class_code?.trim()
-                          ? item.class_code.trim()
-                          : `${selectedSlotForView.day}-${selectedSlotForView.slot}`).replace(/\s+/g, '_');
+                        const cleanClass = item!.class_code!.trim().replace(/\s+/g, '_');
                         const roomName = cleanClass;
                         const link = `${window.location.origin}/classroom/${roomName}`;
                         navigator.clipboard.writeText(link);
@@ -449,7 +397,29 @@ export function TeacherScheduleView({ teacherId }: Props) {
                   </>
                 );
               }
-              return null;
+
+              return (
+                <div className="space-y-3 pb-2">
+                  <div>
+                    <label className="text-sm font-bold text-[#2E357F] mb-1.5 block">
+                      Nhập mã lớp học cho lịch này
+                    </label>
+                    <input
+                      type="text"
+                      value={editClassCode}
+                      onChange={(e) => setEditClassCode(e.target.value)}
+                      placeholder="Nhập mã lớp..."
+                      className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] transition-colors text-sm"
+                    />
+                  </div>
+                  <button
+                    onClick={updateClassCode}
+                    className="w-full py-3 rounded-xl text-sm font-bold bg-[#FF6B00] text-white hover:bg-[#e66000] shadow-md transition-all"
+                  >
+                    Lưu mã lớp học
+                  </button>
+                </div>
+              );
             })()}
 
             {/* Option 2: Delete schedule */}

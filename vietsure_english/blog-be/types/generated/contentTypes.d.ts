@@ -699,7 +699,6 @@ export interface ApiTeacherScheduleTeacherSchedule
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     day: Schema.Attribute.String;
-    isVietSureEnglish: Schema.Attribute.Boolean & Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',

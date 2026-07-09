@@ -1,6 +1,5 @@
 import TrialSection from '@/components/custom/common/traial-section';
 import { TeacherDetailClient } from '@/components/custom/teacher/teacher-detail';
-import { TeacherScheduleView } from '@/components/custom/teacher/teacher-schedule';
 import { TeacherDTO } from '@/dto/TeacherDTO';
 import { getData } from '@/service/api';
 
@@ -23,9 +22,6 @@ export default async function TeacherDetailPage(props: {
     <div className="md:col-span-3 w-full">
       {/* Teacher info */}
       <TeacherDetailClient teacher={teacher} avatar={avatar} />
-
-      {/* Schedule RIGHT BELOW - Removed by request */}
-      {/* <TeacherScheduleView teacherId={Number(teacher.id)} /> */}
 
       <div>
         <TrialSection />

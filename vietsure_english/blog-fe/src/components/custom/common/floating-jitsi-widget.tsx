@@ -23,8 +23,8 @@ export default function FloatingJitsiWidget() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const initialWidth = window.innerWidth < 768 ? Math.floor(window.innerWidth * 0.9) : 650;
-      const initialHeight = window.innerHeight < 768 ? Math.floor(window.innerHeight * 0.6) : 450;
+      const initialWidth = window.innerWidth < 768 ? Math.floor(window.innerWidth * 0.9) : Math.floor(window.innerWidth * 0.5);
+      const initialHeight = window.innerHeight < 768 ? Math.floor(window.innerHeight * 0.6) : Math.floor(window.innerHeight * 0.7);
       setSize({ width: initialWidth, height: initialHeight });
     }
   }, []);
@@ -214,14 +214,14 @@ export default function FloatingJitsiWidget() {
             disableSelfRecording: false,
           },
           toolbarButtons: [
-            'camera', 'chat', 'closedcaptions', 'desktop', 'download',
+            'camera', 'chat', 'closedcaptions', 'download',
             'etherpad', 'feedback', 'filmstrip', 'fullscreen',
             'help', 'highlight', 'invite', 'livestreaming', 'microphone',
             'mute-everyone', 'mute-video-everyone', 'participants-pane',
             'profile', 'raisehand', 'select-background',
-            'settings', 'shareaudio', 'sharedvideo', 'stats', 'tileview',
-            'toggle-camera', 'videoquality', 'whiteboard', 'polls',
-            ...(isHost ? ['hangup'] : [])
+            'settings', 'shareaudio', 'sharedvideo', 'stats',
+            'toggle-camera', 'videoquality', 'polls', 'whiteboard',
+            ...(isHost ? ['hangup', 'tileview', 'desktop'] : [])
           ],
         },
         interfaceConfigOverwrite: {
@@ -272,14 +272,21 @@ export default function FloatingJitsiWidget() {
 
       // Push background image state to Jitsi iframe when conference joins
       apiRef.current.addEventListener('videoConferenceJoined', () => {
-        // Auto-start recording
-        setTimeout(() => {
-          if (apiRef.current) {
-            apiRef.current.executeCommand('startRecording', {
-              mode: 'file'
-            });
-          }
-        }, 1000);
+        if (isHost) {
+          setTimeout(() => {
+            if (apiRef.current) {
+              apiRef.current.executeCommand('startRecording', {
+                mode: 'file'
+              });
+            }
+          }, 1000);
+        } else {
+          setTimeout(() => {
+            if (apiRef.current) {
+              apiRef.current.executeCommand('toggleFilmStrip');
+            }
+          }, 2000);
+        }
 
         if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
           apiRef.current.getIFrame().contentWindow.postMessage({

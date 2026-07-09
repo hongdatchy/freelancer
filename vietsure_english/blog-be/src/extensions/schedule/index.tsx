@@ -41,7 +41,6 @@ interface ScheduleMap {
     [key: string]: {
         id: string;
         class_code?: string;
-        isVietSureEnglish?: boolean;
     };
 }
 
@@ -65,8 +64,8 @@ export default function SchedulePage() {
 
     const [selectedSlot, setSelectedSlot] = useState<{ day: string, slot: string } | null>(null);
     const [selectedSlotForView, setSelectedSlotForView] = useState<{ day: string, slot: string } | null>(null);
-    const [popupBookingType, setPopupBookingType] = useState<'VSE' | 'OTHER'>('VSE');
     const [popupClassCode, setPopupClassCode] = useState('');
+    const [editClassCode, setEditClassCode] = useState('');
 
     useEffect(() => {
         fetch('/content-manager/collection-types/plugin::users-permissions.user?page=1&pageSize=100&sort=id:ASC', { headers: authHeaders() })
@@ -78,23 +77,25 @@ export default function SchedulePage() {
     }, []);
 
     useEffect(() => {
-        if (!selectedUser) return;
+        if (!selectedUser) {
+            setSchedule({});
+            return;
+        }
+
         setLoading(true);
-        fetch(
-            `/content-manager/collection-types/api::teacher-schedule.teacher-schedule?pageSize=500&filters[users_permissions_user][id][$eq]=${selectedUser}`,
-            { headers: authHeaders() }
-        )
+        fetch(`/content-manager/collection-types/api::teacher-schedule.teacher-schedule?filters[users_permissions_user][id][$eq]=${selectedUser}&pagination[pageSize]=100`, {
+            headers: authHeaders(),
+        })
             .then(res => res.json())
             .then(data => {
-                const result = data as { results: any[] };
+                const result = data as { results: Array<{ id: number; documentId: string; day: string; time_slot: string; class_code: string }> };
                 const map: ScheduleMap = {};
 
-                result.results?.forEach((item: any) => {
+                (result.results || []).forEach(item => {
                     const key = `${item.day}_${item.time_slot}`;
                     map[key] = {
                         id: item.documentId,
                         class_code: item.class_code || '',
-                        isVietSureEnglish: item.isVietSureEnglish || false,
                     };
                 });
 
@@ -108,9 +109,9 @@ export default function SchedulePage() {
 
         if (schedule[key]) {
             setSelectedSlotForView({ day, slot });
+            setEditClassCode(schedule[key].class_code || '');
         } else {
             setSelectedSlot({ day, slot });
-            setPopupBookingType('VSE');
             setPopupClassCode('');
         }
     };
@@ -136,13 +137,42 @@ export default function SchedulePage() {
         setSelectedSlotForView(null);
     };
 
+    const updateClassCode = async () => {
+        if (!selectedSlotForView) return;
+        const { day, slot } = selectedSlotForView;
+        const key = `${day}_${slot}`;
+
+        try {
+            await fetch(`/content-manager/collection-types/api::teacher-schedule.teacher-schedule/${schedule[key].id}`, {
+                method: 'PUT',
+                headers: authHeaders(),
+                body: JSON.stringify({
+                    day,
+                    time_slot: slot,
+                    class_code: editClassCode,
+                    users_permissions_user: {
+                        connect: [{ id: Number(selectedUser), isTemporary: true }],
+                        disconnect: [],
+                    },
+                }),
+            });
+
+            setSchedule(prev => ({
+                ...prev,
+                [key]: { ...prev[key], class_code: editClassCode },
+            }));
+            setSelectedSlotForView(null);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const confirmBooking = async () => {
         if (!selectedSlot) return;
         const { day, slot } = selectedSlot;
         const key = `${day}_${slot}`;
 
-        const isVSE = popupBookingType === 'VSE';
-        const studentName = isVSE ? popupClassCode : '';
+        const studentName = popupClassCode;
 
         const res = await fetch('/content-manager/collection-types/api::teacher-schedule.teacher-schedule/actions/publish?', {
             method: 'POST',
@@ -151,7 +181,6 @@ export default function SchedulePage() {
                 day,
                 time_slot: slot,
                 class_code: studentName,
-                isVietSureEnglish: isVSE,
                 users_permissions_user: {
                     connect: [{ id: Number(selectedUser), isTemporary: true }],
                     disconnect: [],
@@ -166,7 +195,7 @@ export default function SchedulePage() {
 
         setSchedule(prev => ({
             ...prev,
-            [key]: { id: newItem.data.documentId, class_code: studentName, isVietSureEnglish: isVSE },
+            [key]: { id: newItem.data.documentId, class_code: studentName },
         }));
 
         setSelectedSlot(null);
@@ -222,7 +251,6 @@ export default function SchedulePage() {
                                             const key = `${day}_${slot}`;
                                             const item = schedule[key];
                                             const active = !!item;
-                                            const isVSE = item?.isVietSureEnglish;
 
                                             return (
                                                 <td
@@ -232,7 +260,7 @@ export default function SchedulePage() {
                                                         ...tdStyle,
                                                         height: 42,
                                                         padding: 4,
-                                                        background: active ? '#3F489A' : '#F5F7FC',
+                                                        background: active ? '#3F489A' : '#FEE2E2',
                                                         cursor: 'pointer',
                                                         textAlign: 'center',
                                                         userSelect: 'none',
@@ -250,7 +278,7 @@ export default function SchedulePage() {
                                                             height: '100%',
                                                             width: '100%'
                                                         }}>
-                                                            {isVSE ? (
+                                                            {schedule[key].class_code ? (
                                                                 <div style={{
                                                                     width: '80%',
                                                                     height: '75%',
@@ -269,24 +297,12 @@ export default function SchedulePage() {
                                                                     textOverflow: 'ellipsis',
                                                                     whiteSpace: 'nowrap'
                                                                 }}>
-                                                                    {schedule[key].class_code || 'VSE'}
+                                                                    {schedule[key].class_code}
                                                                 </div>
-                                                            ) : (
-                                                                <div style={{
-                                                                    width: '80%',
-                                                                    height: '75%',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center',
-                                                                    color: 'white',
-                                                                    fontSize: 10,
-                                                                    fontWeight: 'bold',
-                                                                    lineHeight: '1.2'
-                                                                }}>Trung tâm<br />khác</div>
-                                                            )}
+                                                            ) : null}
                                                         </div>
                                                     ) : (
-                                                        <span style={{ color: '#8E9AD5', fontWeight: 600, fontSize: 14 }}>x</span>
+                                                        <span style={{ color: '#EF4444', fontWeight: 600, fontSize: 14 }}>x</span>
                                                     )}
                                                 </td>
                                             );
@@ -316,49 +332,22 @@ export default function SchedulePage() {
                             Lịch: {selectedSlot.slot} ({selectedSlot.day})
                         </div>
 
-                        <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
-                            <button
-                                onClick={() => setPopupBookingType('VSE')}
+                        <div style={{ marginBottom: 20 }}>
+                            <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold', fontSize: 14, color: '#333' }}>
+                                Mã lớp học
+                            </label>
+                            <input
+                                type="text"
+                                value={popupClassCode}
+                                onChange={(e) => setPopupClassCode(e.target.value)}
+                                placeholder="Nhập mã lớp..."
+                                autoFocus
                                 style={{
-                                    flex: 1, padding: '10px 0', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer',
-                                    border: popupBookingType === 'VSE' ? '2px solid #3F489A' : '2px solid #ddd',
-                                    background: popupBookingType === 'VSE' ? '#3F489A' : 'white',
-                                    color: popupBookingType === 'VSE' ? 'white' : '#666'
+                                    width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #ddd',
+                                    fontSize: 14, boxSizing: 'border-box'
                                 }}
-                            >
-                                VietSure English
-                            </button>
-                            <button
-                                onClick={() => setPopupBookingType('OTHER')}
-                                style={{
-                                    flex: 1, padding: '10px 0', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer',
-                                    border: popupBookingType === 'OTHER' ? '2px solid #8B5CF6' : '2px solid #ddd',
-                                    background: popupBookingType === 'OTHER' ? '#8B5CF6' : 'white',
-                                    color: popupBookingType === 'OTHER' ? 'white' : '#666'
-                                }}
-                            >
-                                Trung tâm khác
-                            </button>
+                            />
                         </div>
-
-                        {popupBookingType === 'VSE' && (
-                            <div style={{ marginBottom: 20 }}>
-                                <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold', fontSize: 14, color: '#333' }}>
-                                    Mã lớp học <span style={{ color: 'red' }}>*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={popupClassCode}
-                                    onChange={(e) => setPopupClassCode(e.target.value)}
-                                    placeholder="Nhập mã lớp..."
-                                    autoFocus
-                                    style={{
-                                        width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #ddd',
-                                        fontSize: 14, boxSizing: 'border-box'
-                                    }}
-                                />
-                            </div>
-                        )}
 
                         <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 30 }}>
                             <button
@@ -410,7 +399,33 @@ export default function SchedulePage() {
                             })()}
                         </div>
 
+                        <div style={{ marginBottom: 20 }}>
+                            <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold', fontSize: 14, color: '#333' }}>
+                                Cập nhật mã lớp học
+                            </label>
+                            <input
+                                type="text"
+                                value={editClassCode}
+                                onChange={(e) => setEditClassCode(e.target.value)}
+                                placeholder="Nhập mã lớp..."
+                                style={{
+                                    width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #ddd',
+                                    fontSize: 14, boxSizing: 'border-box'
+                                }}
+                            />
+                        </div>
+
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <button
+                                onClick={updateClassCode}
+                                style={{
+                                    padding: '10px', borderRadius: 6, border: 'none', background: '#FF6B00',
+                                    cursor: 'pointer', fontWeight: 'bold', color: 'white'
+                                }}
+                            >
+                                Cập nhật mã lớp
+                            </button>
+
                             <button
                                 onClick={deleteSchedule}
                                 style={{
