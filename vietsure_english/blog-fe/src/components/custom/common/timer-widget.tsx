@@ -41,10 +41,15 @@ export default function TimerWidget({
   const widgetRef = useRef<HTMLDivElement | null>(null);
   const initialLeftRef = useRef(0);
   const initialTopRef = useRef(0);
+  const hasMovedRef = useRef(false);
 
   const handleDragStart = (e: React.MouseEvent) => {
     if (e.button !== 0) return; // Left click only
-    if ((e.target as HTMLElement).closest('button, input, select')) return;
+    
+    const target = e.target as HTMLElement;
+    // Allow dragging circular open button even though it's technically a button tag
+    const isCircularBtn = target.closest('.timer-open-btn');
+    if (!isCircularBtn && target.closest('button, input, select')) return;
 
     const widgetEl = widgetRef.current;
     if (!widgetEl) return;
@@ -58,6 +63,7 @@ export default function TimerWidget({
     initialTopRef.current = widgetRect.top - parentRect.top - dragOffset.y;
 
     setIsDragging(true);
+    hasMovedRef.current = false; // Reset movement flag on start
     dragStartRef.current = {
       x: e.clientX - dragOffset.x,
       y: e.clientY - dragOffset.y,
@@ -79,6 +85,11 @@ export default function TimerWidget({
 
       const rawX = e.clientX - dragStartRef.current.x;
       const rawY = e.clientY - dragStartRef.current.y;
+
+      // Mark as moved if displacement exceeds 5px threshold to prevent click triggering
+      if (Math.abs(rawX - dragOffset.x) > 5 || Math.abs(rawY - dragOffset.y) > 5) {
+        hasMovedRef.current = true;
+      }
 
       const proposedLeft = initialLeftRef.current + rawX;
       const proposedTop = initialTopRef.current + rawY;
@@ -282,11 +293,13 @@ export default function TimerWidget({
 
     // ── Receive timer commands via XMPP ChatMessage (__TIMER__:) ────────
     const onIncomingChat = (event: any) => {
+      console.log('📬 [Student Timer] Received incomingMessage event:', event);
       const msg = event?.message;
       if (typeof msg === 'string' && msg.startsWith('__TIMER__:')) {
         const jsonStr = msg.slice('__TIMER__:'.length);
         try {
-          applyTimerPayload(JSON.parse(jsonStr));
+          const decodedPayload = JSON.parse(jsonStr);
+          applyTimerPayload(decodedPayload);
         } catch (e) {
           console.warn('[Timer] Failed to parse chat timer payload:', e);
         }
@@ -340,6 +353,14 @@ export default function TimerWidget({
   const onOpen = () => {
     setIsOpen(true);
     if (isHost) broadcast(buildPayload('OPEN'));
+  };
+  const handleOpenClick = (e: React.MouseEvent) => {
+    if (hasMovedRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    onOpen();
   };
   const onClose = () => {
     startTsRef.current = null;
@@ -489,8 +510,8 @@ export default function TimerWidget({
           onMouseDown={handleDragStart}
         >
           {!isOpen
-            ? <button onClick={onOpen} title="Bật đồng hồ bấm giờ"
-                className="w-11 h-11 flex items-center justify-center bg-slate-900/80 hover:bg-slate-900 text-white rounded-full shadow-lg border border-slate-700 backdrop-blur-sm transition-all hover:scale-105 active:scale-95 cursor-move">
+            ? <button onClick={handleOpenClick} title="Bật đồng hồ bấm giờ"
+                className="timer-open-btn w-11 h-11 flex items-center justify-center bg-slate-900/80 hover:bg-slate-900 text-white rounded-full shadow-lg border border-slate-700 backdrop-blur-sm transition-all hover:scale-105 active:scale-95 cursor-move">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
