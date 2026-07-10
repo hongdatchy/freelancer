@@ -35,20 +35,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "http",
-        hostname: "vietsureenglish.vn",
+        hostname: "cloudcamera.online",
       },
       {
         protocol: "https",
-        hostname: "vietsureenglish.vn",
-      },
-      {
-        protocol: "https",
-        hostname: "api.phamtuan.net",
-      },
-      {
-        protocol: "https",
-        hostname: "dev.api.phamtuan.net",
-      },
+        hostname: "cloudcamera.online",
+      }
     ],
   },
   /* config options here */
