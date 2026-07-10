@@ -545,6 +545,8 @@ services:
   jibri:
     image: jitsi/jibri:${JITSI_IMAGE_VERSION:-stable-11031}
     restart: ${RESTART_POLICY:-unless-stopped}
+    ports:
+      - "127.0.0.1:2222:2222"
     volumes:
       - ${CONFIG}/jibri:/config:Z
       - ./jibri/finalize_recording.sh:/config/finalize_recording.sh
@@ -609,7 +611,9 @@ services:
       - MINIO_BUCKET
     extra_hosts:
       - "localhost:host-gateway"
-      - "meet.vietsureenglish.vn:host-gateway"
+      - "meet.cloudcamera.online:host-gateway"
+      - "minio.cloudcamera.online:host-gateway"
+      - "jibri.cloudcamera.online:host-gateway"
     depends_on:
       - jicofo
     networks:
@@ -625,11 +629,13 @@ services:
       - MINIO_BUCKET=${MINIO_BUCKET:-jitsi-recordings}
     entrypoint: >
       /bin/sh -c "
-      until /usr/bin/mc alias set myminio http://minio:9000 $MINIO_ACCESS_KEY $MINIO_SECRET_KEY; do echo 'Waiting for MinIO...'; sleep 1; done;
+      until /usr/bin/mc alias set myminio $MINIO_ENDPOINT $MINIO_ACCESS_KEY $MINIO_SECRET_KEY; do echo 'Waiting for MinIO...'; sleep 1; done;
       /usr/bin/mc mb --ignore-existing myminio/$MINIO_BUCKET;
       /usr/bin/mc anonymous set download myminio/$MINIO_BUCKET;
       exit 0;
       "
+    extra_hosts:
+      - "minio.cloudcamera.online:host-gateway"
     networks:
       meet.jitsi:
 
