@@ -58,7 +58,7 @@ services:
       - XMPP_INTERNAL_MUC_DOMAIN
       - XMPP_MUC_DOMAIN
       - XMPP_HIDDEN_DOMAIN
-      - XMPP_SERVER
+      - XMPP_SERVER=meet.cloudcamera.online
       - XMPP_PORT
       - XMPP_RECORDER_DOMAIN
       - XMPP_TRUST_ALL_CERTS=true
