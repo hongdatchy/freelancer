@@ -105,14 +105,14 @@ export default function ClassroomPage() {
     try {
       const res = await getData(`api/teacher-schedules?filters[class_code][$eq]=${roomName}&populate=*`);
       if (res.data?.[0]) {
-        teacherId = res.data[0].users_permissions_user?.id || '0';
+        teacherId = String(res.data[0].users_permissions_user?.id || '0');
       }
     } catch (err) {
       console.error("Fetch teacher id error:", err);
     }
 
     if (teacherId === '0' && isHostUser) {
-      teacherId = currentUser?.id || '0';
+      teacherId = String(currentUser?.id || '0');
     }
 
     const jitsiRoomJID = `${roomName}_GV_${teacherId}`;
