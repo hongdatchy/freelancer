@@ -137,6 +137,8 @@ export default function FloatingJitsiWidget() {
       const sanitizedRoom = decodeURIComponent(roomName)
         .replace(/[^a-zA-Z0-9À-ỹ\-_]/g, '-')
         .replace(/-+/g, '-');
+      const teacherId = userRef.current?.id || '0';
+      const jitsiRoomJID = `${sanitizedRoom}_GV_${teacherId}`;
 
       // Generate JWT Token using Web Crypto API
       const generateJitsiJWT = async () => {
@@ -150,7 +152,7 @@ export default function FloatingJitsiWidget() {
           aud: "vietsure_app",
           iss: "vietsure_app",
           sub: "meet.jitsi",
-          room: sanitizedRoom,
+          room: jitsiRoomJID,
           iat: now,
           nbf: now - 60, // allow 1 min clock skew
           exp: now + 86400 // 24 hours valid
@@ -192,7 +194,7 @@ export default function FloatingJitsiWidget() {
       const token = await generateJitsiJWT();
 
       apiRef.current = new (window as any).JitsiMeetExternalAPI(JITSI_SERVER, {
-        roomName: sanitizedRoom,
+        roomName: jitsiRoomJID,
         jwt: token,
         width: '100%',
         height: '100%',
@@ -211,6 +213,7 @@ export default function FloatingJitsiWidget() {
           settingsSections: ['devices', 'moderator', 'profile', 'calendar', 'sounds'],
           disableSelfViewSettings: true,
           isStudent: true,
+          subject: sanitizedRoom,
           whiteboard: { enabled: true },
           localRecording: {
             enabled: true,

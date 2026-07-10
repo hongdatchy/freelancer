@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import useUserLoginStore from '@/state-manager/user-login-store';
 import TimerWidget from '@/components/custom/common/timer-widget';
+import { getData } from '@/service/api';
 
 const JITSI_SERVER = process.env.NEXT_PUBLIC_JITSI_SERVER;
 
@@ -100,6 +101,21 @@ export default function ClassroomPage() {
     const currentUser = storeState.user;
     const isHostUser = !!currentUser;
 
+    let teacherId = '0';
+    try {
+      const res = await getData(`api/teacher-schedules?filters[class_code][$eq]=${roomName}&populate=*`);
+      if (res.data?.[0]) {
+        teacherId = res.data[0].users_permissions_user?.id || '0';
+      }
+    } catch (err) {
+      console.error("Fetch teacher id error:", err);
+    }
+
+    if (teacherId === '0' && isHostUser) {
+      teacherId = currentUser?.id || '0';
+    }
+
+    const jitsiRoomJID = `${roomName}_GV_${teacherId}`;
     const displayName = isHostUser ? (currentUser?.fullName || currentUser?.username || 'Giáo viên') : 'Học viên';
     const email = isHostUser ? (currentUser?.email || '') : '';
 
@@ -118,7 +134,7 @@ export default function ClassroomPage() {
         aud: "vietsure_app",
         iss: "vietsure_app",
         sub: "meet.jitsi",
-        room: roomName,
+        room: jitsiRoomJID,
         iat: now,
         nbf: now - 60, // allow 1 min clock skew
         exp: now + 86400 // 24 hours valid
@@ -161,7 +177,7 @@ export default function ClassroomPage() {
     const token = isHostUser ? await generateJitsiJWT() : undefined;
 
     apiRef.current = new window.JitsiMeetExternalAPI(JITSI_SERVER, {
-      roomName,
+      roomName: jitsiRoomJID,
       ...(token ? { jwt: token } : {}),
       width: '100%',
       height: '100%',
