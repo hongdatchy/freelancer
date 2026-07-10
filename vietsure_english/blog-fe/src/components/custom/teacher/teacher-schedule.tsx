@@ -366,8 +366,7 @@ export function TeacherScheduleView() {
                         if (!selectedSlotForView) return;
                         const cleanClass = item!.class_code!.trim().replace(/\s+/g, '_');
                         const teacherId = user?.id || '0';
-                        const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
-                        const roomName = `${cleanClass}_GV_${teacherId}_${todayStr}`;
+                        const roomName = `${cleanClass}_GV_${teacherId}`;
                         setSelectedSlotForView(null);
                         startMeeting(roomName);
                       }}
@@ -383,8 +382,7 @@ export function TeacherScheduleView() {
                         if (!selectedSlotForView) return;
                         const cleanClass = item!.class_code!.trim().replace(/\s+/g, '_');
                         const teacherId = user?.id || '0';
-                        const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
-                        const roomName = `${cleanClass}_GV_${teacherId}_${todayStr}`;
+                        const roomName = `${cleanClass}_GV_${teacherId}`;
                         const link = `${window.location.origin}/classroom/${roomName}`;
                         navigator.clipboard.writeText(link);
                         setCopied(true);
