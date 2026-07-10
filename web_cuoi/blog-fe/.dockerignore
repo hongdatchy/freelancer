@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+.env
+.vercel
+.DS_Store
+.git
+.gitignore
+README.md
+docker-compose.yaml
+Dockerfile

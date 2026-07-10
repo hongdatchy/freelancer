@@ -1,0 +1,83 @@
+{
+  "kind": "collectionType",
+  "collectionName": "courses",
+  "info": {
+    "singularName": "course",
+    "pluralName": "courses",
+    "displayName": "Course"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "thumbnail": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "lectures": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::lecture.lecture"
+    },
+    "users_permissions_users": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "courses"
+    },
+    "isStudentLecture": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    },
+    "ages": {
+      "type": "string",
+      "conditions": {
+        "visible": {
+          "!=": [
+            {
+              "var": "isStudentLecture"
+            },
+            false
+          ]
+        }
+      }
+    },
+    "level": {
+      "type": "enumeration",
+      "conditions": {
+        "visible": {
+          "!=": [
+            {
+              "var": "isStudentLecture"
+            },
+            false
+          ]
+        }
+      },
+      "enum": [
+        "Level 0",
+        "Level 1+2",
+        "Starters",
+        "Level 3+4",
+        "Movers",
+        "Level 5+6",
+        "Flyers",
+        "Test Đầu Vào"
+      ]
+    }
+  }
+}

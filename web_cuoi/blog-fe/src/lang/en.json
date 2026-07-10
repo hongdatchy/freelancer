@@ -1,0 +1,38 @@
+{
+  "common": {
+    "post": {
+      "postDetailTitle": "View Detail"
+    }
+  },
+  "header": {
+    "post": {
+      "title": "Post",
+      "subItems": {
+        "trending": {
+          "title": "Trending",
+          "description": "Trending"
+        },
+        "allPosts": {
+          "title": "All Post",
+          "description": "All Post"
+        }
+      }
+    },
+    "categories": {
+      "title": "Categories"
+    },
+    "author": {
+      "title": "Author"
+    }
+  },
+  "pageRight": {
+    "categories": "Categories",
+    "trending": "Trending Topics"
+  },
+  "searchPage": {
+    "noResultSearch": "Sorry, but nothing matched your search terms. Please try again with some different keywords.",
+    "noPost": "No posts available.",
+    "haveResultSearch1": "We found",
+    "haveResultSearch2": "results for your search"
+  }
+}

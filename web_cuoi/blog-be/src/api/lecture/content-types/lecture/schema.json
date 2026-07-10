@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "lectures",
+  "info": {
+    "singularName": "lecture",
+    "pluralName": "lectures",
+    "displayName": "Lecture"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "content": {
+      "type": "richtext"
+    },
+    "media_lectures": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::media-lecture.media-lecture",
+      "mappedBy": "lecture"
+    }
+  }
+}

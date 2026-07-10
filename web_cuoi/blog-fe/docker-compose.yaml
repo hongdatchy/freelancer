@@ -1,0 +1,18 @@
+services:
+  nextjs-app:
+    container_name: nextjs-app-prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:3000:3000"
+    restart: unless-stopped
+    extra_hosts:
+      - "cloudcamera.online:host-gateway"
+    networks:
+      - vietsure-network
+
+networks:
+  vietsure-network:
+    name: vietsure-network
+    external: true

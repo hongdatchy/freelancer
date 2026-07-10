@@ -1,0 +1,91 @@
+import Image from "next/image";
+
+export default function PenguinAdventuresSection() {
+  return (
+    <section className="px-6 lg:py-20 py-10 bg-gradient-to-b from-[#F0F7FF] to-white overflow-hidden" data-purpose="penguin-adventures-section">
+      <div className="mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-12">
+        
+        {/* Header */}
+        <div className="text-center max-w-none mx-auto mb-12">
+          <h2 className="section-title text-center">
+            KHÁC BIỆT TỪ SERIES PHIM NGẮN TIẾNG ANH
+          </h2>
+          <h2 className="section-title  text-[#FF6B00] tracking-wider mt-2">
+            &quot;THE HOPE SEED: A PENGUIN ADVENTURE&quot;
+          </h2>
+          <p className="section-desc mt-4 max-w-7xl mx-auto text-center md:text-justify md:[text-align-last:center]">
+            Series được thiết kế và lồng ghép theo từng chương trình học gắn liền với những giá trị văn hóa người Việt Nam như lòng biết ơn, sự hiếu thảo, lễ phép, kiên nhẫn, bảo vệ môi trường,... thông qua việc hoàn thành nhiệm vụ ở từng trạm năng lực gắn với các tỉnh thành lớn của VN từ Nam đến Bắc (Cần Thơ, HCM, Đăk Lăk, Đà Nẵng, Hải Phòng và Hà Nội) giúp bé phát triển tính cách để trở thành 1 người có ích và hứng thú học tập, sử dụng tiếng Anh một cách tự nhiên.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
+          
+          {/* Left Column: Values Cards */}
+          <div className="lg:col-span-7 space-y-6 flex flex-col justify-between order-last lg:order-first">
+            
+            {/* Card 1: Học viên */}
+            <div className="bg-white rounded-[32px] brand-light-border p-6 md:p-8 shadow-[0_10px_35px_rgba(96,165,250,0.06)] flex-1 flex flex-col justify-center">
+              <h3 className="text-[#3F489A] font-bold text-[15px] md:text-[17px] block mb-4">
+                Giá trị với học viên:
+              </h3>
+              <ul className="space-y-3">
+                {[
+                  "Khơi gợi sự hứng thú và cố gắng học tập của trẻ để mong chờ các tập tiếp theo",
+                  "Tạo môi trường suy luận, phản biện và trao đổi bằng tiếng Anh về các tình huống trong phim",
+                  "Tiếp thu tiếng Anh hiệu quả qua hành trình học tập gắn liền với những giá trị văn hóa Việt Nam",
+                  "Tạo môi trường học tập chuẩn quốc tế, giúp trẻ học tiếng Anh như ngôn ngữ thứ hai"
+                ].map((bullet, idx) => (
+                  <li key={idx} className="flex items-start gap-3">
+                    <span className="mt-1.5 flex-shrink-0 w-2.5 h-2.5 rounded-full bg-[#FF6B00]" />
+                    <span className="section-desc block">
+                      {bullet}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Card 2: Phụ huynh */}
+            <div className="bg-white rounded-[32px] brand-light-border p-6 md:p-8 shadow-[0_10px_35px_rgba(96,165,250,0.06)] flex-1 flex flex-col justify-center">
+              <h3 className="text-[#3F489A] font-bold text-[15px] md:text-[17px] block mb-4">
+                Giá trị đối với phụ huynh:
+              </h3>
+              <ul className="space-y-3">
+                {[
+                  "Nhận thấy sự tiến bộ rõ rệt của con qua các thói quen học tập tích cực",
+                  "Con học trong trạng thái hứng thú và chủ động, giảm áp lực ép học tại nhà",
+                  "Tiết kiệm thời gian đồng hành tại nhà nhưng vẫn đảm bảo hiệu quả học tập",
+                  "Yên tâm đồng hành cùng con trên lộ trình tiếng Anh chuẩn quốc tế, vẫn gìn giữ bản sắc Việt"
+                ].map((bullet, idx) => (
+                  <li key={idx} className="flex items-start gap-3">
+                    <span className="mt-1.5 flex-shrink-0 w-2.5 h-2.5 rounded-full bg-[#FF6B00]" />
+                    <span className="section-desc block">
+                      {bullet}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+          </div>
+
+          {/* Right Column: Poster Image */}
+          <div className="lg:col-span-5 flex justify-center w-full order-first lg:order-last">
+            <div className="w-full max-w-[370px] lg:max-w-[420px] aspect-[420/580] lg:aspect-auto lg:h-full relative select-none pointer-events-none filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] rounded-2xl overflow-hidden hover:scale-[1.02] transition-transform duration-300 border-4 border-[#2E357F]">
+              <Image
+                src="/images/penguin.png"
+                alt="Poster The Hope Seed: A Penguin Adventure Series Phim Ngắn Tiếng Anh"
+                fill
+                className="object-cover"
+                priority
+                unoptimized
+              />
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+  );
+}

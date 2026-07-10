@@ -1,0 +1,13 @@
+net stop winnat
+net start winnat
+
+npx strapi export --no-encrypt -f exports/export_data
+docker compose exec strapi pnpm strapi import -f exports/export_data.tar.gz --force
+
+
+docker compose up db2 -d
+
+
+docker compose --env-file .env.prod up -d
+
+chmod 777 filename

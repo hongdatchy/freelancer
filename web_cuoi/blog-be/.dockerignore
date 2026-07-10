@@ -1,0 +1,13 @@
+node_modules
+.strapi
+dist
+.env
+.tmp
+.cache
+build
+.DS_Store
+.git
+.gitignore
+README.md
+docker-compose*.yaml
+Dockerfile
