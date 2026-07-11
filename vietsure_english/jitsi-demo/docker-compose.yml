@@ -611,9 +611,9 @@ services:
       - MINIO_BUCKET
     extra_hosts:
       - "localhost:host-gateway"
-      - "meet.cloudcamera.online:host-gateway"
-      - "minio.cloudcamera.online:host-gateway"
-      - "jibri.cloudcamera.online:host-gateway"
+      - "meet.vietsureenglish.vn:host-gateway"
+      - "minio.vietsureenglish.vn:host-gateway"
+      - "jibri.vietsureenglish.vn:host-gateway"
     depends_on:
       - jicofo
     networks:
@@ -635,7 +635,7 @@ services:
       exit 0;
       "
     extra_hosts:
-      - "minio.cloudcamera.online:host-gateway"
+      - "minio.vietsureenglish.vn:host-gateway"
     networks:
       meet.jitsi:
 

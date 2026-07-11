@@ -8,7 +8,7 @@ services:
       - "127.0.0.1:3000:3000"
     restart: unless-stopped
     extra_hosts:
-      - "cloudcamera.online:host-gateway"
+      - "vietsureenglish.vn:host-gateway"
     networks:
       - vietsure-network
 
