@@ -18,3 +18,147 @@ docker exec jitsi-demo-prosody-1 prosodyctl --config /config/prosody.cfg.lua reg
 
 
 docker exec jitsi-demo-prosody-1 prosodyctl --config /config/prosody.cfg.lua register recorder auth.meet.jitsi c0CR3Tu2mwNwENoi
+
+
+################################################################################
+# CONFIG NGINX & DOCKER COMPOSE FOR 4 SERVERS (DOMAIN: vietsureenglish.vn)
+################################################################################
+
+================================================================================
+# SERVER A: WEB SERVER (vietsureenglish.vn & www.vietsureenglish.vn)
+# Next.js (port 3000) & Strapi (port 1337)
+================================================================================
+
+# Cài đặt Nginx & Certbot (Ubuntu):
+# sudo apt update && sudo apt install -y nginx certbot python3-certbot-nginx
+
+# File cấu hình Nginx (/etc/nginx/conf.d/web.conf):
+server {
+    listen 80;
+    server_name vietsureenglish.vn www.vietsureenglish.vn;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+
+    location ~ ^/(api|admin|uploads)(/.*)?$ {
+        proxy_pass http://127.0.0.1:1337;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# Lệnh cài đặt SSL HTTPS:
+# sudo certbot --nginx -d vietsureenglish.vn -d www.vietsureenglish.vn
+
+
+================================================================================
+# SERVER B: JITSI MEET (meet.vietsureenglish.vn)
+# Jitsi Web (port 8000) & Prosody XMPP (port 5222)
+================================================================================
+
+# Cài đặt Nginx & Certbot (CentOS / AlmaLinux / RHEL):
+# sudo yum install -y epel-release && sudo yum install -y nginx certbot python3-certbot-nginx
+# sudo systemctl enable nginx && sudo systemctl start nginx
+
+# File cấu hình Nginx (/etc/nginx/conf.d/meet.conf):
+server {
+    listen 80;
+    server_name meet.vietsureenglish.vn;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+
+# Lệnh cài đặt SSL HTTPS:
+# sudo certbot --nginx -d meet.vietsureenglish.vn
+
+# Lệnh mở cổng 5222 cho Jibri (INPUT chain):
+# sudo iptables -I INPUT -p tcp --dport 5222 -j ACCEPT
+# sudo service iptables save
+
+# Lệnh chạy Docker Compose Jitsi Meet (Server B):
+# docker compose --env-file .env.prod -f docker-compose-jitsi.yml up -d
+# docker compose --env-file .env.prod -f docker-compose-jitsi.yml down
+
+
+================================================================================
+# SERVER C: MINIO STORAGE (minio.vietsureenglish.vn)
+# MinIO S3 API (port 9000)
+================================================================================
+
+# File cấu hình Nginx (/etc/nginx/conf.d/minio.conf):
+server {
+    listen 80;
+    server_name minio.vietsureenglish.vn;
+    client_max_body_size 1000M;
+
+    location / {
+        proxy_pass http://127.0.0.1:9000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+
+# Lệnh cài đặt SSL HTTPS:
+# sudo certbot --nginx -d minio.vietsureenglish.vn
+
+# Lệnh mở cổng 443 cho MinIO (INPUT chain):
+# sudo iptables -I INPUT -p tcp --dport 443 -j ACCEPT
+# sudo service iptables save
+
+# Lệnh chạy Docker Compose MinIO (Server C):
+# docker compose --env-file .env.prod -f docker-compose-minio.yml up -d
+# docker compose --env-file .env.prod -f docker-compose-minio.yml down
+
+
+================================================================================
+# SERVER D: JIBRI RECORDING (jibri.vietsureenglish.vn)
+# Jibri API / Webhook (port 2222)
+================================================================================
+
+# File cấu hình Nginx (/etc/nginx/conf.d/jibri.conf):
+server {
+    listen 80;
+    server_name jibri.vietsureenglish.vn;
+
+    location / {
+        proxy_pass http://127.0.0.1:2222;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# Lệnh cài đặt SSL HTTPS:
+# sudo certbot --nginx -d jibri.vietsureenglish.vn
+
+# Lệnh chạy Docker Compose Jibri (Server D):
+# docker compose --env-file .env.prod -f docker-compose-jibri.yml up -d
+# docker compose --env-file .env.prod -f docker-compose-jibri.yml down
+
+# Lệnh scale Jibri lên N instance song song (không lo xung đột cổng):
+# docker compose --env-file .env.prod -f docker-compose-jibri.yml up -d --scale jibri=3
