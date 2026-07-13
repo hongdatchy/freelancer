@@ -22,6 +22,23 @@ export default function FloatingJitsiWidget() {
   const [isResizing, setIsResizing] = useState(false);
   const resizeStartRef = useRef({ mouseX: 0, mouseY: 0, width: 0, height: 0 });
 
+  // Highlighter state (Excalidraw pen opacity toggler)
+  const [isHighlighterActive, setIsHighlighterActive] = useState(false);
+
+  const toggleHighlighter = () => {
+    const nextVal = !isHighlighterActive;
+    setIsHighlighterActive(nextVal);
+    
+    const iframe = apiRef.current?.getIFrame?.();
+    if (iframe) {
+      console.log('[Parent] Sending SET_EXCALIDRAW_OPACITY:', nextVal ? 40 : 100);
+      iframe.contentWindow?.postMessage({
+        type: 'SET_EXCALIDRAW_OPACITY',
+        opacity: nextVal ? 40 : 100
+      }, '*');
+    }
+  };
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const initialWidth = window.innerWidth < 768 ? Math.floor(window.innerWidth * 0.9) : Math.floor(window.innerWidth * 0.5);
@@ -630,6 +647,29 @@ export default function FloatingJitsiWidget() {
             <div className="flex-1 w-full bg-[#F0F7FF] relative">
               <div ref={containerRef} className="w-full h-full" />
               <TimerWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} />
+              
+              {/* Highlighter Toggler Button (Teacher only, floats next to the clock button) */}
+              {isHost && (
+                <button
+                  onClick={toggleHighlighter}
+                  title={isHighlighterActive ? 'Bút thường (100% độ mờ)' : 'Bút dạ quang (40% độ mờ)'}
+                  style={{
+                    position: 'absolute',
+                    top: '16px',
+                    left: '68px',
+                    zIndex: 9999,
+                  }}
+                  className={`w-11 h-11 flex items-center justify-center rounded-full shadow-lg border backdrop-blur-sm transition-all hover:scale-105 active:scale-95 cursor-pointer ${
+                    isHighlighterActive 
+                      ? 'bg-yellow-500 border-yellow-400 text-white hover:bg-yellow-400' 
+                      : 'bg-slate-900/80 border-slate-700 text-slate-300 hover:text-white hover:bg-slate-900'
+                  }`}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122l9.88-9.88a3 3 0 114.243 4.243l-9.88 9.88M9.53 16.122a3 3 0 11-4.243-4.242l9.88-9.88M9.53 16.122L5.29 20.36a1.5 1.5 0 11-2.122-2.121L7.41 14M18 10l-4-4" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
         </div>

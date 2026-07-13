@@ -120,10 +120,23 @@ if (typeof document !== 'undefined') {
     document.head.appendChild(style);
 }
 
-// Helper to find the Excalidraw API via React Fiber tree
+// Helper to find the Excalidraw API via React Fiber tree (including inside iframes)
 function findExcalidrawAPI() {
     try {
-        const el = document.querySelector('.excalidraw') || document.querySelector('.excalidraw-container');
+        let el = document.querySelector('.excalidraw') || document.querySelector('.excalidraw-container');
+        if (!el) {
+            const iframes = document.querySelectorAll('iframe');
+            for (let i = 0; i < iframes.length; i++) {
+                try {
+                    const iframeDoc = iframes[i].contentDocument || iframes[i].contentWindow?.document;
+                    if (iframeDoc) {
+                        el = iframeDoc.querySelector('.excalidraw') || iframeDoc.querySelector('.excalidraw-container');
+                        if (el) break;
+                    }
+                } catch (e) {}
+            }
+        }
+        
         if (!el) return null;
         
         const fiberKey = Object.keys(el).find(key => key.startsWith('__reactInternalInstance') || key.startsWith('__reactFiber'));
@@ -569,6 +582,31 @@ if (typeof window !== 'undefined') {
                     notifContainer.style.display = '';
                     console.log('[Jitsi custom-config] Successfully restored notifications container display');
                 }
+            } else if (event.data && event.data.type === 'SET_EXCALIDRAW_OPACITY') {
+                const val = event.data.opacity;
+                console.log('[Jitsi custom-config] SET_EXCALIDRAW_OPACITY message received:', val);
+                const activeApi = findExcalidrawAPI();
+                if (activeApi) {
+                    // Update current tool opacity
+                    activeApi.updateScene({
+                        appState: {
+                            currentItemOpacity: val
+                        }
+                    });
+                    
+                    // Update selected elements opacity
+                    const selectedIds = activeApi.getAppState()?.selectedElementIds || {};
+                    if (Object.keys(selectedIds).length > 0) {
+                        activeApi.updateScene({
+                            elements: activeApi.getSceneElements().map(el => {
+                                if (selectedIds[el.id]) {
+                                    return { ...el, opacity: val };
+                                }
+                                return el;
+                            })
+                        });
+                    }
+                }
             }
         } catch (err) {
             console.error('[Jitsi custom-config] Error in message listener:', err);
@@ -765,62 +803,6 @@ if (typeof window !== 'undefined') {
             }
         }, 100);
     }
-
-    // Intercept Canvas rendering to turn the 5th color (orange/yellow-orange) into a translucent highlighter
-    (function() {
-        if (typeof window === 'undefined' || !window.CanvasRenderingContext2D) return;
-
-        const originalStrokeStyleDescriptor = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'strokeStyle');
-        const originalFillStyleDescriptor = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'fillStyle');
-
-        const isFifthColor = (value) => {
-            if (typeof value !== 'string') return false;
-            const lowerVal = value.toLowerCase().replace(/\s+/g, '');
-            // Match typical 5th colors (yellow-orange / orange):
-            // #fab005, #f08c00, #fd7e14, #e67e22, rgb(250, 176, 5), rgb(240, 140, 0), rgb(253, 126, 20), rgb(230, 126, 34)
-            return (
-                lowerVal === '#fab005' || 
-                lowerVal === '#f08c00' || 
-                lowerVal === '#fd7e14' ||
-                lowerVal === '#e67e22' ||
-                lowerVal.includes('250,176,5') ||
-                lowerVal.includes('240,140,0') ||
-                lowerVal.includes('253,126,20') ||
-                lowerVal.includes('230,126,34')
-            );
-        };
-
-        if (originalStrokeStyleDescriptor && originalStrokeStyleDescriptor.set) {
-            Object.defineProperty(CanvasRenderingContext2D.prototype, 'strokeStyle', {
-                get: function() {
-                    return originalStrokeStyleDescriptor.get.call(this);
-                },
-                set: function(value) {
-                    let newValue = value;
-                    if (isFifthColor(value)) {
-                        newValue = 'rgba(250, 176, 5, 0.4)'; // 40% translucent orange/yellow-orange
-                    }
-                    originalStrokeStyleDescriptor.set.call(this, newValue);
-                }
-            });
-        }
-
-        if (originalFillStyleDescriptor && originalFillStyleDescriptor.set) {
-            Object.defineProperty(CanvasRenderingContext2D.prototype, 'fillStyle', {
-                get: function() {
-                    return originalFillStyleDescriptor.get.call(this);
-                },
-                set: function(value) {
-                    let newValue = value;
-                    if (isFifthColor(value)) {
-                        newValue = 'rgba(250, 176, 5, 0.4)';
-                    }
-                    originalFillStyleDescriptor.set.call(this, newValue);
-                }
-            });
-        }
-        console.log('[Jitsi custom-config] Canvas stroke/fill interceptors attached for 5th color highlighter');
-    })();
 }
 
 
