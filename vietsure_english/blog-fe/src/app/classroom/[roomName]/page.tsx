@@ -28,6 +28,7 @@ export default function ClassroomPage() {
   const bgImageRef = useRef<string | null>(null);
   const isHost = !!clientUser;
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   const toggleFullscreen = () => {
     const element = document.documentElement as any;
@@ -247,9 +248,10 @@ export default function ClassroomPage() {
           'microphone', 'camera', 'closedcaptions',
           'fodeviceselection', 'chat',
           'settings', 'raisehand', 'videoquality', 'filmstrip',
-          'download', 'help', 'whiteboard', 'hangup',
-          ...(isHostUser ? ['tileview', 'desktop'] : [])
+          'download', 'help', 'whiteboard',
+          ...(isHostUser ? ['hangup', 'tileview', 'desktop'] : [])
         ],
+        buttonsWithNotifyClick: [],
       },
       interfaceConfigOverwrite: {
         SHOW_JITSI_WATERMARK: false,
@@ -277,6 +279,13 @@ export default function ClassroomPage() {
           type: 'SET_WHITEBOARD_BACKGROUND',
           imageUrl: bgImageRef.current
         }, '*');
+      }
+    });
+
+    // Intercept student hangup clicks and show the custom React popover menu
+    apiRef.current.addEventListener('toolbarButtonClicked', (event: any) => {
+      if (event.key === 'hangup') {
+        setShowExitConfirm(prev => !prev);
       }
     });
 
@@ -337,6 +346,20 @@ export default function ClassroomPage() {
               </svg>
             </button>
 
+
+
+            {!isHost && (
+              <button
+                onClick={() => setShowExitConfirm(prev => !prev)}
+                className="p-2 bg-[#FF4D4D] hover:bg-[#E60000] text-white rounded-lg transition-colors shadow-sm flex items-center justify-center"
+                title="Thoát cuộc họp"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path fillRule="evenodd" clipRule="evenodd" d="M15.5354 14.2137C15.7419 15.0465 15.9228 15.4474 16.4337 15.8121C16.8922 16.1384 19.3358 16.5121 20.3023 16.4997C20.811 16.4933 21.2542 16.3621 21.6056 16.0384L21.6232 16.0217C22.4813 15.1709 22.6574 12.8488 22.3762 11.6107C22.2078 10.4059 21.3703 9.47571 19.9807 8.85603L19.7682 8.76541C16.0438 7.06296 7.96818 7.0911 4.2181 8.77268C2.73412 9.36142 1.82253 10.3345 1.61993 11.6621C1.35005 12.7299 1.50796 15.133 2.37837 16.0151C2.75243 16.3607 3.19644 16.492 3.70455 16.4986C4.66973 16.5111 7.11478 16.1372 7.57192 15.8123C8.04127 15.4779 8.23266 15.113 8.42034 14.413L8.48734 14.1503C8.61337 13.6444 8.68996 13.4979 8.88053 13.4009C10.9611 12.4505 13.0448 12.4503 15.1496 13.4114C15.3001 13.4887 15.3773 13.6153 15.4834 14.0097L15.5354 14.2137ZM7.03286 13.7836C7.09435 13.537 7.18016 13.2139 7.33129 12.9257C7.53766 12.5321 7.83388 12.2506 8.19985 12.0642L8.22827 12.0497L8.25728 12.0365C10.7362 10.9041 13.2746 10.9063 15.7726 12.0469L15.8041 12.0613L15.8348 12.0771C16.172 12.2502 16.4436 12.5087 16.6381 12.8519C16.7893 13.1187 16.8744 13.4061 16.9319 13.6203L16.9344 13.6297L16.9913 13.8528C17.0895 14.2487 17.1504 14.4019 17.1903 14.4759C17.2045 14.5022 17.2134 14.5129 17.22 14.5202"/>
+                </svg>
+              </button>
+            )}
+
             {isHost && (
               <button
                 onClick={() => router.back()}
@@ -356,7 +379,7 @@ export default function ClassroomPage() {
       {isFullscreen && (
         <button
           onClick={toggleFullscreen}
-          className="fixed top-3 right-3 z-[100] bg-black/60 hover:bg-black/80 text-white p-2.5 rounded-full shadow-lg backdrop-blur-md border border-white/20 transition-all"
+          className="fixed top-3 left-3 z-[100] bg-black/60 hover:bg-black/80 text-white p-2.5 rounded-full shadow-lg backdrop-blur-md border border-white/20 transition-all"
           title="Thoát toàn màn hình"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -369,6 +392,33 @@ export default function ClassroomPage() {
       <div className="flex-1 w-full relative">
         <div ref={containerRef} className="w-full h-full" />
         {!isHost && <TimerWidget apiRef={apiRef} isHost={false} apiReady={apiReady} />}
+
+        {/* Custom Exit Popover for Student (Matches Jitsi's native look, but with 1 option) */}
+        {showExitConfirm && (
+          <div 
+            className="absolute top-[60px] right-[20px] bg-[#141414] p-3 rounded-xl flex flex-col items-center shadow-[0_4px_16px_rgba(0,0,0,0.5)] border border-white/10 w-[220px] z-[99999]"
+            style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+          >
+            <button
+              onClick={() => {
+                setShowExitConfirm(false);
+                apiRef.current?.executeCommand('hangup');
+              }}
+              className="w-full bg-[#E0E0E0] hover:bg-[#c9c9c9] text-[#040404] font-bold py-2.5 px-4 rounded-lg text-sm text-center transition-colors"
+            >
+              Rời khỏi cuộc họp
+            </button>
+            <button
+              onClick={() => setShowExitConfirm(false)}
+              className="w-full bg-transparent hover:bg-white/10 text-white font-semibold py-2 px-4 rounded-lg text-sm text-center mt-1 transition-colors"
+            >
+              Hủy
+            </button>
+            
+            {/* Arrow pointing up */}
+            <div className="absolute bottom-full right-[20px] w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[8px] border-b-[#141414]"></div>
+          </div>
+        )}
       </div>
     </div>
   );
