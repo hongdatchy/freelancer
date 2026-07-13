@@ -25,7 +25,7 @@ export default function FloatingJitsiWidget() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const initialWidth = window.innerWidth < 768 ? Math.floor(window.innerWidth * 0.9) : Math.floor(window.innerWidth * 0.5);
-      const initialHeight = window.innerHeight < 768 ? Math.floor(window.innerHeight * 0.6) : Math.floor(window.innerHeight * 0.7);
+      const initialHeight = window.innerHeight < 768 ? Math.floor(window.innerHeight * 0.9) : Math.floor(window.innerHeight * 0.7);
       setSize({ width: initialWidth, height: initialHeight });
     }
   }, []);
@@ -606,7 +606,16 @@ export default function FloatingJitsiWidget() {
                 {/* Minimize button */}
                 {!isPipActive && (
                   <button
-                    onClick={() => setMinimized(true)}
+                    onClick={() => {
+                      if (document.fullscreenElement) {
+                        document.exitFullscreen().then(() => {
+                          setIsFullscreen(false);
+                          setMinimized(true);
+                        }).catch(() => setMinimized(true));
+                      } else {
+                        setMinimized(true);
+                      }
+                    }}
                     className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
                     title="Thu nhỏ cửa sổ"
                   >
