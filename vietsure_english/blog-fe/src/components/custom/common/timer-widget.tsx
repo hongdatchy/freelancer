@@ -115,6 +115,22 @@ export default function TimerWidget({
       window.removeEventListener('mouseup', handleDragEnd);
     };
   }, [isDragging]);
+  // Listen to the custom window event to toggle the timer card
+  useEffect(() => {
+    const handleToggle = () => {
+      if (isOpen) {
+        setIsOpen(false);
+        broadcast(buildPayload('CLOSE'));
+      } else {
+        setIsOpen(true);
+        broadcast(buildPayload('OPEN'));
+      }
+    };
+    window.addEventListener('toggle-timer-card', handleToggle);
+    return () => {
+      window.removeEventListener('toggle-timer-card', handleToggle);
+    };
+  }, [isOpen, timerMode, initialLimit, time]);
 
   const startTsRef      = useRef<number | null>(null);
   const participantIds  = useRef<Set<string>>(new Set());
@@ -510,12 +526,7 @@ export default function TimerWidget({
           onMouseDown={handleDragStart}
         >
           {!isOpen
-            ? <button onClick={handleOpenClick} title="Bật đồng hồ bấm giờ"
-                className="timer-open-btn w-11 h-11 flex items-center justify-center bg-slate-900/80 hover:bg-slate-900 text-white rounded-full shadow-lg border border-slate-700 backdrop-blur-sm transition-all hover:scale-105 active:scale-95 cursor-move">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-              </button>
+            ? null
             : <TimerCard />
           }
         </div>

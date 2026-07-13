@@ -213,7 +213,7 @@ export default function FloatingJitsiWidget() {
           defaultLanguage: 'vi',
           settingsSections: ['devices', 'moderator', 'profile', 'calendar', 'sounds'],
           disableSelfViewSettings: true,
-          isStudent: true,
+          isStudent: !isHost,
           subject: sanitizedRoom,
           whiteboard: { enabled: true },
           localRecording: {
@@ -223,7 +223,7 @@ export default function FloatingJitsiWidget() {
           toolbarButtons: [
             'camera', 'chat', 'closedcaptions', 'download',
             'etherpad', 'feedback', 'filmstrip',
-            'hangup', 'help', 'highlight', 'invite', 'livestreaming', 'microphone',
+            'hangup', 'help', 'highlight', 'livestreaming', 'microphone',
             'mute-everyone', 'mute-video-everyone', 'participants-pane',
             'profile', 'raisehand', 'select-background',
             'settings', 'shareaudio', 'sharedvideo', 'stats',
@@ -328,6 +328,20 @@ export default function FloatingJitsiWidget() {
       }
     };
   }, [isOpen, roomName]);
+
+  // Listen for TOGGLE_TIMER_CARD message from iframe
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'TOGGLE_TIMER_CARD') {
+        console.log('[Parent] TOGGLE_TIMER_CARD message received, dispatching event');
+        window.dispatchEvent(new CustomEvent('toggle-timer-card'));
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, []);
 
   const bgImageRef = useRef<string | null>(null);
   useEffect(() => {

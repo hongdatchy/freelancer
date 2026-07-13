@@ -116,6 +116,38 @@ if (typeof document !== 'undefined') {
         .is-student button[title*="Hiện bảng"] {
             display: none !important;
         }
+        /* Hide Jitsi native invite buttons/items */
+        .invite-button,
+        [class*="invite"],
+        [aria-label*="Invite"],
+        [aria-label*="Mời"],
+        [data-testid="toolbox-invite"],
+        .button-invite,
+        [class*="-invite"] {
+            display: none !important;
+        }
+
+        /* Style our custom Jitsi toolbar clock button to match standard Jitsi buttons */
+        #custom-jitsi-timer-btn {
+            width: 48px !important;
+            min-width: 48px !important;
+            height: 48px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        #custom-jitsi-timer-btn .toolbox-button {
+            width: 40px !important;
+            height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-radius: 6px !important;
+            transition: background-color 0.2s ease !important;
+        }
+        #custom-jitsi-timer-btn .toolbox-button:hover {
+            background-color: rgba(255, 255, 255, 0.15) !important;
+        }
     `;
     document.head.appendChild(style);
 }
@@ -313,6 +345,93 @@ const injectToolbarIcon = () => {
         toolbarStack.appendChild(label);
     }
     console.log('[Jitsi custom-config] Custom Excalidraw Highlighter tool button injected successfully');
+};
+
+
+// Create the Clock button for Jitsi's bottom toolbar
+const createToolbarClockButton = (doc) => {
+    const btnWrapper = doc.createElement('div');
+    btnWrapper.className = 'toolbox-button-wrapper';
+    btnWrapper.id = 'custom-jitsi-timer-btn';
+    
+    btnWrapper.innerHTML = `
+        <div aria-disabled="false" aria-label="Đồng hồ bấm giờ" class="toolbox-button" role="button" tabindex="0" title="Đồng hồ bấm giờ" style="cursor: pointer;">
+            <div class="toolbox-icon" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+                <svg aria-hidden="true" focusable="false" role="img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 22px; height: 22px;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+            </div>
+        </div>
+    `;
+    
+    // Add click event listener to postMessage to parent application
+    btnWrapper.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('[Jitsi] Clock button clicked, sending TOGGLE_TIMER_CARD');
+        window.parent.postMessage({ type: 'TOGGLE_TIMER_CARD' }, '*');
+    });
+    
+    return btnWrapper;
+};
+
+// Inject the custom Jitsi toolbar clock button
+const injectToolbarClockButton = () => {
+    // Check if the user is a student. Emojis and timer trigger buttons are teacher-only features.
+    const isStudent = typeof config !== 'undefined' && config.isStudent;
+    if (isStudent) return;
+
+    let anchorBtn = null;
+    let targetDoc = document;
+    
+    // Helper to find the first toolbar button wrapper in a document context
+    const findFirstBtnWrapper = (doc) => {
+        const firstBtn = doc.querySelector('.toolbox-button');
+        if (firstBtn) {
+            return firstBtn.closest('.toolbox-button-wrapper') || 
+                   firstBtn;
+        }
+        return null;
+    };
+    
+    // 1. Try finding in main Jitsi document context
+    anchorBtn = findFirstBtnWrapper(document);
+    
+    // 2. Try finding inside nested Jitsi iframes (if applicable)
+    if (!anchorBtn) {
+        const iframes = document.querySelectorAll('iframe');
+        for (let i = 0; i < iframes.length; i++) {
+            try {
+                const iframeDoc = iframes[i].contentDocument || iframes[i].contentWindow?.document;
+                if (iframeDoc) {
+                    const btn = findFirstBtnWrapper(iframeDoc);
+                    if (btn) {
+                        anchorBtn = btn;
+                        targetDoc = iframeDoc;
+                        break;
+                    }
+                }
+            } catch (e) {}
+        }
+    }
+    
+    if (!anchorBtn) return;
+    
+    // Get parent toolbar container of the anchor button
+    const toolbarContainer = anchorBtn.parentElement;
+    if (!toolbarContainer) return;
+    
+    // Check if already injected
+    if (targetDoc.getElementById('custom-jitsi-timer-btn')) {
+        return;
+    }
+    
+    const btn = createToolbarClockButton(targetDoc);
+    
+    // Insert before the first button (microphone/camera button wrapper)
+    toolbarContainer.insertBefore(btn, anchorBtn);
+    console.log('[Jitsi custom-config] Jitsi toolbar clock button injected successfully as the first button');
 };
 
 
@@ -927,6 +1046,9 @@ if (typeof window !== 'undefined') {
 
         // Ensure Excalidraw highlighter icon is injected in the toolbar
         injectToolbarIcon();
+
+        // Ensure Jitsi toolbar timer button is injected
+        injectToolbarClockButton();
     };
 
     // DOM MutationObserver to detect and hide timer messages in the chat pane UI on any DOM changes
@@ -958,9 +1080,10 @@ if (typeof window !== 'undefined') {
         }, 100);
     }
 
-    // Periodically scan and inject Excalidraw custom toolbar highlighter icon
+    // Periodically scan and inject custom buttons
     setInterval(() => {
         injectToolbarIcon();
+        injectToolbarClockButton();
     }, 500);
 }
 
