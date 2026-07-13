@@ -447,14 +447,12 @@ export default function ClassroomPage() {
 const triggerPraiseAnimation = (selectedIdx?: number) => {
   if (typeof window === 'undefined') return;
 
-  // 1. Play Hooray celebratory sound via Speech Synthesis
+  // 1. Play Hooray celebratory sound via MP3
   try {
-    const utterance = new SpeechSynthesisUtterance("Hooray!");
-    utterance.pitch = 1.6;
-    utterance.rate = 1.15;
-    window.speechSynthesis.speak(utterance);
+    const audio = new Audio('/Hooray.mp3');
+    audio.play().catch(e => console.warn('[Praise] MP3 play failed:', e));
   } catch (e) {
-    console.warn('[Praise] Audio play failed:', e);
+    console.warn('[Praise] Audio player creation failed:', e);
   }
   const containerId = 'custom-celebration-container';
   let container = document.getElementById(containerId);
