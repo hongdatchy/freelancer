@@ -182,6 +182,13 @@ if (typeof document !== 'undefined') {
             }
         }
 
+        /* Prevent collapsed filmstrip containers from clipping the expand toggle button */
+        .filmstrip.is-collapsed,
+        .vertical-filmstrip.is-collapsed,
+        .horizontal-filmstrip.is-collapsed {
+            overflow: visible !important;
+        }
+
         /* Force filmstrip expand/collapse toggle container to be always visible and clickable on mobile screens */
         .filmstrip-toggle-container,
         .toggle-filmstrip-button,
