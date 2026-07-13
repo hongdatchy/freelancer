@@ -165,6 +165,157 @@ function findExcalidrawAPI() {
     return null;
 }
 
+// Inject highlighter toggle button directly into Excalidraw toolbar (shapes-section)
+const injectToolbarIcon = () => {
+    let toolbarStack = null;
+    let targetDoc = document;
+    
+    // 1. Try finding in main document
+    toolbarStack = document.querySelector('.shapes-section .App-toolbar .Stack_horizontal') || 
+                   document.querySelector('.App-toolbar .Stack_horizontal');
+                   
+    // 2. Try finding inside nested whiteboard iframes
+    if (!toolbarStack) {
+        const iframes = document.querySelectorAll('iframe');
+        for (let i = 0; i < iframes.length; i++) {
+            try {
+                const iframeDoc = iframes[i].contentDocument || iframes[i].contentWindow?.document;
+                if (iframeDoc) {
+                    toolbarStack = iframeDoc.querySelector('.shapes-section .App-toolbar .Stack_horizontal') || 
+                                   iframeDoc.querySelector('.App-toolbar .Stack_horizontal');
+                    if (toolbarStack) {
+                        targetDoc = iframeDoc;
+                        break;
+                    }
+                }
+            } catch (e) {}
+        }
+    }
+    
+    if (!toolbarStack) return;
+    
+    // Check if already injected
+    if (targetDoc.getElementById('custom-highlighter-tool')) {
+        // Sync active state class with current excalidraw opacity
+        const api = findExcalidrawAPI();
+        if (api) {
+            const currentOpacity = api.getAppState()?.currentItemOpacity ?? 100;
+            const label = targetDoc.getElementById('custom-highlighter-tool');
+            if (label) {
+                if (currentOpacity === 40) {
+                    label.classList.add('active');
+                } else if (currentOpacity === 100) {
+                    label.classList.remove('active');
+                }
+            }
+        }
+        return;
+    }
+    
+    // Create the custom tool label (matches Excalidraw ToolIcon Shape styling)
+    const label = targetDoc.createElement('label');
+    label.className = 'ToolIcon Shape';
+    label.id = 'custom-highlighter-tool';
+    label.title = 'Bút dạ quang (Highlighter - 40% độ mờ)';
+    label.style.cursor = 'pointer';
+    
+    // Highlighter SVG icon (Marker style)
+    label.innerHTML = `
+        <input type="checkbox" style="display: none;">
+        <div class="ToolIcon__icon" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+            <svg aria-hidden="true" focusable="false" role="img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 17px; height: 17px;">
+                <path d="M9.53 16.122l9.88-9.88a3 3 0 114.243 4.243l-9.88 9.88M9.53 16.122a3 3 0 11-4.243-4.242l9.88-9.88M9.53 16.122L5.29 20.36a1.5 1.5 0 11-2.122-2.121L7.41 14M18 10l-4-4" />
+            </svg>
+        </div>
+    `;
+    
+    // Inject active status stylesheet inside target doc if not present
+    if (!targetDoc.getElementById('custom-highlighter-tool-style')) {
+        const style = targetDoc.createElement('style');
+        style.id = 'custom-highlighter-tool-style';
+        style.textContent = `
+            #custom-highlighter-tool.active {
+                background-color: var(--color-primary-light, #e3e2fe) !important;
+                color: var(--color-primary, #6965db) !important;
+            }
+        `;
+        targetDoc.head.appendChild(style);
+    }
+    
+    // Add click listener to toggle opacity
+    let isHighlighterActive = false;
+    label.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        isHighlighterActive = !isHighlighterActive;
+        if (isHighlighterActive) {
+            label.classList.add('active');
+        } else {
+            label.classList.remove('active');
+        }
+        
+        const activeApi = findExcalidrawAPI();
+        if (activeApi) {
+            const val = isHighlighterActive ? 40 : 100;
+            // 1. Update current tool opacity
+            activeApi.updateScene({
+                appState: {
+                    currentItemOpacity: val
+                }
+            });
+            
+            // 2. Try updating active tool only when turning highlighter ON (both excalidraw API styles)
+            if (isHighlighterActive) {
+                try {
+                    if (typeof activeApi.setActiveTool === 'function') {
+                        activeApi.setActiveTool({ 
+                            type: 'freedraw', 
+                            locked: true 
+                        });
+                    } else {
+                        activeApi.updateScene({
+                            appState: {
+                                activeTool: {
+                                    type: 'freedraw'
+                                }
+                            }
+                        });
+                    }
+                } catch (err) {
+                    console.warn('[Jitsi custom-config] Failed to set active tool:', err);
+                }
+            }
+            
+            // 3. Update selected elements opacity
+            const selectedIds = activeApi.getAppState()?.selectedElementIds || {};
+            const hasSelection = Object.keys(selectedIds).length > 0;
+            if (hasSelection) {
+                activeApi.updateScene({
+                    elements: activeApi.getSceneElements().map(el => {
+                        if (selectedIds[el.id]) {
+                            return { ...el, opacity: val };
+                        }
+                        return el;
+                    })
+                });
+            }
+        }
+    });
+    
+    // Append to the toolbar Stack (places it at the end of drawing tools)
+    // We insert it before the divider / extra tools trigger if present, or just append it
+    const dividers = toolbarStack.querySelectorAll('.App-toolbar__divider');
+    const divider = dividers[dividers.length - 1] || null;
+    if (divider) {
+        toolbarStack.insertBefore(label, divider);
+    } else {
+        toolbarStack.appendChild(label);
+    }
+    console.log('[Jitsi custom-config] Custom Excalidraw Highlighter tool button injected successfully');
+};
+
+
 // Monitor screen sharing and maintain the video background element behind the canvas
 if (typeof window !== 'undefined') {
     window.videoBgElement = null;
@@ -773,6 +924,9 @@ if (typeof window !== 'undefined') {
         
         // Ensure badge state is updated whenever chat messages are scanned
         updateBadgeState();
+
+        // Ensure Excalidraw highlighter icon is injected in the toolbar
+        injectToolbarIcon();
     };
 
     // DOM MutationObserver to detect and hide timer messages in the chat pane UI on any DOM changes
@@ -803,6 +957,11 @@ if (typeof window !== 'undefined') {
             }
         }, 100);
     }
+
+    // Periodically scan and inject Excalidraw custom toolbar highlighter icon
+    setInterval(() => {
+        injectToolbarIcon();
+    }, 500);
 }
 
 
