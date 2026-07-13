@@ -222,13 +222,19 @@ if (typeof document !== 'undefined') {
         }
 
         /* 4. Ensure proper left boundary positioning (shifted 20px to the left of the edge) */
-        .vertical-filmstrip [class*="toggle"],
-        .vertical-filmstrip [class*="button"] {
+        .vertical-filmstrip .filmstrip-toggle-container,
+        .vertical-filmstrip .toggle-filmstrip-button,
+        .vertical-filmstrip .filmstrip__toggle,
+        .vertical-filmstrip button[aria-label*="filmstrip"],
+        .vertical-filmstrip button[aria-label*="danh sách video"] {
             left: -20px !important;
             right: auto !important;
         }
-        .horizontal-filmstrip [class*="toggle"],
-        .horizontal-filmstrip [class*="button"] {
+        .horizontal-filmstrip .filmstrip-toggle-container,
+        .horizontal-filmstrip .toggle-filmstrip-button,
+        .horizontal-filmstrip .filmstrip__toggle,
+        .horizontal-filmstrip button[aria-label*="filmstrip"],
+        .horizontal-filmstrip button[aria-label*="danh sách video"] {
             bottom: 52px !important;
             top: auto !important;
         }
