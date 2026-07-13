@@ -29,6 +29,7 @@ export default function ClassroomPage() {
   const isHost = !!clientUser;
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const lastPraiseTimeRef = useRef<number>(0);
 
   const toggleFullscreen = () => {
     const element = document.documentElement as any;
@@ -137,7 +138,6 @@ export default function ClassroomPage() {
     // Get fresh user state directly from store to avoid React stale closures/race conditions
     const storeState = useUserLoginStore.getState();
     const currentUser = storeState.user;
-    const isHostUser = !!currentUser;
 
     let teacherId = '0';
     try {
@@ -149,7 +149,11 @@ export default function ClassroomPage() {
       console.error("Fetch teacher id error:", err);
     }
 
-    if (teacherId === '0' && isHostUser) {
+    // A user is the host/teacher only if they are logged in AND their ID matches the teacher's ID on the class schedule
+    const isHostUser = currentUser && teacherId !== '0' && String(currentUser.id) === String(teacherId);
+
+    if (teacherId === '0' && currentUser) {
+      // Fallback: if schedule is not registered, only treat as host under safe conditions (default to false for safety)
       teacherId = String(currentUser?.id || '0');
     }
 
@@ -302,6 +306,21 @@ export default function ClassroomPage() {
     setBgImage("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=");
   }, [isMounted]);
 
+  // Listen for custom Jitsi iframe messages
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'PLAY_PRAISE') {
+        const index = typeof event.data.index === 'number' ? event.data.index : 0;
+        console.log('[Student] PLAY_PRAISE message received with index:', index, ', triggering local animation');
+        triggerPraiseAnimation(index);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, []);
+
   return (
     <div className="fixed inset-0 bg-black flex flex-col z-50">
       {/* Top bar (Hidden when in Fullscreen Mode so video fills 100% mobile screen) */}
@@ -423,3 +442,101 @@ export default function ClassroomPage() {
     </div>
   );
 }
+
+// Celebration / Praise animations (mascot characters bubbling up from the bottom with hooray sounds)
+const triggerPraiseAnimation = (selectedIdx?: number) => {
+  if (typeof window === 'undefined') return;
+
+  // 1. Play Hooray celebratory sound via Speech Synthesis
+  try {
+    const utterance = new SpeechSynthesisUtterance("Hooray!");
+    utterance.pitch = 1.6;
+    utterance.rate = 1.15;
+    window.speechSynthesis.speak(utterance);
+  } catch (e) {
+    console.warn('[Praise] Audio play failed:', e);
+  }
+  const containerId = 'custom-celebration-container';
+  let container = document.getElementById(containerId);
+  if (!container) {
+    container = document.createElement('div');
+    container.id = containerId;
+    container.style.cssText = `
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999999;
+      overflow: hidden;
+    `;
+    document.body.appendChild(container);
+  }
+
+  // Inject animation keyframes stylesheet if not present
+  const styleId = 'custom-celebration-style';
+  if (!document.getElementById(styleId)) {
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      @keyframes floatUpSingle {
+        0% {
+          transform: translate(-50%, 0) scale(0.6) rotate(0deg);
+          opacity: 0;
+        }
+        20% {
+          transform: translate(-50%, -60vh) scale(1) rotate(-5deg);
+          opacity: 1;
+        }
+        80% {
+          transform: translate(-50%, -65vh) scale(1) rotate(5deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(-50%, -135vh) scale(0.8) rotate(15deg);
+          opacity: 0;
+        }
+      }
+      .praise-character-single {
+        position: absolute;
+        left: 50%;
+        bottom: -300px;
+        will-change: transform, opacity;
+        animation: floatUpSingle 2.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Mascot penguin characters to spawn (Only specific penguin expressions!)
+  const penguinImages = [
+    '/images/phan-khich-nang-dong.png',
+    '/images/hao-hung-san-sang.png',
+    '/images/bo-ngo-to-mo.png',
+    '/images/character-penguin.png',
+    '/images/tap-trung-quyet-liet.png'
+  ];
+
+  // Resolve the chosen penguin image
+  const resolvedIndex = typeof selectedIdx === 'number' ? selectedIdx : Math.floor(Math.random() * penguinImages.length);
+  const imgPath = penguinImages[resolvedIndex % penguinImages.length];
+
+  // Spawn exactly 1 single penguin character centered on screen
+  const img = document.createElement('img');
+  img.src = imgPath;
+  img.className = 'praise-character-single';
+  img.style.width = '240px';
+  img.style.height = 'auto';
+
+  container.appendChild(img);
+
+  // Self-destruct only the individual image after its animation finishes
+  setTimeout(() => {
+    if (img && img.parentNode) {
+      img.parentNode.removeChild(img);
+    }
+    // Clean up empty container if no more images are floating
+    const currentContainer = document.getElementById(containerId);
+    if (currentContainer && currentContainer.childNodes.length === 0 && currentContainer.parentNode) {
+      currentContainer.parentNode.removeChild(currentContainer);
+    }
+  }, 2600);
+};

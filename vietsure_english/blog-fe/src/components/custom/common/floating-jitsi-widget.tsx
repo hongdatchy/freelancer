@@ -101,6 +101,7 @@ export default function FloatingJitsiWidget() {
   // Use refs to store callback/user data to prevent changing dependency array size and layout effects
   const userRef = useRef(user);
   const closeMeetingRef = useRef(closeMeeting);
+  const lastPraiseTimeRef = useRef<number>(0);
 
   useEffect(() => {
     userRef.current = user;
@@ -329,12 +330,24 @@ export default function FloatingJitsiWidget() {
     };
   }, [isOpen, roomName]);
 
-  // Listen for TOGGLE_TIMER_CARD message from iframe
+  // Listen for custom Jitsi iframe messages
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.data && event.data.type === 'TOGGLE_TIMER_CARD') {
-        console.log('[Parent] TOGGLE_TIMER_CARD message received, dispatching event');
-        window.dispatchEvent(new CustomEvent('toggle-timer-card'));
+      if (event.data) {
+        if (event.data.type === 'TOGGLE_TIMER_CARD') {
+          console.log('[Parent] TOGGLE_TIMER_CARD message received, dispatching event');
+          window.dispatchEvent(new CustomEvent('toggle-timer-card'));
+        } else if (event.data.type === 'TRIGGER_PRAISE') {
+          const randIndex = Math.floor(Math.random() * 5);
+          console.log('[Parent] TRIGGER_PRAISE received, broadcasting index:', randIndex);
+          if (apiRef.current) {
+            apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${randIndex}`);
+          }
+        } else if (event.data.type === 'PLAY_PRAISE') {
+          const index = typeof event.data.index === 'number' ? event.data.index : 0;
+          console.log('[Parent] PLAY_PRAISE received, playing animation with index:', index);
+          triggerPraiseAnimation(index);
+        }
       }
     };
     window.addEventListener('message', handleMessage);
@@ -652,3 +665,101 @@ export default function FloatingJitsiWidget() {
     </>
   );
 }
+
+// Celebration / Praise animations (mascot characters bubbling up from the bottom with hooray sounds)
+const triggerPraiseAnimation = (selectedIdx?: number) => {
+  if (typeof window === 'undefined') return;
+
+  // 1. Play Hooray celebratory sound via Speech Synthesis
+  try {
+    const utterance = new SpeechSynthesisUtterance("Hooray!");
+    utterance.pitch = 1.6;
+    utterance.rate = 1.15;
+    window.speechSynthesis.speak(utterance);
+  } catch (e) {
+    console.warn('[Praise] Audio play failed:', e);
+  }
+  const containerId = 'custom-celebration-container';
+  let container = document.getElementById(containerId);
+  if (!container) {
+    container = document.createElement('div');
+    container.id = containerId;
+    container.style.cssText = `
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999999;
+      overflow: hidden;
+    `;
+    document.body.appendChild(container);
+  }
+
+  // Inject animation keyframes stylesheet if not present
+  const styleId = 'custom-celebration-style';
+  if (!document.getElementById(styleId)) {
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      @keyframes floatUpSingle {
+        0% {
+          transform: translate(-50%, 0) scale(0.6) rotate(0deg);
+          opacity: 0;
+        }
+        20% {
+          transform: translate(-50%, -60vh) scale(1) rotate(-5deg);
+          opacity: 1;
+        }
+        80% {
+          transform: translate(-50%, -65vh) scale(1) rotate(5deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(-50%, -135vh) scale(0.8) rotate(15deg);
+          opacity: 0;
+        }
+      }
+      .praise-character-single {
+        position: absolute;
+        left: 50%;
+        bottom: -300px;
+        will-change: transform, opacity;
+        animation: floatUpSingle 2.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Mascot penguin characters to spawn (Only specific penguin expressions!)
+  const penguinImages = [
+    '/images/phan-khich-nang-dong.png',
+    '/images/hao-hung-san-sang.png',
+    '/images/bo-ngo-to-mo.png',
+    '/images/character-penguin.png',
+    '/images/tap-trung-quyet-liet.png'
+  ];
+
+  // Resolve the chosen penguin image
+  const resolvedIndex = typeof selectedIdx === 'number' ? selectedIdx : Math.floor(Math.random() * penguinImages.length);
+  const imgPath = penguinImages[resolvedIndex % penguinImages.length];
+
+  // Spawn exactly 1 single penguin character centered on screen
+  const img = document.createElement('img');
+  img.src = imgPath;
+  img.className = 'praise-character-single';
+  img.style.width = '240px';
+  img.style.height = 'auto';
+
+  container.appendChild(img);
+
+  // Self-destruct only the individual image after its animation finishes
+  setTimeout(() => {
+    if (img && img.parentNode) {
+      img.parentNode.removeChild(img);
+    }
+    // Clean up empty container if no more images are floating
+    const currentContainer = document.getElementById(containerId);
+    if (currentContainer && currentContainer.childNodes.length === 0 && currentContainer.parentNode) {
+      currentContainer.parentNode.removeChild(currentContainer);
+    }
+  }, 2600);
+};
