@@ -182,21 +182,55 @@ if (typeof document !== 'undefined') {
             }
         }
 
-        /* Prevent collapsed filmstrip containers from clipping the expand toggle button */
-        .filmstrip.is-collapsed,
-        .vertical-filmstrip.is-collapsed,
-        .horizontal-filmstrip.is-collapsed {
+        /* 1. Force Jitsi filmstrip containers to always have their hover-state background color (dark grey) */
+        .filmstrip,
+        .vertical-filmstrip,
+        .horizontal-filmstrip,
+        .filmstrip__videos,
+        [class*="filmstrip"],
+        [class*="Filmstrip"] {
+  
+            opacity: 1 !important;
+            visibility: visible !important;
             overflow: visible !important;
         }
 
-        /* Force filmstrip expand/collapse toggle container to be always visible and clickable on mobile screens */
+        /* 2. Force ONLY the filmstrip toggle container to be always visible and not slid off-screen */
         .filmstrip-toggle-container,
-        .toggle-filmstrip-button,
-        .filmstrip__toggle {
+        [class*="filmstrip-toggle"],
+        [class*="toggle-filmstrip"],
+        [class*="FilmstripToggle"] {
             display: flex !important;
             visibility: visible !important;
             opacity: 1 !important;
-            z-index: 1000 !important;
+            z-index: 99999 !important;
+            transform: none !important; /* Prevent sliding off-screen */
+            transition: none !important;
+        }
+
+        /* 3. Force the button itself to be visible, and rotate the chevron to point to the left (<) */
+        .toggle-filmstrip-button,
+        .filmstrip__toggle,
+        [class*="Filmstrip__toggle"],
+        button[aria-label*="filmstrip"],
+        button[aria-label*="danh sách video"] {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 99999 !important;
+            transform: rotate(90deg) !important; /* Rotate chevron 90deg clockwise to point left (<) */
+        }
+
+        /* 4. Ensure proper left boundary positioning (shifted 20px to the left of the edge) */
+        .vertical-filmstrip [class*="toggle"],
+        .vertical-filmstrip [class*="button"] {
+            left: -20px !important;
+            right: auto !important;
+        }
+        .horizontal-filmstrip [class*="toggle"],
+        .horizontal-filmstrip [class*="button"] {
+            bottom: 52px !important;
+            top: auto !important;
         }
     `;
     document.head.appendChild(style);
@@ -1244,6 +1278,18 @@ if (typeof window !== 'undefined') {
         injectToolbarIcon();
         injectToolbarClockButton();
         injectToolbarPraiseButton();
+
+        // Simulate hover on filmstrip to force Jitsi's React code to render the collapse button
+        try {
+            const filmstrip = document.querySelector('.vertical-filmstrip') || document.querySelector('.filmstrip') || document.querySelector('.horizontal-filmstrip');
+            if (filmstrip) {
+                filmstrip.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, cancelable: true }));
+                const videos = filmstrip.querySelector('.filmstrip__videos');
+                if (videos) {
+                    videos.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, cancelable: true }));
+                }
+            }
+        } catch (e) {}
     }, 500);
 }
 
