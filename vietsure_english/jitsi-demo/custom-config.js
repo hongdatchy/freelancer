@@ -607,6 +607,110 @@ if (typeof window !== 'undefined') {
         return false;
     };
 
+    // Helper: find the chat badge inner span (actual number) on the toolbar
+    // Real DOM: <span class="badge-round"><span>1</span></span>
+    const getChatBadgeEl = () => {
+        return document.querySelector('.badge-round > span') || null;
+    };
+
+    // Helper: find the badge-round wrapper (to hide it entirely when count = 0)
+    const getChatBadgeWrapper = () => {
+        return document.querySelector('.badge-round') || null;
+    };
+
+    // Message counts tracking
+    let timerMessagesCount = 0;
+    let realMessagesCount = 0;
+
+    const getRoom = () => {
+        try {
+            if (typeof APP !== 'undefined') {
+                return APP.conference?._room || APP.conference?.room || null;
+            }
+        } catch (e) {}
+        return null;
+    };
+
+    const isChatOpen = () => {
+        try {
+            if (typeof APP !== 'undefined' && APP.store) {
+                return !!APP.store.getState()?.['features/chat']?.isOpen;
+            }
+        } catch (e) {}
+        return !!(
+            document.querySelector('[class*="chat-panel"]') ||
+            document.querySelector('[class*="-chatConversation"]') ||
+            document.querySelector('.chat-conversation') ||
+            document.querySelector('[data-testid="chat-panel"]') ||
+            document.querySelector('[class*="chat-container"]')
+        );
+    };
+
+    const updateBadgeState = () => {
+        if (isChatOpen()) {
+            realMessagesCount = 0;
+            timerMessagesCount = 0;
+        }
+
+        const badgeWrapper = getChatBadgeWrapper();
+        const badgeEl = getChatBadgeEl();
+
+        if (badgeWrapper) {
+            if (realMessagesCount === 0) {
+                // Only modify if not already hidden
+                if (badgeWrapper.style.display !== 'none') {
+                    badgeWrapper.style.setProperty('display', 'none', 'important');
+                }
+            } else {
+                // Only modify if hidden
+                if (badgeWrapper.style.display === 'none') {
+                    badgeWrapper.style.removeProperty('display');
+                }
+                if (badgeEl) {
+                    const nextVal = String(realMessagesCount);
+                    if (badgeEl.textContent !== nextVal) {
+                        badgeEl.textContent = nextVal;
+                    }
+                }
+            }
+        }
+    };
+
+    // Listen to Jitsi incoming messages to count real vs timer messages
+    const setupMessageTracking = () => {
+        const room = getRoom();
+        if (!room) return false;
+        try {
+            room.on('conference.messageReceived', (id, text, ts) => {
+                const isTimer = text && (
+                    text.includes('__TIMER__') || 
+                    text.includes('__CLK__') || 
+                    text.includes('TIMER_ACTION')
+                );
+                if (isTimer) {
+                    timerMessagesCount++;
+                } else {
+                    realMessagesCount++;
+                }
+                updateBadgeState();
+            });
+            console.log('[Jitsi custom-config] Successfully attached conference.messageReceived listener');
+            return true;
+        } catch (e) {
+            console.warn('[Jitsi custom-config] Failed to attach conference.messageReceived listener:', e);
+            return false;
+        }
+    };
+
+    // Retry until APP.conference._room is available
+    if (!setupMessageTracking()) {
+        const trackingInterval = setInterval(() => {
+            if (setupMessageTracking()) {
+                clearInterval(trackingInterval);
+            }
+        }, 1000);
+    }
+
     // Try to setup immediately, or retry if DOM is not ready
     if (!setupNotificationObserver()) {
         const interval = setInterval(() => {
@@ -628,6 +732,9 @@ if (typeof window !== 'undefined') {
                 }
             }
         });
+        
+        // Ensure badge state is updated whenever chat messages are scanned
+        updateBadgeState();
     };
 
     // DOM MutationObserver to detect and hide timer messages in the chat pane UI on any DOM changes
