@@ -166,6 +166,21 @@ if (typeof document !== 'undefined') {
             display: flex !important;
             flex-wrap: nowrap !important;
         }
+
+        /* Reclaim wasted bottom safe area space in mobile landscape */
+        @media (max-height: 480px) and (orientation: landscape) {
+            .toolbox,
+            .new-toolbox,
+            .toolbox-content,
+            .toolbox-content-wrapper {
+                padding-bottom: 2px !important;
+                margin-bottom: 0px !important;
+                height: 48px !important;
+            }
+            .toolbox-content-items {
+                height: 40px !important;
+            }
+        }
     `;
     document.head.appendChild(style);
 }
