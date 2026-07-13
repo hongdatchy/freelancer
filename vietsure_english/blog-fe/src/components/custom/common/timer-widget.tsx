@@ -33,6 +33,7 @@ export default function TimerWidget({
   const [timerMode, setTimerMode] = useState<TimerMode>('UP');
   const [initialLimit, setInitialLimit] = useState(300); // 5 mins in seconds
   const [inputMinutes, setInputMinutes] = useState('5');
+  const [flashToggle, setFlashToggle]   = useState(true);
 
   // Dragging support
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -179,35 +180,85 @@ export default function TimerWidget({
 
   // ── Local tick interval ────────────────────────────────────────────────────
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive) {
+      try {
+        const api = apiRef.current;
+        if (api) {
+          const iframe = api.getIFrame();
+          if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage({ type: 'STOP_TICK_SOUND' }, '*');
+          }
+        }
+      } catch (e) {}
+      return;
+    }
+
     const id = setInterval(() => {
+      let nextTime = 0;
       if (startTsRef.current !== null) {
         if (timerMode === 'DOWN') {
           const remaining = Math.max(0, initialLimit - Math.round((Date.now() - startTsRef.current) / 1000));
           setTime(remaining);
+          nextTime = remaining;
           if (remaining <= 0) {
             setIsActive(false);
             startTsRef.current = null;
           }
         } else {
-          setTime(Math.max(0, Math.round((Date.now() - startTsRef.current) / 1000)));
+          const elapsed = Math.max(0, Math.round((Date.now() - startTsRef.current) / 1000));
+          setTime(elapsed);
+          nextTime = elapsed;
         }
       } else {
         if (timerMode === 'DOWN') {
           setTime((t) => {
             const next = Math.max(0, t - 1);
+            nextTime = next;
             if (next <= 0) {
               setIsActive(false);
             }
             return next;
           });
         } else {
-          setTime((t) => t + 1);
+          setTime((t) => {
+            const next = t + 1;
+            nextTime = next;
+            return next;
+          });
         }
       }
+
+      // Send tick sound instruction to Jitsi Meet iframe
+      try {
+        const api = apiRef.current;
+        if (api) {
+          const iframe = api.getIFrame();
+          if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage({
+              type: 'PLAY_TICK_SOUND',
+              seconds: nextTime,
+              timerMode,
+              origin: typeof window !== 'undefined' ? window.location.origin : ''
+            }, '*');
+          }
+        }
+      } catch (e) {}
     }, 1000);
     return () => clearInterval(id);
   }, [isActive, timerMode, initialLimit]);
+
+  // ── Final 10 seconds fast flashing toggler (JS-based to bypass CSS styling conflicts) ──
+  useEffect(() => {
+    const isFinalCountdown = isActive && timerMode === 'DOWN' && time <= 10 && time > 0;
+    if (!isFinalCountdown) {
+      setFlashToggle(true);
+      return;
+    }
+    const flashId = setInterval(() => {
+      setFlashToggle((prev) => !prev);
+    }, 300);
+    return () => clearInterval(flashId);
+  }, [isActive, timerMode, time]);
 
   // ── Apply incoming timer action payload ────────────────────────────────────
   const applyTimerPayload = (payload: TimerPayload) => {
@@ -355,6 +406,9 @@ export default function TimerWidget({
       setIsActive(false);
       broadcast(buildPayload('PAUSE'));
     } else {
+      const isStartDisabled = timerMode === 'DOWN' && (inputMinutes === '' || inputMinutes === '0' || parseInt(inputMinutes, 10) <= 0);
+      if (isStartDisabled) return;
+      
       setIsActive(true);
       broadcast(buildPayload('START'));
     }
@@ -401,7 +455,11 @@ export default function TimerWidget({
   };
 
   const handleMinutesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.replace(/[^0-9]/g, '');
+    let val = e.target.value.replace(/[^0-9]/g, '');
+    // Allow single '0' or empty input
+    if (val.startsWith('0') && val.length > 1) {
+      val = val.replace(/^0+/, '0');
+    }
     setInputMinutes(val);
     const parsed = parseInt(val, 10);
     if (!isNaN(parsed) && parsed > 0) {
@@ -409,6 +467,10 @@ export default function TimerWidget({
       setInitialLimit(seconds);
       if (!isActive) {
         setTime(seconds);
+      }
+    } else {
+      if (!isActive) {
+        setTime(0);
       }
     }
   };
@@ -459,13 +521,22 @@ export default function TimerWidget({
         </div>
       )}
 
-      <div className={`text-2xl font-mono font-bold tracking-widest py-1.5 tabular-nums transition-colors ${
-        timerMode === 'DOWN' && time === 0 
-          ? 'text-red-500 animate-pulse' 
-          : isActive 
-            ? 'text-green-400' 
-            : 'text-amber-400'
-      }`}>
+      <div 
+        className={`text-2xl font-mono font-bold tracking-widest py-1.5 tabular-nums ${
+          timerMode === 'DOWN' && isActive && time <= 10 && time > 0
+            ? ''
+            : timerMode === 'DOWN' && time === 0 
+              ? 'text-red-500' 
+              : isActive 
+                ? 'text-green-400' 
+                : 'text-amber-400'
+        }`}
+        style={
+          timerMode === 'DOWN' && isActive && time <= 10 && time > 0
+            ? { color: flashToggle ? '#ef4444' : '#22c55e' }
+            : undefined
+        }
+      >
         {fmt(time)}
       </div>
 
@@ -474,25 +545,37 @@ export default function TimerWidget({
         <span className="text-[9px] text-slate-400">{isActive ? 'Đang chạy' : 'Tạm dừng'}</span>
       </div>
 
-      {isHost && (
-        <div className="flex items-center gap-2.5 w-full justify-center">
-          <button onClick={onStartPause}
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-white transition-all hover:scale-105 active:scale-95 shadow-md ${isActive ? 'bg-amber-500 hover:bg-amber-400' : 'bg-green-600 hover:bg-green-500'}`}
-            title={isActive ? 'Tạm dừng' : 'Bắt đầu'}>
-            {isActive
-              ? <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"/></svg>
-              : <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd"/></svg>
-            }
-          </button>
-          <button onClick={onReset}
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-all hover:scale-105 active:scale-95 shadow-md"
-            title="Đặt lại">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18"/>
-            </svg>
-          </button>
-        </div>
-      )}
+      {isHost && (() => {
+        const isStartDisabled = timerMode === 'DOWN' && (inputMinutes === '' || inputMinutes === '0' || parseInt(inputMinutes, 10) <= 0);
+        return (
+          <div className="flex items-center gap-2.5 w-full justify-center">
+            <button 
+              onClick={onStartPause}
+              disabled={!isActive && isStartDisabled}
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-white transition-all hover:scale-105 active:scale-95 shadow-md ${
+                isActive 
+                  ? 'bg-amber-500 hover:bg-amber-400' 
+                  : isStartDisabled 
+                    ? 'bg-slate-600 cursor-not-allowed opacity-50' 
+                    : 'bg-green-600 hover:bg-green-500'
+              }`}
+              title={isActive ? 'Tạm dừng' : isStartDisabled ? 'Vui lòng nhập số phút hợp lệ' : 'Bắt đầu'}
+            >
+              {isActive
+                ? <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"/></svg>
+                : <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd"/></svg>
+              }
+            </button>
+            <button onClick={onReset}
+              className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-all hover:scale-105 active:scale-95 shadow-md"
+              title="Đặt lại">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18"/>
+              </svg>
+            </button>
+          </div>
+        );
+      })()}
     </div>
   );
 

@@ -1215,5 +1215,63 @@ if (typeof window !== 'undefined') {
     }, 500);
 }
 
+// Global ticking audio instance tracking to prevent layering
+window.currentTickAudio = null;
+
+window.addEventListener('message', (event) => {
+    if (!event.data) return;
+
+    if (event.data.type === 'PLAY_TICK_SOUND') {
+        const seconds = typeof event.data.seconds === 'number' ? event.data.seconds : 0;
+        const timerMode = typeof event.data.timerMode === 'string' ? event.data.timerMode : 'UP';
+        const origin = event.data.origin || '';
+        
+        try {
+            // 1. If countdown reaches 0, play the alarm sound phone-ring-medium.mp3
+            if (timerMode === 'DOWN' && seconds === 0) {
+                if (window.currentTickAudio) {
+                    window.currentTickAudio.pause();
+                }
+                const alarmPath = origin ? `${origin}/images/phone-ring-medium.mp3` : '/images/phone-ring-medium.mp3';
+                window.currentTickAudio = new Audio(alarmPath);
+                window.currentTickAudio.play().catch(() => {});
+                return;
+            }
+
+            // 2. Play normal ticking sound quartz-clock.mp3
+            const tickPath = origin ? `${origin}/images/quartz-clock.mp3` : '/images/quartz-clock.mp3';
+            
+            // If currently playing the alarm or another file, create/reset the ticking audio object
+            if (!window.currentTickAudio || window.currentTickAudio.src !== new URL(tickPath, window.location.href).href) {
+                window.currentTickAudio = new Audio(tickPath);
+            }
+            
+            // Set playback rate: 3.0x during final 10 seconds of countdown, 1.0x otherwise
+            if (timerMode === 'DOWN' && seconds <= 10 && seconds > 0) {
+                window.currentTickAudio.playbackRate = 3.0;
+            } else {
+                window.currentTickAudio.playbackRate = 1.0;
+            }
+            
+            window.currentTickAudio.currentTime = 0;
+            window.currentTickAudio.play().catch(() => {});
+        } catch (e) {
+            console.warn('[Timer sound] Failed to play sound:', e);
+        }
+    }
+
+    if (event.data.type === 'STOP_TICK_SOUND') {
+        try {
+            if (window.currentTickAudio) {
+                const src = window.currentTickAudio.src || '';
+                // Only stop standard ticking sounds (quartz-clock), let the alarm (phone-ring-medium) ring to completion
+                if (!src.includes('phone-ring-medium.mp3')) {
+                    window.currentTickAudio.pause();
+                }
+            }
+        } catch (e) {}
+    }
+});
+
 
 
