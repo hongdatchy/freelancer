@@ -275,7 +275,7 @@ export default function ClassroomPage() {
         toolbarButtons: [
           'microphone', 'camera', 'closedcaptions',
           'fodeviceselection', 'chat',
-          'settings', 'raisehand', 'videoquality', 'filmstrip',
+          'settings', 'raisehand', 'filmstrip',
           'download', 'help', 'whiteboard',
           ...(isHostUser ? ['tileview', 'desktop'] : [])
         ],

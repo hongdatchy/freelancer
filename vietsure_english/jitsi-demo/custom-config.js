@@ -233,17 +233,6 @@ if (typeof document !== 'undefined') {
             display: none !important;
         }
 
-        /* Hide Video Quality/Performance tuning button on toolbar */
-        [data-testid="video-quality"],
-        button[aria-label*="chất lượng video"],
-        button[aria-label*="quality"],
-        button[aria-label*="Quality"],
-        button[aria-label*="performance"],
-        button[aria-label*="Performance"] {
-            display: none !important;
-        }
-
-
         /* 2. Force ONLY the filmstrip toggle container to be always visible and not slid off-screen */
         .filmstrip-toggle-container,
         [class*="filmstrip-toggle"],
@@ -369,7 +358,7 @@ const injectToolbarIcon = () => {
     if (targetDoc.getElementById('custom-highlighter-tool')) {
         // Sync active state class with current excalidraw opacity
         const api = findExcalidrawAPI();
-        if (api) {
+        if (api && typeof api.getAppState === 'function') {
             const currentOpacity = api.getAppState()?.currentItemOpacity ?? 100;
             const label = targetDoc.getElementById('custom-highlighter-tool');
             if (label) {
@@ -1524,6 +1513,41 @@ setInterval(() => {
                 card.style.outlineOffset = '';
                 card.style.boxShadow = '';
             }
+        });
+    } catch (e) {}
+}, 200);
+
+// Dynamically hide only the "Ẩn bảng" (Hide board) action button, keeping the "Bảng trắng" open action button visible
+setInterval(() => {
+    try {
+        const docs = [document];
+        const iframes = document.querySelectorAll('iframe');
+        iframes.forEach(iframe => {
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                if (iframeDoc) docs.push(iframeDoc);
+            } catch (e) {}
+        });
+
+        docs.forEach(doc => {
+            const menuItems = doc.querySelectorAll('[role="button"], .css-k2ih75-contextMenuItem');
+            menuItems.forEach(item => {
+                const label = item.getAttribute('aria-label') || '';
+                const text = item.textContent || '';
+                
+                const isHideAction = label === 'Ẩn bảng' || label === 'Hide board' || label === 'Hide whiteboard' || 
+                                     text.trim() === 'Ẩn bảng' || text.trim() === 'Hide board' || text.trim() === 'Hide whiteboard';
+                                     
+                const isShowAction = label === 'Bảng trắng' || label === 'Bật bảng' || label === 'Mở bảng' || label === 'Whiteboard' ||
+                                     text.trim() === 'Bảng trắng' || text.trim() === 'Bật bảng' || text.trim() === 'Mở bảng' || text.trim() === 'Whiteboard';
+
+                if (isHideAction) {
+                    item.style.setProperty('display', 'none', 'important');
+                } else if (isShowAction) {
+                    // Make sure the "show" action button remains fully visible
+                    item.style.setProperty('display', '', '');
+                }
+            });
         });
     } catch (e) {}
 }, 200);
