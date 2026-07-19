@@ -1491,5 +1491,40 @@ window.addEventListener('message', (event) => {
     }
 });
 
+// Highlight speaking participants in real-time based on audio indicator dot opacities (handles unmount state)
+setInterval(() => {
+    try {
+        const cards = document.querySelectorAll('.videocontainer, .video-preview, [id^="participant_"]');
+        cards.forEach(card => {
+            const indicator = card.querySelector('.audioindicator-container');
+            if (indicator) {
+                // Find audio dots
+                const dots = indicator.querySelectorAll('.audiodot-bottom, .audiodot-middle, .audiodot-top');
+                let maxOpacity = 0;
+                dots.forEach(dot => {
+                    const op = parseFloat(dot.style.opacity || '0');
+                    if (op > maxOpacity) {
+                        maxOpacity = op;
+                    }
+                });
 
+                // If volume is active (opacity > 0.5)
+                if (maxOpacity > 0.5) {
+                    card.style.outline = '3px solid #00FF7F';
+                    card.style.outlineOffset = '-3px';
+                    card.style.boxShadow = '0 0 15px rgba(0, 255, 127, 0.8)';
+                } else {
+                    card.style.outline = '';
+                    card.style.outlineOffset = '';
+                    card.style.boxShadow = '';
+                }
+            } else {
+                // If Jitsi has unmounted the audio indicator container, the participant is definitely silent
+                card.style.outline = '';
+                card.style.outlineOffset = '';
+                card.style.boxShadow = '';
+            }
+        });
+    } catch (e) {}
+}, 200);
 
