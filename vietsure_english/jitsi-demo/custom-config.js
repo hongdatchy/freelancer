@@ -563,25 +563,21 @@ const findCameraWrapper = (doc) => {
         // 1. Check data-testid attribute on the wrapper itself
         const testId = String(w.getAttribute('data-testid') || '').toLowerCase();
         if (testId.includes('camera') || testId.includes('video') || testId.includes('cam')) {
-            console.log('[findCameraWrapper] Matched via wrapper data-testid:', testId, w);
             return w;
         }
         
         // 2. Check inner elements with data-testid or class or aria-label
         const innerBtn = w.querySelector('[data-testid*="camera" i], [data-testid*="video" i], [data-testid*="cam" i], [aria-label*="camera" i], [aria-label*="video" i], [aria-label*="cam" i], [aria-label*="ảnh" i]');
         if (innerBtn) {
-            console.log('[findCameraWrapper] Matched via querySelector innerBtn:', innerBtn, w);
             return w;
         }
         
         // 3. Fallback: check innerHTML text content
         const html = w.innerHTML.toLowerCase();
         if (html.includes('camera') || html.includes('video') || html.includes('tắt camera') || html.includes('bật camera') || html.includes('webcam')) {
-            console.log('[findCameraWrapper] Matched via html content:', html, w);
             return w;
         }
     }
-    console.warn('[findCameraWrapper] Failed to locate camera button wrapper among children count:', wrappers.length);
     return null;
 };
 
@@ -1401,7 +1397,40 @@ if (typeof window !== 'undefined') {
                 }
             }
         } catch (e) {}
+
+        // Enforce screen share / video share button mutual exclusivity
+        try {
+            const desktopBtn = document.querySelector('.toolbox-button[aria-label*="màn hình" i]');
+            const videoShareBtn = document.querySelector('.toolbox-button[aria-label*="video" i]');
+
+            const isScreenSharing = desktopBtn && (
+                desktopBtn.classList.contains('toggled') || 
+                desktopBtn.getAttribute('aria-pressed') === 'true' ||
+                (desktopBtn.getAttribute('aria-label') || '').toLowerCase().includes('stop') ||
+                (desktopBtn.getAttribute('aria-label') || '').toLowerCase().includes('dừng') ||
+                !!document.getElementById('filmstripLocalScreenShareThumbnail') ||
+                !!document.getElementById('filmstripLocalScreenShare')
+            );
+            const isVideoSharing = !!document.getElementById('sharedVideoPlayer');
+
+            if (isScreenSharing) {
+                // Screen sharing is active: hide video share, show screen share
+                if (videoShareBtn) videoShareBtn.style.display = 'none';
+                if (desktopBtn) desktopBtn.style.display = '';
+            } else if (isVideoSharing) {
+                // Video sharing is active: hide screen share, show video share
+                if (desktopBtn) desktopBtn.style.display = 'none';
+                if (videoShareBtn) videoShareBtn.style.display = '';
+            } else {
+                // Neither is active: show both buttons
+                if (desktopBtn) desktopBtn.style.display = '';
+                if (videoShareBtn) videoShareBtn.style.display = '';
+            }
+        } catch (e) {
+            console.error('[Jitsi custom-config] Error in button toggle logic:', e);
+        }
     }, 500);
+
 }
 
 // Global ticking audio instance tracking to prevent layering

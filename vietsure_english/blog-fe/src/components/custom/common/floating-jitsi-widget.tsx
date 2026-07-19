@@ -104,6 +104,7 @@ export default function FloatingJitsiWidget() {
   const closeMeetingRef = useRef(closeMeeting);
   const lastPraiseTimeRef = useRef<number>(0);
   const isTileViewEnabledRef = useRef<boolean>(false);
+  const isScreenSharingRef = useRef<boolean>(false);
 
 
   useEffect(() => {
@@ -249,6 +250,24 @@ export default function FloatingJitsiWidget() {
 
       // Sync background to newly joined participants
       apiRef.current.addEventListener('participantJoined', (event: any) => {
+        console.log('[Jitsi] participantJoined event raw data:', event);
+
+        // If the participant is the YouTube shared video virtual participant
+        if (event.id === 'shared-video' && apiRef.current) {
+          console.log('[Jitsi] YouTube shared video participant joined:', event.id);
+          
+          // Check if local screen sharing is active by searching DOM
+          const iframe = apiRef.current.getIFrame();
+          const iframeDoc = iframe?.contentDocument || iframe?.contentWindow?.document;
+          const isLocalScreenSharing = !!iframeDoc?.getElementById('filmstripLocalScreenShareThumbnail');
+          
+          console.log('[Jitsi] Screen share status when video joined:', isLocalScreenSharing);
+          if (isLocalScreenSharing) {
+            console.log('[Jitsi] Toggling screen sharing off due to video join');
+            apiRef.current.executeCommand('toggleShareScreen');
+          }
+        }
+
         if (!participantsRef.current.includes(event.id)) {
           participantsRef.current.push(event.id);
         }
@@ -336,10 +355,23 @@ export default function FloatingJitsiWidget() {
         });
       }
 
+      // Debug: Log screen sharing event
+      apiRef.current.addEventListener('screenSharingStatusChanged', (event: any) => {
+        isScreenSharingRef.current = event.on;
+        console.log('[DEBUG-SHARE] screenSharingStatusChanged event raw data:', event);
+      });
+
+      // Debug: Log shared video event
+      apiRef.current.addEventListener('sharedVideoStatusChanged', (event: any) => {
+        console.log('[DEBUG-SHARE] sharedVideoStatusChanged event raw data:', event);
+      });
+
       apiRef.current.addEventListener('readyToClose', () => {
         closeMeetingRef.current();
       });
     };
+
+
 
     // Load Jitsi API script if not loaded
     if (!window.hasOwnProperty('JitsiMeetExternalAPI')) {
