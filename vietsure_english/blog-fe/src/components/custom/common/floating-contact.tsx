@@ -4,12 +4,15 @@ import Image from 'next/image';
 import { Phone } from 'lucide-react';
 import BtnTrial from '@/components/custom/common/btn-trial';
 import { usePathname } from 'next/navigation';
+import useUserLoginStore from '@/state-manager/user-login-store';
 
 export default function FloatingContact() {
   const pathname = usePathname();
+  const { user } = useUserLoginStore();
 
   // Hide on classroom pages to prevent blocking the whiteboard and UI
-  if (pathname?.includes('/classroom')) {
+  // Also hide when user is logged in (LMS view)
+  if (pathname?.includes('/classroom') || user) {
     return null;
   }
 

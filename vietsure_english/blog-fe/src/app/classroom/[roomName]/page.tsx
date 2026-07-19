@@ -26,7 +26,14 @@ export default function ClassroomPage() {
   const [bgImage, setBgImage] = useState<string | null>(null);
   const [apiReady, setApiReady] = useState(false);
   const bgImageRef = useRef<string | null>(null);
-  const isHost = !!clientUser;
+  
+  const [isCheckingHost, setIsCheckingHost] = useState(true);
+  const [isHostUser, setIsHostUser] = useState(false);
+  const [teacherId, setTeacherId] = useState('0');
+  const [studentInputName, setStudentInputName] = useState('');
+  const [hasEnteredName, setHasEnteredName] = useState(false);
+  
+  const isHost = isHostUser;
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const lastPraiseTimeRef = useRef<number>(0);
@@ -106,6 +113,39 @@ export default function ClassroomPage() {
   useEffect(() => {
     if (!isMounted) return;
 
+    const checkHost = async () => {
+      const storeState = useUserLoginStore.getState();
+      const currentUser = storeState.user;
+      let tId = '0';
+      try {
+        const res = await getData(`api/teacher-schedules?filters[class_code][$eq]=${roomName}&populate=*`);
+        if (res.data?.[0]) {
+          tId = String(res.data[0].users_permissions_user?.id || '0');
+        }
+      } catch (err) {
+        console.error("Fetch teacher id error:", err);
+      }
+
+      const isHostVal = !!(currentUser && tId !== '0' && String(currentUser.id) === String(tId));
+      
+      let finalTeacherId = tId;
+      if (tId === '0' && currentUser) {
+        finalTeacherId = String(currentUser?.id || '0');
+      }
+
+      setTeacherId(finalTeacherId);
+      setIsHostUser(isHostVal);
+      setIsCheckingHost(false);
+    };
+
+    checkHost();
+  }, [isMounted, roomName]);
+
+  const shouldLoadJitsi = !isCheckingHost && (isHostUser || hasEnteredName);
+
+  useEffect(() => {
+    if (!isMounted || !shouldLoadJitsi) return;
+
     // Load Jitsi External API script dynamically
     const script = document.createElement('script');
     script.src = `https://${JITSI_SERVER}/external_api.js`;
@@ -115,12 +155,14 @@ export default function ClassroomPage() {
     document.body.appendChild(script);
 
     return () => {
-      document.body.removeChild(script);
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
       if (apiRef.current) {
         apiRef.current.dispose();
       }
     };
-  }, [isMounted]);
+  }, [isMounted, shouldLoadJitsi]);
 
   // Push background image state to Jitsi iframe whenever it changes
   useEffect(() => {
@@ -139,26 +181,8 @@ export default function ClassroomPage() {
     const storeState = useUserLoginStore.getState();
     const currentUser = storeState.user;
 
-    let teacherId = '0';
-    try {
-      const res = await getData(`api/teacher-schedules?filters[class_code][$eq]=${roomName}&populate=*`);
-      if (res.data?.[0]) {
-        teacherId = String(res.data[0].users_permissions_user?.id || '0');
-      }
-    } catch (err) {
-      console.error("Fetch teacher id error:", err);
-    }
-
-    // A user is the host/teacher only if they are logged in AND their ID matches the teacher's ID on the class schedule
-    const isHostUser = currentUser && teacherId !== '0' && String(currentUser.id) === String(teacherId);
-
-    if (teacherId === '0' && currentUser) {
-      // Fallback: if schedule is not registered, only treat as host under safe conditions (default to false for safety)
-      teacherId = String(currentUser?.id || '0');
-    }
-
     const jitsiRoomJID = `${roomName}_GV_${teacherId}`;
-    const displayName = isHostUser ? (currentUser?.fullName || currentUser?.username || 'Giáo viên') : 'Học viên';
+    const displayName = isHostUser ? (currentUser?.fullName || currentUser?.username || 'Giáo viên') : (studentInputName.trim() || 'Học viên');
     const email = isHostUser ? (currentUser?.email || '') : '';
 
     // Generate JWT Token using Web Crypto API (Only for Hosts/Teachers)
@@ -268,6 +292,15 @@ export default function ClassroomPage() {
     apiRef.current.addEventListener('videoConferenceJoined', () => {
       setApiReady(true);
 
+      // Set the default filmstrip width to 360px on join if screen width > 1100px
+      if (window.innerWidth > 1100) {
+        setTimeout(() => {
+          if (apiRef.current) {
+            apiRef.current.executeCommand('resizeFilmStrip', { width: 360 });
+          }
+        }, 1000);
+      }
+
       if (isHostUser) {
         setTimeout(() => {
           if (apiRef.current) {
@@ -321,6 +354,71 @@ export default function ClassroomPage() {
     };
   }, []);
 
+  if (isCheckingHost) {
+    return (
+      <div className="fixed inset-0 bg-[#1d285c] flex flex-col items-center justify-center z-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+          <p className="text-white/80 text-sm font-semibold">Đang chuẩn bị phòng học...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!shouldLoadJitsi) {
+    return (
+      <div className="fixed inset-0 bg-[#1d285c] flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-8 max-w-md w-full flex flex-col items-center gap-6 border border-slate-100">
+          <div className="relative w-28 h-28 -mt-20 flex items-center justify-center">
+            <img
+              src="/images/hao-hung-san-sang.png"
+              alt="Vietsure Mascot"
+              className="w-24 h-24 object-contain drop-shadow-md"
+            />
+          </div>
+          
+          <div className="text-center space-y-1.5 mt-2">
+            <h2 className="text-[#2E357F] text-xl font-extrabold">Chào mừng bạn đến với lớp học!</h2>
+            <p className="text-slate-500 text-sm">Vui lòng nhập tên của bạn để bắt đầu buổi học cùng giáo viên nhé.</p>
+          </div>
+
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (studentInputName.trim()) {
+                setHasEnteredName(true);
+              }
+            }}
+            className="w-full flex flex-col gap-4"
+          >
+            <div>
+              <label className="text-xs font-bold text-[#2E357F] mb-1.5 block uppercase tracking-wider">Tên của học viên</label>
+              <input
+                type="text"
+                value={studentInputName}
+                onChange={(e) => setStudentInputName(e.target.value)}
+                placeholder="Ví dụ: Nguyễn Văn A..."
+                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] text-slate-800 font-medium text-sm transition-colors"
+                autoFocus
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3.5 rounded-xl text-sm font-bold bg-[#FF6B00] hover:bg-[#e66000] text-white transition-all shadow-md flex items-center justify-center gap-2 hover:shadow-lg active:scale-[0.98]"
+            >
+              Vào lớp học
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 bg-black flex flex-col z-50">
       {/* Top bar (Hidden when in Fullscreen Mode so video fills 100% mobile screen) */}
@@ -345,8 +443,8 @@ export default function ClassroomPage() {
           </div>
 
           {/* Central banner text */}
-          <p className="hidden md:block text-white/95 text-xs font-black tracking-wider uppercase text-center flex-1 mx-6 truncate">
-            HỆ THỐNG GIÁO DỤC ONLINE CHẤT LƯỢNG CAO CHO TRẺ EM TRONG VÀ NGOÀI NƯỚC
+          <p className="hidden md:block text-white/95 text-sm md:text-base font-black tracking-wider uppercase text-center flex-1 mx-6 truncate">
+            HỆ THỐNG GIÁO DỤC ONLINE <span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span> CHO TRẺ EM TRONG VÀ NGOÀI NƯỚC
           </p>
 
           <div className="flex items-center gap-3 shrink-0">

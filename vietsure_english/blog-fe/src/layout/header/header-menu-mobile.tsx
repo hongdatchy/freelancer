@@ -1,6 +1,5 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import {
   Drawer,
   DrawerClose,
@@ -76,14 +75,14 @@ export function HeaderMenuMobile({ onChange, user }: Props) {
   return (
     <Drawer direction="left" open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
       <DrawerTrigger asChild>
-        <Button className="block lg:hidden text-[#2E357F] hover:bg-[#3F489A]/5 rounded-full p-2 h-10 w-10 flex items-center justify-center transition-colors" variant="ghost">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+        <button className="flex lg:hidden text-[#2E357F] hover:bg-[#3F489A]/5 rounded-full h-12 w-12 items-center justify-center transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="4" x2="20" y1="12" y2="12" />
             <line x1="4" x2="20" y1="6" y2="6" />
             <line x1="4" x2="20" y1="18" y2="18" />
           </svg>
-        </Button>
+        </button>
       </DrawerTrigger>
 
       <DrawerContent className="mt-0 rounded-none h-full max-w-[280px] bg-white border-r border-slate-100 flex flex-col justify-between">

@@ -26,8 +26,8 @@ export default function FloatingJitsiWidget() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const initialWidth = window.innerWidth < 768 ? Math.floor(window.innerWidth * 0.9) : Math.floor(window.innerWidth * 0.5);
-      const initialHeight = window.innerHeight < 768 ? Math.floor(window.innerHeight * 0.9) : Math.floor(window.innerHeight * 0.7);
+      const initialWidth = Math.max(320, window.innerWidth - 48);
+      const initialHeight = Math.max(400, window.innerHeight - 100);
       setSize({ width: initialWidth, height: initialHeight });
     }
   }, []);
@@ -103,6 +103,8 @@ export default function FloatingJitsiWidget() {
   const userRef = useRef(user);
   const closeMeetingRef = useRef(closeMeeting);
   const lastPraiseTimeRef = useRef<number>(0);
+  const isTileViewEnabledRef = useRef<boolean>(false);
+
 
   useEffect(() => {
     userRef.current = user;
@@ -222,6 +224,10 @@ export default function FloatingJitsiWidget() {
             enabled: true,
             disableSelfRecording: false,
           },
+          resolution: 720,
+          videoQuality: {
+            maxReceiverVideoQuality: 3, // 3 = Best/High quality
+          },
           toolbarButtons: [
             'camera', 'chat', 'closedcaptions', 'download',
             'etherpad', 'feedback', 'filmstrip',
@@ -229,7 +235,7 @@ export default function FloatingJitsiWidget() {
             'mute-everyone', 'mute-video-everyone', 'participants-pane',
             'profile', 'raisehand', 'select-background',
             'settings', 'shareaudio', 'sharedvideo', 'stats',
-            'toggle-camera', 'videoquality', 'polls', 'whiteboard',
+            'toggle-camera', 'polls', 'whiteboard',
             ...(isHost ? ['tileview', 'desktop'] : [])
           ],
         },
@@ -279,9 +285,18 @@ export default function FloatingJitsiWidget() {
         } catch (err) {}
       });
 
-      // Push background image state to Jitsi iframe when conference joins
       apiRef.current.addEventListener('videoConferenceJoined', () => {
         setApiReady(true);
+
+        // Set initial filmstrip width to 360px on join if widget width > 1100px
+        if (size.width > 1100) {
+          setTimeout(() => {
+            if (apiRef.current) {
+              apiRef.current.executeCommand('resizeFilmStrip', { width: 360 });
+            }
+          }, 1000);
+        }
+
         if (isHost) {
           setTimeout(() => {
             if (apiRef.current) {
@@ -290,6 +305,13 @@ export default function FloatingJitsiWidget() {
               });
             }
           }, 1000);
+
+          // Auto-enable tile view on join (host only)
+          setTimeout(() => {
+            if (apiRef.current) {
+              apiRef.current.executeCommand('toggleTileView');
+            }
+          }, 1500);
         }
 
         if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
@@ -299,6 +321,20 @@ export default function FloatingJitsiWidget() {
           }, '*');
         }
       });
+
+      // Track tile view state
+      apiRef.current.addEventListener('tileViewChanged', (event: any) => {
+        isTileViewEnabledRef.current = event.enabled;
+      });
+
+      // Auto-disable tile view when host starts screen sharing
+      if (isHost) {
+        apiRef.current.addEventListener('screenSharingStatusChanged', (event: any) => {
+          if (event.on && apiRef.current && isTileViewEnabledRef.current) {
+            apiRef.current.executeCommand('toggleTileView');
+          }
+        });
+      }
 
       apiRef.current.addEventListener('readyToClose', () => {
         closeMeetingRef.current();
@@ -330,6 +366,23 @@ export default function FloatingJitsiWidget() {
       }
     };
   }, [isOpen, roomName]);
+
+  // Lock Jitsi filmstrip width to 360px if widget width > 1100px when resizing finishes or restores
+  useEffect(() => {
+    if (!isResizing && !isMinimized && apiRef.current && apiReady) {
+      if (size.width > 1100) {
+        setTimeout(() => {
+          if (apiRef.current) {
+            apiRef.current.executeCommand('resizeFilmStrip', { width: 360 });
+          }
+        }, 100);
+      }
+    }
+  }, [isResizing, isMinimized, size.width, apiReady]);
+
+
+
+
 
   // Listen for custom Jitsi iframe messages
   useEffect(() => {
@@ -599,8 +652,8 @@ export default function FloatingJitsiWidget() {
                 />
                 <p className="text-white/60 text-[10px]">| Phòng: {roomName}</p>
               </div>
-              <p className="hidden sm:block text-white/95 text-[9px] md:text-[10px] font-black tracking-wider uppercase text-center flex-1 mx-4 truncate">
-                HỆ THỐNG GIÁO DỤC ONLINE CHẤT LƯỢNG CAO CHO TRẺ EM TRONG VÀ NGOÀI NƯỚC
+              <p className="hidden sm:block text-white/95 text-[11px] md:text-xs font-black tracking-wider uppercase text-center flex-1 mx-4 truncate">
+                HỆ THỐNG GIÁO DỤC ONLINE <span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span> CHO TRẺ EM TRONG VÀ NGOÀI NƯỚC
               </p>
               <div className="flex items-center gap-1">
                 {/* Fullscreen button */}
@@ -632,7 +685,7 @@ export default function FloatingJitsiWidget() {
                     <rect x="12" y="10" width="9" height="6" rx="1" fill="currentColor" stroke="none" />
                   </svg>
                 </button>
-                {/* Minimize button */}
+                {/* Minimize button (Commented out as currently not needed)
                 {!isPipActive && (
                   <button
                     onClick={() => {
@@ -653,6 +706,7 @@ export default function FloatingJitsiWidget() {
                     </svg>
                   </button>
                 )}
+                */}
                 {/* Custom Exit Button */}
                 <button
                   onClick={() => setShowExitConfirm(prev => !prev)}

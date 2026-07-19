@@ -195,6 +195,55 @@ if (typeof document !== 'undefined') {
             overflow: visible !important;
         }
 
+
+        /* Filmstrip card alignment - only active when widget width < 1100px and outer ancestor has vertical-filmstrip class */
+        @media (max-width: 1099px) {
+            /* 1. Push Teacher (Local) videos to the bottom of their area */
+            .vertical-filmstrip #filmstripLocalVideo,
+            [class*="vertical-filmstrip"] #filmstripLocalVideo {
+                margin-top: auto !important;
+                margin-bottom: 0px !important;
+            }
+
+            .vertical-filmstrip #filmstripLocalScreenShare,
+            [class*="vertical-filmstrip"] #filmstripLocalScreenShare {
+                margin-top: 0px !important;
+                margin-bottom: 0px !important;
+            }
+
+            /* 2. Override Jitsi bottom:0 on remote videos wrapper div to align from top */
+            .vertical-filmstrip .remote-videos>div,
+            [class*="vertical-filmstrip"] .remote-videos>div {
+                bottom: auto !important;
+                top: 0px !important;
+            }
+
+            /* 3. Limit remote-videos (participant area) to 50% of filmstrip height */
+            .vertical-filmstrip .remote-videos,
+            [class*="vertical-filmstrip"] .remote-videos {
+                height: 50% !important;
+                max-height: 50% !important;
+            }
+        }
+
+        /* Hide Moderator (M / Quản trị viên) icon on video cards */
+        svg[aria-label*="Quản trị viên"],
+        svg[aria-label*="Moderator"],
+        svg[aria-label*="moderator"] {
+            display: none !important;
+        }
+
+        /* Hide Video Quality/Performance tuning button on toolbar */
+        [data-testid="video-quality"],
+        button[aria-label*="chất lượng video"],
+        button[aria-label*="quality"],
+        button[aria-label*="Quality"],
+        button[aria-label*="performance"],
+        button[aria-label*="Performance"] {
+            display: none !important;
+        }
+
+
         /* 2. Force ONLY the filmstrip toggle container to be always visible and not slid off-screen */
         .filmstrip-toggle-container,
         [class*="filmstrip-toggle"],
@@ -499,6 +548,60 @@ const checkIfStudent = () => {
     return true;
 };
 
+const findCameraWrapper = (doc) => {
+    const toolbarContainer = doc.querySelector('.toolbox-content-items');
+    if (!toolbarContainer) return null;
+    const wrappers = toolbarContainer.children;
+    for (let i = 0; i < wrappers.length; i++) {
+        const w = wrappers[i];
+        
+        // Skip our own custom elements
+        if (w.id === 'custom-jitsi-timer-btn' || w.id === 'custom-jitsi-praise-btn' || w.id === 'custom-jitsi-divider') {
+            continue;
+        }
+        
+        // 1. Check data-testid attribute on the wrapper itself
+        const testId = String(w.getAttribute('data-testid') || '').toLowerCase();
+        if (testId.includes('camera') || testId.includes('video') || testId.includes('cam')) {
+            console.log('[findCameraWrapper] Matched via wrapper data-testid:', testId, w);
+            return w;
+        }
+        
+        // 2. Check inner elements with data-testid or class or aria-label
+        const innerBtn = w.querySelector('[data-testid*="camera" i], [data-testid*="video" i], [data-testid*="cam" i], [aria-label*="camera" i], [aria-label*="video" i], [aria-label*="cam" i], [aria-label*="ảnh" i]');
+        if (innerBtn) {
+            console.log('[findCameraWrapper] Matched via querySelector innerBtn:', innerBtn, w);
+            return w;
+        }
+        
+        // 3. Fallback: check innerHTML text content
+        const html = w.innerHTML.toLowerCase();
+        if (html.includes('camera') || html.includes('video') || html.includes('tắt camera') || html.includes('bật camera') || html.includes('webcam')) {
+            console.log('[findCameraWrapper] Matched via html content:', html, w);
+            return w;
+        }
+    }
+    console.warn('[findCameraWrapper] Failed to locate camera button wrapper among children count:', wrappers.length);
+    return null;
+};
+
+const injectToolbarDivider = (doc, camWrapper) => {
+    if (!camWrapper) return;
+    let divider = doc.getElementById('custom-jitsi-divider');
+    if (!divider) {
+        divider = doc.createElement('div');
+        divider.id = 'custom-jitsi-divider';
+        divider.className = 'toolbox-button-wrapper';
+        divider.style.cssText = 'width: 16px !important; min-width: 16px !important; height: 48px !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; margin: 0 4px !important;';
+        divider.innerHTML = `
+            <div style="width: 1px; height: 24px; background-color: rgba(255, 255, 255, 0.3); align-self: center;"></div>
+        `;
+    }
+    if (camWrapper.nextSibling !== divider) {
+        camWrapper.parentNode.insertBefore(divider, camWrapper.nextSibling);
+    }
+};
+
 // Inject the custom Jitsi toolbar clock button
 const injectToolbarClockButton = () => {
     // Check if the user is a student. Emojis and timer trigger buttons are teacher-only features.
@@ -535,16 +638,19 @@ const injectToolbarClockButton = () => {
     
     if (!toolbarContainer) return;
     
-    // Check if already injected
-    if (targetDoc.getElementById('custom-jitsi-timer-btn')) {
-        return;
+    let btn = targetDoc.getElementById('custom-jitsi-timer-btn');
+    if (!btn) {
+        btn = createToolbarClockButton(targetDoc);
     }
     
-    const btn = createToolbarClockButton(targetDoc);
-    
-    // Insert before the first child of the main toolbox container
-    toolbarContainer.insertBefore(btn, toolbarContainer.firstElementChild);
-    console.log('[Jitsi custom-config] Jitsi toolbar clock button injected successfully as the first child of .toolbox-content-items');
+    const camWrapper = findCameraWrapper(targetDoc);
+    if (camWrapper) {
+        injectToolbarDivider(targetDoc, camWrapper);
+        const divider = targetDoc.getElementById('custom-jitsi-divider');
+        if (divider && btn.previousSibling !== divider) {
+            divider.parentNode.insertBefore(btn, divider.nextSibling);
+        }
+    }
 };
 
 
@@ -610,16 +716,15 @@ const injectToolbarPraiseButton = () => {
     const toolbarContainer = timerBtn.parentElement;
     if (!toolbarContainer) return;
     
-    // Check if already injected
-    if (targetDoc.getElementById('custom-jitsi-praise-btn')) {
-        return;
+    let btn = targetDoc.getElementById('custom-jitsi-praise-btn');
+    if (!btn) {
+        btn = createToolbarPraiseButton(targetDoc);
     }
     
-    const btn = createToolbarPraiseButton(targetDoc);
-    
     // Insert after the timer button (so it sits next to the clock!)
-    toolbarContainer.insertBefore(btn, timerBtn.nextSibling);
-    console.log('[Jitsi custom-config] Jitsi toolbar praise button injected successfully next to timer button');
+    if (timerBtn.nextSibling !== btn) {
+        timerBtn.parentNode.insertBefore(btn, timerBtn.nextSibling);
+    }
 };
 
 

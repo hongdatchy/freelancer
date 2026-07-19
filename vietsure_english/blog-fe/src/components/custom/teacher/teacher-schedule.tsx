@@ -64,8 +64,15 @@ export function TeacherScheduleView() {
   const [selectedSlotForView, setSelectedSlotForView] = useState<{ day: string, slot: string } | null>(null);
   const [editClassCode, setEditClassCode] = useState('');
   const [copied, setCopied] = useState(false);
+  const [origin, setOrigin] = useState('');
 
   const canEdit = !!user;
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin);
+    }
+  }, []);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -280,7 +287,13 @@ export function TeacherScheduleView() {
                         }`}
                     >
                       {visualActive ? (
-                        <span className="text-white font-black text-base">V</span>
+                        item?.class_code ? (
+                          <span className="text-white font-extrabold text-[11px] block truncate max-w-[85px] px-0.5" title={item.class_code}>
+                            {item.class_code}
+                          </span>
+                        ) : (
+                          <span className="text-white font-black text-base">V</span>
+                        )
                       ) : (
                         <span className="text-red-500 font-semibold text-sm">x</span>
                       )}
@@ -359,8 +372,24 @@ export function TeacherScheduleView() {
               const hasClassCode = !!(item?.class_code && item.class_code.trim());
 
               if (hasClassCode) {
+                const cleanClass = item!.class_code!.trim().replace(/\s+/g, '_');
+                const roomName = cleanClass;
+                const link = `${origin}/classroom/${roomName}`;
+
                 return (
                   <>
+                    <div className="bg-[#3F489A]/5 border border-dashed border-[#3F489A]/20 rounded-xl p-3 text-center mb-1 flex flex-col gap-1.5 items-center justify-center select-all">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1 select-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#3F489A]">
+                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                        </svg>
+                        Đường dẫn lớp học
+                      </span>
+                      <span className="text-xs font-bold text-[#3F489A] break-all select-all">
+                        {link}
+                      </span>
+                    </div>
                     <button
                       onClick={() => {
                         if (!selectedSlotForView) return;
@@ -381,7 +410,7 @@ export function TeacherScheduleView() {
                         if (!selectedSlotForView) return;
                         const cleanClass = item!.class_code!.trim().replace(/\s+/g, '_');
                         const roomName = cleanClass;
-                        const link = `${window.location.origin}/classroom/${roomName}`;
+                        const link = `${origin}/classroom/${roomName}`;
                         navigator.clipboard.writeText(link);
                         setCopied(true);
                         setTimeout(() => setCopied(false), 2000);
