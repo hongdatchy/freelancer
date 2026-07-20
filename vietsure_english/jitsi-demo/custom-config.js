@@ -1432,38 +1432,6 @@ if (typeof window !== 'undefined') {
             });
         } catch (e) {}
 
-        // Hide screenshare filmstrip cards ONLY for Student using exact Jitsi DOM structure
-        try {
-            const isStudent = document.body.classList.contains('is-student') || 
-                              !!document.querySelector('.is-student') || 
-                              window.location.search.includes('isStudent=true') || 
-                              window.location.search.includes('role=student') ||
-                              (window.APP && window.APP.conference && !window.APP.conference.isLocalModerator());
-
-            if (isStudent) {
-                const allContainers = document.querySelectorAll('span.videocontainer');
-                allContainers.forEach(card => {
-                    const id = card.id || '';
-                    const nameEl = card.querySelector('.displayname');
-                    const nameText = nameEl ? (nameEl.textContent || '') : '';
-                    
-                    const isScreenshareCard = id.includes('-v0') || 
-                                               id === 'filmstripLocalScreenShare' || 
-                                               id === 'filmstripRemoteScreenShare' ||
-                                               nameText.includes('Màn hình của') || 
-                                               nameText.includes('Screen of');
-
-                    if (isScreenshareCard) {
-                        if (card.style.display !== 'none') {
-                            card.style.setProperty('display', 'none', 'important');
-                        }
-                    }
-                });
-
-
-            }
-        } catch (e) {}
-
         // Simulate hover on filmstrip to force Jitsi's React code to render the collapse button
         try {
             const filmstrip = document.querySelector('.vertical-filmstrip') || document.querySelector('.filmstrip') || document.querySelector('.horizontal-filmstrip');
