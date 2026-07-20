@@ -1869,51 +1869,62 @@ if (typeof window !== 'undefined') {
         } catch (e) {}
     };
 
-    // Inject PiP button safely overlaying the filmstrip area without altering Jitsi DOM layout
+    // Inject PiP button safely overlaying the filmstrip area, hidden initially until meeting filmstrip is ready
     const injectPipButtonToFilmstrip = () => {
         try {
-            if (document.getElementById('jitsi-custom-filmstrip-pip-btn')) return;
-            if (!document.body) return;
+            const participantTiles = document.querySelectorAll('#localVideoContainer, #remoteVideos .videocontainer, .filmstrip .videocontainer');
+            const pipBtn = document.getElementById('jitsi-custom-filmstrip-pip-btn');
 
-            const pipBtn = document.createElement('button');
-            pipBtn.id = 'jitsi-custom-filmstrip-pip-btn';
-            pipBtn.title = 'Bật Picture-in-Picture Gộp Camera';
-            pipBtn.style.cssText = `
-                position: fixed;
-                top: 12px;
-                right: 12px;
-                z-index: 999999;
-                background: linear-gradient(135deg, #FF6B00 0%, #FF8800 100%);
-                color: #ffffff;
-                border: 1px solid rgba(255, 255, 255, 0.4);
-                border-radius: 20px;
-                padding: 6px 14px;
-                font-size: 12px;
-                font-weight: bold;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-                transition: transform 0.2s, opacity 0.2s;
-            `;
-            pipBtn.innerHTML = `
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <rect x="2" y="3" width="20" height="14" rx="2" />
-                    <rect x="12" y="10" width="9" height="6" rx="1" fill="currentColor" />
-                </svg>
-                <span>PiP Camera</span>
-            `;
+            // Hide initially until meeting/filmstrip is loaded with participant tiles
+            if (!participantTiles || participantTiles.length === 0) {
+                if (pipBtn) pipBtn.style.display = 'none';
+                return;
+            }
 
-            pipBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                console.log('🎥 [Filmstrip PiP] Direct click inside filmstrip!');
-                window.postMessage({ type: 'TRIGGER_COMPOSITE_VIDEO_PIP' }, '*');
-            });
+            if (!pipBtn) {
+                if (!document.body) return;
+                const newBtn = document.createElement('button');
+                newBtn.id = 'jitsi-custom-filmstrip-pip-btn';
+                newBtn.title = 'Bật Picture-in-Picture Gộp Camera';
+                newBtn.style.cssText = `
+                    position: fixed;
+                    top: 12px;
+                    right: 12px;
+                    z-index: 999999;
+                    background: linear-gradient(135deg, #FF6B00 0%, #FF8800 100%);
+                    color: #ffffff;
+                    border: 1px solid rgba(255, 255, 255, 0.4);
+                    border-radius: 20px;
+                    padding: 6px 14px;
+                    font-size: 12px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                    transition: transform 0.2s, opacity 0.2s;
+                `;
+                newBtn.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <rect x="2" y="3" width="20" height="14" rx="2" />
+                        <rect x="12" y="10" width="9" height="6" rx="1" fill="currentColor" />
+                    </svg>
+                    <span>PiP Camera</span>
+                `;
 
-            document.body.appendChild(pipBtn);
-            console.log('✅ [Jitsi] Injected fixed PiP overlay button on document.body!');
+                newBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    console.log('🎥 [Filmstrip PiP] Direct click inside filmstrip!');
+                    window.postMessage({ type: 'TRIGGER_COMPOSITE_VIDEO_PIP' }, '*');
+                });
+
+                document.body.appendChild(newBtn);
+                console.log('✅ [Jitsi] Injected fixed PiP overlay button on document.body!');
+            } else {
+                pipBtn.style.display = 'flex';
+            }
         } catch (e) {}
     };
 
