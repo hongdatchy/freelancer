@@ -116,6 +116,17 @@ if (typeof document !== 'undefined') {
         .is-student button[title*="Hiện bảng"] {
             display: none !important;
         }
+        /* Hide local and remote screenshare filmstrip cards for both Teacher and Student */
+        #filmstripLocalScreenShare,
+        #filmstripLocalScreenShareThumbnail,
+        #filmstripRemoteScreenShare,
+        #filmstripRemoteScreenShareThumbnail,
+        [id*="filmstripLocalScreenShare"],
+        [id*="filmstripRemoteScreenShare"],
+        span.videocontainer:has(#share-desktop) {
+            display: none !important;
+        }
+
         /* Hide Jitsi native invite buttons/items */
         .invite-button,
         [class*="invite"],
@@ -196,34 +207,27 @@ if (typeof document !== 'undefined') {
         }
 
 
-        /* Filmstrip card alignment - only active when widget width < 1100px and outer ancestor has vertical-filmstrip class */
-        @media (max-width: 1099px) {
-            /* 1. Push Teacher (Local) videos to the bottom of their area */
-            .vertical-filmstrip #filmstripLocalVideo,
-            [class*="vertical-filmstrip"] #filmstripLocalVideo {
-                margin-top: auto !important;
-                margin-bottom: 0px !important;
-            }
+        /* Filmstrip card alignment - active ONLY when div with class .filmstrip has width <= 309px */
+        .filmstrip.filmstrip-width-lte-309 #filmstripLocalVideo {
+            margin-top: auto !important;
+            margin-bottom: 0px !important;
+        }
 
-            .vertical-filmstrip #filmstripLocalScreenShare,
-            [class*="vertical-filmstrip"] #filmstripLocalScreenShare {
-                margin-top: 0px !important;
-                margin-bottom: 0px !important;
-            }
+        .filmstrip.filmstrip-width-lte-309 #filmstripLocalScreenShare {
+            margin-top: 0px !important;
+            margin-bottom: 0px !important;
+        }
 
-            /* 2. Override Jitsi bottom:0 on remote videos wrapper div to align from top */
-            .vertical-filmstrip .remote-videos>div,
-            [class*="vertical-filmstrip"] .remote-videos>div {
-                bottom: auto !important;
-                top: 0px !important;
-            }
+        /* Override Jitsi bottom:0 on remote videos wrapper div to align from top */
+        .filmstrip.filmstrip-width-lte-309 .remote-videos>div {
+            bottom: auto !important;
+            top: 0px !important;
+        }
 
-            /* 3. Limit remote-videos (participant area) to 50% of filmstrip height */
-            .vertical-filmstrip .remote-videos,
-            [class*="vertical-filmstrip"] .remote-videos {
-                height: 50% !important;
-                max-height: 50% !important;
-            }
+        /* Limit remote-videos (top participant area) to 70% of filmstrip height */
+        .filmstrip.filmstrip-width-lte-309 .remote-videos {
+            height: 70% !important;
+            max-height: 70% !important;
         }
 
         /* Hide Moderator (M / Quản trị viên) icon on video cards */
@@ -1415,6 +1419,38 @@ if (typeof window !== 'undefined') {
     setInterval(() => {
         injectToolbarIcon();
         injectToolbarToolsButton();
+
+        // Check width of div with class .filmstrip (apply logic ONLY when width <= 309px)
+        try {
+            const filmstripEls = document.querySelectorAll('.filmstrip');
+            filmstripEls.forEach(el => {
+                const width = el.getBoundingClientRect().width || el.offsetWidth;
+                if (width <= 309) {
+                    el.classList.add('filmstrip-width-lte-309');
+                } else {
+                    el.classList.remove('filmstrip-width-lte-309');
+                }
+            });
+        } catch (e) {}
+
+        // Hide screenshare filmstrip cards (local & remote) for both Teacher and Student
+        try {
+            const screenshareElements = document.querySelectorAll(
+                '#filmstripLocalScreenShare, #filmstripLocalScreenShareThumbnail, #filmstripRemoteScreenShare, #filmstripRemoteScreenShareThumbnail, [id*="filmstripLocalScreenShare"], [id*="filmstripRemoteScreenShare"]'
+            );
+            screenshareElements.forEach(el => {
+                if (el && el.style.display !== 'none') {
+                    el.style.setProperty('display', 'none', 'important');
+                }
+            });
+            const shareIcons = document.querySelectorAll('#share-desktop');
+            shareIcons.forEach(icon => {
+                const card = icon.closest('.videocontainer');
+                if (card && card.style.display !== 'none') {
+                    card.style.setProperty('display', 'none', 'important');
+                }
+            });
+        } catch (e) {}
 
         // Simulate hover on filmstrip to force Jitsi's React code to render the collapse button
         try {
