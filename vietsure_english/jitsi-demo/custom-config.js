@@ -1460,50 +1460,7 @@ if (typeof window !== 'undefined') {
                     }
                 });
 
-                // Prioritize auto-showing & auto-pinning Whiteboard on Student side when Screenshare is active
-                const ssContainer = document.querySelector('span.videocontainer[id*="-v0"]') || 
-                                    document.querySelector('#filmstripRemoteScreenShare') ||
-                                    document.querySelector('video[id*="Screenshare"]') ||
-                                    document.querySelector('video[id*="screenshare"]');
 
-                if (ssContainer) {
-                    if (window.APP && window.APP.store) {
-                        const state = window.APP.store.getState();
-                        
-                        // 1. Force whiteboard open if closed
-                        const isWbOpen = !!(state['features/whiteboard'] && state['features/whiteboard'].isOpen);
-                        if (!isWbOpen) {
-                            window.APP.store.dispatch({
-                                type: 'SET_WHITEBOARD_OPEN',
-                                isOpen: true
-                            });
-                        }
-
-                        // 2. Find whiteboard participant ID and pin it
-                        const participants = state['features/base/participants'] || {};
-                        let wbId = null;
-                        Object.values(participants).forEach(p => {
-                            if (p && (p.id === 'whiteboard' || p.name === 'Whiteboard' || p.isWhiteboard)) {
-                                wbId = p.id;
-                            }
-                        });
-                        if (!wbId) wbId = 'whiteboard';
-
-                        const currentPinnedId = state['features/large-video']?.participantId;
-                        if (currentPinnedId !== wbId) {
-                            window.APP.store.dispatch({
-                                type: 'PIN_PARTICIPANT',
-                                participant: { id: wbId }
-                            });
-                        }
-                    }
-
-                    // Fallback DOM pin button click if aria-label is "Whiteboard - Ghim"
-                    const wbPinBtn = document.querySelector('span[aria-label="Whiteboard - Ghim"]');
-                    if (wbPinBtn) {
-                        wbPinBtn.click();
-                    }
-                }
             }
         } catch (e) {}
 
@@ -1863,6 +1820,49 @@ setInterval(() => {
                     }
                 } catch (e) {}
             });
+        } catch (e) {}
+    }, 500);
+})();
+
+// Auto unpin screen share and pin whiteboard on Student screen whenever screen share status changes
+(function() {
+    if (typeof window === 'undefined') return;
+
+    let lastScreenShareState = false;
+
+    setInterval(() => {
+        try {
+            if (!window.APP || !window.APP.store) return;
+            
+            const isStudent = checkIfStudent();
+            if (!isStudent) return;
+
+            const state = window.APP.store.getState();
+            const tracks = state['features/base/tracks'] || [];
+
+            // Check if there is any active, non-muted desktop/screenshare track
+            const isScreenSharing = tracks.some(t => t && (t.mediaType === 'desktop' || t.videoType === 'desktop') && !t.muted);
+
+            if (isScreenSharing !== lastScreenShareState) {
+                lastScreenShareState = isScreenSharing;
+
+                console.log('📢📢📢 [MÀN HỌC VIÊN] Bắt được sự kiện Share màn hình -> Bỏ ghim Share, Ghim Bảng trắng');
+
+                // 1. Action: Unpin screen share / active participant
+                window.APP.store.dispatch({
+                    type: 'PIN_PARTICIPANT',
+                    participant: { id: null }
+                });
+
+                // 2. Action: Pin whiteboard if whiteboard is open
+                const isWbOpen = !!(state['features/whiteboard'] && state['features/whiteboard'].isOpen);
+                if (isWbOpen) {
+                    window.APP.store.dispatch({
+                        type: 'PIN_PARTICIPANT',
+                        participant: { id: 'whiteboard' }
+                    });
+                }
+            }
         } catch (e) {}
     }, 500);
 })();
