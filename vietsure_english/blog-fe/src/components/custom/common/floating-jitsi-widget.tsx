@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import useJitsiStore from '@/state-manager/jitsi-store';
 import useUserLoginStore from '@/state-manager/user-login-store';
 import TimerWidget from '@/components/custom/common/timer-widget';
+import WheelWidget from '@/components/custom/common/wheel-widget';
 
 const JITSI_SERVER = process.env.NEXT_PUBLIC_JITSI_SERVER;
 
@@ -488,8 +489,8 @@ export default function FloatingJitsiWidget() {
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data) {
-        if (event.data.type === 'TOGGLE_TIMER_CARD') {
-          console.log('[Parent] TOGGLE_TIMER_CARD message received, dispatching event');
+        if (event.data.type === 'TOGGLE_TIMER_CARD' || event.data.type === 'TOGGLE_TIMER') {
+          console.log('[Parent] TOGGLE_TIMER message received, dispatching event');
           window.dispatchEvent(new CustomEvent('toggle-timer-card'));
         } else if (event.data.type === 'TRIGGER_PRAISE') {
           const randIndex = Math.floor(Math.random() * 5);
@@ -497,6 +498,11 @@ export default function FloatingJitsiWidget() {
           if (apiRef.current) {
             apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${randIndex}`);
           }
+        } else if (event.data.type === 'TRIGGER_DICE') {
+          console.log('[Parent] TRIGGER_DICE received, ready for dice game component');
+        } else if (event.data.type === 'TRIGGER_WHEEL') {
+          console.log('[Parent] TRIGGER_WHEEL received, dispatching toggle-wheel-widget');
+          window.dispatchEvent(new CustomEvent('toggle-wheel-widget'));
         } else if (event.data.type === 'PLAY_PRAISE') {
           const index = typeof event.data.index === 'number' ? event.data.index : 0;
           console.log('[Parent] PLAY_PRAISE received, playing animation with index:', index);
@@ -922,6 +928,7 @@ export default function FloatingJitsiWidget() {
           </div>
         </div>
       </div>
+      <WheelWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} />
     </>
   );
 }

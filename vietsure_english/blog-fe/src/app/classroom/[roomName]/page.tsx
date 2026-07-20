@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import useUserLoginStore from '@/state-manager/user-login-store';
 import TimerWidget from '@/components/custom/common/timer-widget';
+import WheelWidget from '@/components/custom/common/wheel-widget';
 import { getData } from '@/service/api';
 
 const JITSI_SERVER = process.env.NEXT_PUBLIC_JITSI_SERVER;
@@ -410,14 +411,26 @@ export default function ClassroomPage() {
   // Listen for custom Jitsi iframe messages
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.data && event.data.type === 'PLAY_PRAISE') {
+      if (!event.data) return;
+      if (event.data.type === 'TOGGLE_TIMER' || event.data.type === 'TOGGLE_TIMER_CARD') {
+        console.log('[Page] TOGGLE_TIMER received, dispatching toggle-timer-card');
+        window.dispatchEvent(new CustomEvent('toggle-timer-card'));
+      } else if (event.data.type === 'TRIGGER_WHEEL') {
+        console.log('[Page] TRIGGER_WHEEL received, dispatching toggle-wheel-widget');
+        window.dispatchEvent(new CustomEvent('toggle-wheel-widget'));
+      } else if (event.data.type === 'TRIGGER_PRAISE') {
+        if (apiRef.current) {
+          const randIndex = Math.floor(Math.random() * 5);
+          apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${randIndex}`);
+        }
+      } else if (event.data.type === 'PLAY_PRAISE') {
         const index = typeof event.data.index === 'number' ? event.data.index : 0;
         console.log('[Student] PLAY_PRAISE message received with index:', index, ', triggering local animation');
         triggerPraiseAnimation(index);
-      } else if (event.data && event.data.type === 'BREAKOUT_ROOM_STATUS') {
+      } else if (event.data.type === 'BREAKOUT_ROOM_STATUS') {
         console.log('[Room] BREAKOUT_ROOM_STATUS received:', event.data.inBreakout);
         setIsInBreakoutRoom(!!event.data.inBreakout);
-      } else if (event.data && event.data.type === 'FORCE_END_MEETING_ALL') {
+      } else if (event.data.type === 'FORCE_END_MEETING_ALL') {
         console.log('[Room] FORCE_END_MEETING_ALL received, exiting classroom');
         try {
           apiRef.current?.executeCommand('hangup');
@@ -574,6 +587,7 @@ export default function ClassroomPage() {
       <div className="flex-1 w-full relative">
         <div ref={containerRef} className="w-full h-full" />
         {!isHost && <TimerWidget apiRef={apiRef} isHost={false} apiReady={apiReady} />}
+        <WheelWidget apiRef={apiRef} isHost={isHostUser} apiReady={apiReady} />
 
         {/* Custom Exit Popover (Matches Jitsi's native look) */}
         {showExitConfirm && (

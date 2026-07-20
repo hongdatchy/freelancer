@@ -545,7 +545,7 @@ const findCameraWrapper = (doc) => {
         const w = wrappers[i];
         
         // Skip our own custom elements
-        if (w.id === 'custom-jitsi-timer-btn' || w.id === 'custom-jitsi-praise-btn' || w.id === 'custom-jitsi-divider') {
+        if (w.id === 'custom-jitsi-tools-btn' || w.id === 'custom-jitsi-divider') {
             continue;
         }
         
@@ -587,23 +587,106 @@ const injectToolbarDivider = (doc, camWrapper) => {
     }
 };
 
-// Inject the custom Jitsi toolbar clock button
-const injectToolbarClockButton = () => {
-    // Check if the user is a student. Emojis and timer trigger buttons are teacher-only features.
+// Create the Classroom Tools & Games dropdown menu button for Jitsi's bottom toolbar
+const createToolbarToolsButton = (doc) => {
+    const btnWrapper = doc.createElement('div');
+    btnWrapper.className = 'toolbox-button-wrapper';
+    btnWrapper.id = 'custom-jitsi-tools-btn';
+    btnWrapper.style.position = 'relative';
+    
+    // Game Controller Icon SVG
+    btnWrapper.innerHTML = `
+        <div aria-disabled="false" aria-label="Trò chơi & Công cụ" class="toolbox-button" role="button" tabindex="0" title="Trò chơi & Công cụ lớp học" style="cursor: pointer;">
+            <div class="toolbox-icon" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+                <svg aria-hidden="true" focusable="false" role="img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 21px; height: 21px;">
+                    <line x1="6" y1="12" x2="10" y2="12"></line>
+                    <line x1="8" y1="10" x2="8" y2="14"></line>
+                    <circle cx="15" cy="11" r="1" fill="currentColor"></circle>
+                    <circle cx="17.5" cy="13.5" r="1" fill="currentColor"></circle>
+                    <rect x="2" y="6" width="20" height="12" rx="4"></rect>
+                </svg>
+            </div>
+        </div>
+        <div id="custom-jitsi-tools-menu" style="display: none; position: absolute; bottom: 56px; left: 50%; transform: translateX(-50%); background: #141b2d; border: 1px solid rgba(255,255,255,0.18); border-radius: 12px; padding: 6px; width: 195px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); z-index: 99999; font-family: system-ui, -apple-system, sans-serif;">
+            <button id="tool-item-timer" style="display: flex; align-items: center; gap: 8px; width: 100%; background: transparent; border: none; color: #fff; padding: 8px 10px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='transparent'">
+                <span style="font-size: 15px;">⏱️</span> Đồng hồ đếm ngược
+            </button>
+            <button id="tool-item-praise" style="display: flex; align-items: center; gap: 8px; width: 100%; background: transparent; border: none; color: #fff; padding: 8px 10px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='transparent'">
+                <span style="font-size: 15px;">⭐</span> Khen thưởng học viên
+            </button>
+            <button id="tool-item-dice" style="display: flex; align-items: center; gap: 8px; width: 100%; background: transparent; border: none; color: #fff; padding: 8px 10px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='transparent'">
+                <span style="font-size: 15px;">🎲</span> Đổ Xí Ngầu (Dice)
+            </button>
+            <button id="tool-item-wheel" style="display: flex; align-items: center; gap: 8px; width: 100%; background: transparent; border: none; color: #fff; padding: 8px 10px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='transparent'">
+                <span style="font-size: 15px;">🎡</span> Vòng quay may mắn
+            </button>
+        </div>
+    `;
+    
+    const iconBtn = btnWrapper.querySelector('.toolbox-button');
+    const menu = btnWrapper.querySelector('#custom-jitsi-tools-menu');
+
+    iconBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const isHidden = menu.style.display === 'none';
+        menu.style.display = isHidden ? 'block' : 'none';
+    });
+
+    doc.addEventListener('click', (e) => {
+        if (!btnWrapper.contains(e.target)) {
+            menu.style.display = 'none';
+        }
+    });
+
+    const timerBtn = btnWrapper.querySelector('#tool-item-timer');
+    if (timerBtn) {
+        timerBtn.addEventListener('click', (e) => {
+            e.preventDefault(); e.stopPropagation(); menu.style.display = 'none';
+            window.parent.postMessage({ type: 'TOGGLE_TIMER' }, '*');
+        });
+    }
+
+    const praiseBtn = btnWrapper.querySelector('#tool-item-praise');
+    if (praiseBtn) {
+        praiseBtn.addEventListener('click', (e) => {
+            e.preventDefault(); e.stopPropagation(); menu.style.display = 'none';
+            window.parent.postMessage({ type: 'TRIGGER_PRAISE' }, '*');
+        });
+    }
+
+    const diceBtn = btnWrapper.querySelector('#tool-item-dice');
+    if (diceBtn) {
+        diceBtn.addEventListener('click', (e) => {
+            e.preventDefault(); e.stopPropagation(); menu.style.display = 'none';
+            window.parent.postMessage({ type: 'TRIGGER_DICE' }, '*');
+        });
+    }
+
+    const wheelBtn = btnWrapper.querySelector('#tool-item-wheel');
+    if (wheelBtn) {
+        wheelBtn.addEventListener('click', (e) => {
+            e.preventDefault(); e.stopPropagation(); menu.style.display = 'none';
+            window.parent.postMessage({ type: 'TRIGGER_WHEEL' }, '*');
+        });
+    }
+    
+    return btnWrapper;
+};
+
+// Inject the custom Jitsi toolbar tools & games dropdown menu button
+const injectToolbarToolsButton = () => {
     if (checkIfStudent()) return;
 
     let toolbarContainer = null;
     let targetDoc = document;
     
-    // Helper to find the main toolbox container
     const findToolboxContent = (doc) => {
         return doc.querySelector('.toolbox-content-items');
     };
     
-    // 1. Try finding in main Jitsi document context
     toolbarContainer = findToolboxContent(document);
     
-    // 2. Try finding inside nested Jitsi iframes (if applicable)
     if (!toolbarContainer) {
         const iframes = document.querySelectorAll('iframe');
         for (let i = 0; i < iframes.length; i++) {
@@ -623,9 +706,15 @@ const injectToolbarClockButton = () => {
     
     if (!toolbarContainer) return;
     
-    let btn = targetDoc.getElementById('custom-jitsi-timer-btn');
+    // Remove legacy standalone buttons if present in DOM
+    const oldTimerBtn = targetDoc.getElementById('custom-jitsi-timer-btn');
+    if (oldTimerBtn) oldTimerBtn.remove();
+    const oldPraiseBtn = targetDoc.getElementById('custom-jitsi-praise-btn');
+    if (oldPraiseBtn) oldPraiseBtn.remove();
+
+    let btn = targetDoc.getElementById('custom-jitsi-tools-btn');
     if (!btn) {
-        btn = createToolbarClockButton(targetDoc);
+        btn = createToolbarToolsButton(targetDoc);
     }
     
     const camWrapper = findCameraWrapper(targetDoc);
@@ -635,80 +724,6 @@ const injectToolbarClockButton = () => {
         if (divider && btn.previousSibling !== divider) {
             divider.parentNode.insertBefore(btn, divider.nextSibling);
         }
-    }
-};
-
-
-// Create the Praise button for Jitsi's bottom toolbar
-const createToolbarPraiseButton = (doc) => {
-    const btnWrapper = doc.createElement('div');
-    btnWrapper.className = 'toolbox-button-wrapper';
-    btnWrapper.id = 'custom-jitsi-praise-btn';
-    
-    btnWrapper.innerHTML = `
-        <div aria-disabled="false" aria-label="Khen ngợi" class="toolbox-button" role="button" tabindex="0" title="Khen ngợi học viên" style="cursor: pointer;">
-            <div class="toolbox-icon" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
-                <svg aria-hidden="true" focusable="false" role="img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 21px; height: 21px;">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                </svg>
-            </div>
-        </div>
-    `;
-    
-    // Add click event listener to postMessage to parent application
-    btnWrapper.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('[Jitsi] Praise button clicked, sending TRIGGER_PRAISE');
-        window.parent.postMessage({ type: 'TRIGGER_PRAISE' }, '*');
-    });
-    
-    return btnWrapper;
-};
-
-// Inject the custom Jitsi toolbar praise button next to the clock button
-const injectToolbarPraiseButton = () => {
-    // Check if the user is a student. Emojis and timer/praise trigger buttons are teacher-only features.
-    if (checkIfStudent()) return;
-
-    let timerBtn = null;
-    let targetDoc = document;
-    
-    // 1. Try finding custom timer button in main Jitsi document context
-    timerBtn = document.getElementById('custom-jitsi-timer-btn');
-    
-    // 2. Try finding inside nested Jitsi iframes (if applicable)
-    if (!timerBtn) {
-        const iframes = document.querySelectorAll('iframe');
-        for (let i = 0; i < iframes.length; i++) {
-            try {
-                const iframeDoc = iframes[i].contentDocument || iframes[i].contentWindow?.document;
-                if (iframeDoc) {
-                    const btn = iframeDoc.getElementById('custom-jitsi-timer-btn');
-                    if (btn) {
-                        timerBtn = btn;
-                        targetDoc = iframeDoc;
-                        break;
-                    }
-                }
-            } catch (e) {}
-        }
-    }
-    
-    if (!timerBtn) return;
-    
-    // Get parent toolbar container of the timer button
-    const toolbarContainer = timerBtn.parentElement;
-    if (!toolbarContainer) return;
-    
-    let btn = targetDoc.getElementById('custom-jitsi-praise-btn');
-    if (!btn) {
-        btn = createToolbarPraiseButton(targetDoc);
-    }
-    
-    // Insert after the timer button (so it sits next to the clock!)
-    if (timerBtn.nextSibling !== btn) {
-        timerBtn.parentNode.insertBefore(btn, timerBtn.nextSibling);
     }
 };
 
@@ -1118,14 +1133,18 @@ if (typeof window !== 'undefined') {
         try {
             if (event.data && event.data.type === 'HIDE_TIMER_NOTIF') {
                 console.log('[Jitsi custom-config] HIDE_TIMER_NOTIF message received');
-                const notifContainer = document.getElementById('notifications-container') || document.querySelector('.css-gckfkq-container');
+                const notifContainer = document.getElementById('notifications-container') ||
+                    document.querySelector('[aria-live="polite"]') ||
+                    document.querySelector('[aria-live="assertive"]');
                 if (notifContainer) {
                     notifContainer.style.display = 'none';
                     console.log('[Jitsi custom-config] Successfully set notifications container display to none');
                 }
             } else if (event.data && event.data.type === 'SHOW_TIMER_NOTIF') {
                 console.log('[Jitsi custom-config] SHOW_TIMER_NOTIF message received');
-                const notifContainer = document.getElementById('notifications-container') || document.querySelector('.css-gckfkq-container');
+                const notifContainer = document.getElementById('notifications-container') ||
+                    document.querySelector('[aria-live="polite"]') ||
+                    document.querySelector('[aria-live="assertive"]');
                 if (notifContainer) {
                     notifContainer.style.display = '';
                     console.log('[Jitsi custom-config] Successfully restored notifications container display');
@@ -1161,38 +1180,53 @@ if (typeof window !== 'undefined') {
         }
     });
 
-    // MutationObserver to automatically intercept and remove any notification containing __TIMER__, TIMER_ACTION, or __PRAISE__
+    // Helper: check if a node contains system message content that should be hidden
+    const isSystemMessageNode = (node) => {
+        if (!node || node.nodeType !== 1) return false;
+        const text = node.textContent || '';
+        const html = node.innerHTML || '';
+        return (
+            text.includes('__TIMER__') ||
+            text.includes('TIMER_ACTION') ||
+            text.includes('__CLK__') ||
+            text.includes('__PRAISE__') ||
+            text.includes('__WHEEL__') ||
+            html.includes('__TIMER__') ||
+            html.includes('TIMER_ACTION') ||
+            html.includes('__CLK__') ||
+            html.includes('__PRAISE__') ||
+            html.includes('__WHEEL__')
+        );
+    };
+
+    // MutationObserver on document.body - catches ALL notifications regardless of Jitsi's internal class names
     const setupNotificationObserver = () => {
-        const notifContainer = document.getElementById('notifications-container') || document.querySelector('.css-gckfkq-container');
-        if (notifContainer) {
-            const observer = new MutationObserver((mutations) => {
-                mutations.forEach((mutation) => {
-                    mutation.addedNodes.forEach((node) => {
-                        if (node.nodeType === 1) { // ELEMENT_NODE
-                            const text = node.textContent || '';
-                            const html = node.innerHTML || '';
-                            if (
-                                text.includes('__TIMER__') || 
-                                text.includes('TIMER_ACTION') || 
-                                text.includes('__CLK__') ||
-                                text.includes('__PRAISE__') ||
-                                html.includes('__TIMER__') || 
-                                html.includes('TIMER_ACTION') ||
-                                html.includes('__CLK__') ||
-                                html.includes('__PRAISE__')
-                            ) {
-                                node.style.setProperty('display', 'none', 'important');
-                                console.log('[Jitsi custom-config] MutationObserver suppressed system notification toast');
-                            }
+        if (!document.body) return false;
+        const KEYWORDS = ['__TIMER__', '__CLK__', '__PRAISE__', '__WHEEL__', 'TIMER_ACTION'];
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType !== 1) return;
+                    // Only check the text of this exact node itself (not full subtree text)
+                    // Using innerHTML so we catch toast cards that wrap the message text
+                    const text = node.textContent || '';
+                    const html = node.innerHTML || '';
+                    if (KEYWORDS.some((kw) => text.includes(kw) || html.includes(kw))) {
+                        // Only hide if this is a notification/toast element, NOT a large container
+                        // Notification toasts are typically small elements without many children
+                        const childCount = node.childElementCount;
+                        const isLargeContainer = childCount > 20;
+                        if (!isLargeContainer) {
+                            node.style.setProperty('display', 'none', 'important');
+                            console.log('[Jitsi custom-config] Suppressed system notification toast');
                         }
-                    });
+                    }
                 });
             });
-            observer.observe(notifContainer, { childList: true, subtree: true });
-            console.log('[Jitsi custom-config] MutationObserver successfully attached to notifications-container');
-            return true;
-        }
-        return false;
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+        console.log('[Jitsi custom-config] NotificationObserver attached to document.body');
+        return true;
     };
 
     // Helper: find the chat badge inner span (actual number) on the toolbar
@@ -1271,6 +1305,7 @@ if (typeof window !== 'undefined') {
         try {
             room.on('conference.messageReceived', (id, text, ts) => {
                 const isPraise = text && text.includes('__PRAISE__');
+                const isWheel = text && text.includes('__WHEEL__');
                 const isTimer = text && (
                     text.includes('__TIMER__') || 
                     text.includes('__CLK__') || 
@@ -1281,7 +1316,7 @@ if (typeof window !== 'undefined') {
                     const index = parts[1] ? parseInt(parts[1], 10) : 0;
                     console.log('[Jitsi custom-config] __PRAISE__ received with index:', index, ', posting to parent');
                     window.parent.postMessage({ type: 'PLAY_PRAISE', index }, '*');
-                } else if (isTimer) {
+                } else if (isWheel || isTimer) {
                     timerMessagesCount++;
                 } else {
                     realMessagesCount++;
@@ -1319,7 +1354,7 @@ if (typeof window !== 'undefined') {
         const wrappers = document.querySelectorAll('[class*="-chatMessageWrapper"]');
         wrappers.forEach((wrapper) => {
             const text = wrapper.textContent || '';
-            if (text.includes('__TIMER__') || text.includes('__CLK__') || text.includes('__PRAISE__')) {
+            if (text.includes('__TIMER__') || text.includes('__CLK__') || text.includes('__PRAISE__') || text.includes('__WHEEL__')) {
                 if (wrapper.style.display !== 'none') {
                     wrapper.style.setProperty('display', 'none', 'important');
                     console.log('[Jitsi custom-config] ChatObserver hidden system message wrapper');
@@ -1333,11 +1368,8 @@ if (typeof window !== 'undefined') {
         // Ensure Excalidraw highlighter icon is injected in the toolbar
         injectToolbarIcon();
 
-        // Ensure Jitsi toolbar timer button is injected
-        injectToolbarClockButton();
-
-        // Ensure Jitsi toolbar praise button is injected
-        injectToolbarPraiseButton();
+        // Ensure Jitsi toolbar tools menu button is injected
+        injectToolbarToolsButton();
     };
 
     // DOM MutationObserver to detect and hide timer messages in the chat pane UI on any DOM changes
@@ -1372,8 +1404,7 @@ if (typeof window !== 'undefined') {
     // Periodically scan and inject custom buttons
     setInterval(() => {
         injectToolbarIcon();
-        injectToolbarClockButton();
-        injectToolbarPraiseButton();
+        injectToolbarToolsButton();
 
         // Simulate hover on filmstrip to force Jitsi's React code to render the collapse button
         try {
@@ -1568,7 +1599,7 @@ setInterval(() => {
         });
 
         docs.forEach(doc => {
-            const menuItems = doc.querySelectorAll('[role="button"], .css-k2ih75-contextMenuItem');
+            const menuItems = doc.querySelectorAll('[role="button"], [role="menuitem"]');
             menuItems.forEach(item => {
                 const label = item.getAttribute('aria-label') || '';
                 const text = item.textContent || '';
