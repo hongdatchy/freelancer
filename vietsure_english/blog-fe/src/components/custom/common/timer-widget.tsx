@@ -33,6 +33,7 @@ export default function TimerWidget({
   const [timerMode, setTimerMode] = useState<TimerMode>('UP');
   const [initialLimit, setInitialLimit] = useState(300); // 5 mins in seconds
   const [inputMinutes, setInputMinutes] = useState('5');
+  const [inputSeconds, setInputSeconds] = useState('0');
   const [flashToggle, setFlashToggle]   = useState(true);
 
   // Dragging support
@@ -401,12 +402,19 @@ export default function TimerWidget({
   }, [apiReady]);
 
   // ── Teacher controls ───────────────────────────────────────────────────────
+  const getCalculatedCountdownSeconds = (mStr: string, sStr: string) => {
+    const m = parseInt(mStr, 10) || 0;
+    const s = parseInt(sStr, 10) || 0;
+    return m * 60 + s;
+  };
+
   const onStartPause = () => {
     if (isActive) {
       setIsActive(false);
       broadcast(buildPayload('PAUSE'));
     } else {
-      const isStartDisabled = timerMode === 'DOWN' && (inputMinutes === '' || inputMinutes === '0' || parseInt(inputMinutes, 10) <= 0);
+      const totalSec = getCalculatedCountdownSeconds(inputMinutes, inputSeconds);
+      const isStartDisabled = timerMode === 'DOWN' && totalSec <= 0;
       if (isStartDisabled) return;
       
       setIsActive(true);
@@ -445,8 +453,7 @@ export default function TimerWidget({
     if (isActive) return;
     setTimerMode(mode);
     if (mode === 'DOWN') {
-      const parsed = parseInt(inputMinutes, 10) || 5;
-      const seconds = parsed * 60;
+      const seconds = getCalculatedCountdownSeconds(inputMinutes, inputSeconds) || 300;
       setInitialLimit(seconds);
       setTime(seconds);
     } else {
@@ -456,22 +463,31 @@ export default function TimerWidget({
 
   const handleMinutesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value.replace(/[^0-9]/g, '');
-    // Allow single '0' or empty input
     if (val.startsWith('0') && val.length > 1) {
       val = val.replace(/^0+/, '0');
     }
     setInputMinutes(val);
-    const parsed = parseInt(val, 10);
-    if (!isNaN(parsed) && parsed > 0) {
-      const seconds = parsed * 60;
+    const seconds = getCalculatedCountdownSeconds(val, inputSeconds);
+    if (seconds > 0) {
       setInitialLimit(seconds);
-      if (!isActive) {
-        setTime(seconds);
-      }
+      if (!isActive) setTime(seconds);
     } else {
-      if (!isActive) {
-        setTime(0);
-      }
+      if (!isActive) setTime(0);
+    }
+  };
+
+  const handleSecondsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/[^0-9]/g, '');
+    if (val.startsWith('0') && val.length > 1) {
+      val = val.replace(/^0+/, '0');
+    }
+    setInputSeconds(val);
+    const seconds = getCalculatedCountdownSeconds(inputMinutes, val);
+    if (seconds > 0) {
+      setInitialLimit(seconds);
+      if (!isActive) setTime(seconds);
+    } else {
+      if (!isActive) setTime(0);
     }
   };
 
@@ -480,7 +496,7 @@ export default function TimerWidget({
 
   // ── Shared timer card UI ───────────────────────────────────────────────────
   const TimerCard = ({ dropDown = false }: { dropDown?: boolean }) => (
-    <div className={`flex flex-col items-center bg-slate-900/95 text-white rounded-xl p-2.5 w-40 shadow-2xl border border-slate-700 backdrop-blur-md ${dropDown ? 'absolute right-0 top-full mt-2 z-[9999]' : ''}`}>
+    <div className={`flex flex-col items-center bg-slate-900/95 text-white rounded-xl p-2.5 w-44 shadow-2xl border border-slate-700 backdrop-blur-md ${dropDown ? 'absolute right-0 top-full mt-2 z-[9999]' : ''}`}>
       <div className="flex w-full items-center justify-between pb-1.5 mb-1.5 border-b border-slate-700">
         <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">⏱️ Đồng hồ</span>
         {isHost && (
@@ -510,14 +526,25 @@ export default function TimerWidget({
       )}
 
       {isHost && !isActive && timerMode === 'DOWN' && (
-        <div className="flex items-center gap-1 mb-1.5 w-full justify-center">
-          <span className="text-[9px] text-slate-400">Số phút:</span>
+        <div className="flex items-center gap-1 mb-1.5 w-full justify-center text-[9px] text-slate-400">
           <input 
             type="text" 
             value={inputMinutes} 
             onChange={handleMinutesChange}
-            className="w-10 bg-slate-800 border border-slate-700 text-center text-[10px] font-mono rounded py-0.5 text-white focus:outline-none focus:border-blue-500"
+            placeholder="Phút"
+            title="Số phút"
+            className="w-7 bg-slate-800 border border-slate-700 text-center text-[10px] font-mono rounded py-0.5 text-white focus:outline-none focus:border-blue-500"
           />
+          <span>p</span>
+          <input 
+            type="text" 
+            value={inputSeconds} 
+            onChange={handleSecondsChange}
+            placeholder="Giây"
+            title="Số giây"
+            className="w-7 bg-slate-800 border border-slate-700 text-center text-[10px] font-mono rounded py-0.5 text-white focus:outline-none focus:border-blue-500"
+          />
+          <span>s</span>
         </div>
       )}
 
@@ -546,7 +573,8 @@ export default function TimerWidget({
       </div>
 
       {isHost && (() => {
-        const isStartDisabled = timerMode === 'DOWN' && (inputMinutes === '' || inputMinutes === '0' || parseInt(inputMinutes, 10) <= 0);
+        const totalSec = getCalculatedCountdownSeconds(inputMinutes, inputSeconds);
+        const isStartDisabled = timerMode === 'DOWN' && totalSec <= 0;
         return (
           <div className="flex items-center gap-2.5 w-full justify-center">
             <button 
@@ -559,7 +587,7 @@ export default function TimerWidget({
                     ? 'bg-slate-600 cursor-not-allowed opacity-50' 
                     : 'bg-green-600 hover:bg-green-500'
               }`}
-              title={isActive ? 'Tạm dừng' : isStartDisabled ? 'Vui lòng nhập số phút hợp lệ' : 'Bắt đầu'}
+              title={isActive ? 'Tạm dừng' : isStartDisabled ? 'Vui lòng nhập thời gian hợp lệ' : 'Bắt đầu'}
             >
               {isActive
                 ? <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"/></svg>
