@@ -607,8 +607,28 @@ export default function FloatingJitsiWidget() {
       iframe.contentWindow.postMessage({
         type: 'TRIGGER_COMPOSITE_VIDEO_PIP'
       }, '*');
+
+      if (!isPipActive) {
+        setIsPipActive(true);
+        setMinimized(true);
+      } else {
+        setIsPipActive(false);
+        setMinimized(false);
+      }
     }
   };
+
+  useEffect(() => {
+    const handleWindowMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'PIP_CLOSED') {
+        console.log('[PiP] PIP_CLOSED event received from Jitsi iframe');
+        setIsPipActive(false);
+        setMinimized(false);
+      }
+    };
+    window.addEventListener('message', handleWindowMessage);
+    return () => window.removeEventListener('message', handleWindowMessage);
+  }, []);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const toggleFullscreen = () => {
@@ -678,7 +698,15 @@ export default function FloatingJitsiWidget() {
         <button
           onClick={() => {
             if (isPipActive) {
-              pipWindowRef.current?.close();
+              const jitsiEl = containerRef.current;
+              const iframe = apiRef.current?.getIFrame() || jitsiEl?.querySelector('iframe');
+              if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.postMessage({
+                  type: 'TRIGGER_COMPOSITE_VIDEO_PIP'
+                }, '*');
+              }
+              setIsPipActive(false);
+              setMinimized(false);
             } else {
               setMinimized(false);
             }

@@ -1861,6 +1861,12 @@ if (typeof window !== 'undefined') {
             } catch (e) {}
             canvasPipVideo = null;
         }
+        // Notify parent window that PiP has been closed
+        try {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'PIP_CLOSED' }, '*');
+            }
+        } catch (e) {}
     };
 
     window.addEventListener('message', async (event) => {
