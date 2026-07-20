@@ -797,6 +797,19 @@ if (typeof window !== 'undefined') {
                     
                     // Reset alignment
                     window.hasAlignedTopLeft = false;
+
+                    // Automatically open Whiteboard if not open yet when screenshare starts
+                    if (window.APP && window.APP.store) {
+                        const wbState = window.APP.store.getState()['features/whiteboard'];
+                        const isWBOpen = !!(wbState && wbState.isOpen);
+                        if (!isWBOpen) {
+                            console.log("🖥️ [GIÁO VIÊN] Share màn hình thành công! Tự động bật Bảng trắng.");
+                            window.APP.store.dispatch({
+                                type: 'SET_WHITEBOARD_OPEN',
+                                isOpen: true
+                            });
+                        }
+                    }
                 }
             } else {
                 if (window.videoBgElement.srcObject) {
@@ -1179,32 +1192,30 @@ if (typeof window !== 'undefined') {
 
     // MutationObserver on document.body - catches ALL notifications regardless of Jitsi's internal class names
     const setupNotificationObserver = () => {
-        if (!document.body) return false;
-        const KEYWORDS = ['__TIMER__', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', 'TIMER_ACTION'];
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                mutation.addedNodes.forEach((node) => {
-                    if (node.nodeType !== 1) return;
-                    // Only check the text of this exact node itself (not full subtree text)
-                    // Using innerHTML so we catch toast cards that wrap the message text
-                    const text = node.textContent || '';
-                    const html = node.innerHTML || '';
-                    if (KEYWORDS.some((kw) => text.includes(kw) || html.includes(kw))) {
-                        // Only hide if this is a notification/toast element, NOT a large container
-                        // Notification toasts are typically small elements without many children
-                        const childCount = node.childElementCount;
-                        const isLargeContainer = childCount > 20;
-                        if (!isLargeContainer) {
-                            node.style.setProperty('display', 'none', 'important');
-                            console.log('[Jitsi custom-config] Suppressed system notification toast');
+        const notifContainer = document.getElementById('notifications-container') || 
+            document.querySelector('[aria-live="polite"]') ||
+            document.querySelector('[aria-live="assertive"]');
+        if (notifContainer) {
+            const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__'];
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === 1) { // ELEMENT_NODE
+                            const text = node.textContent || '';
+                            const html = node.innerHTML || '';
+                            if (systemKeywords.some(kw => text.includes(kw) || html.includes(kw))) {
+                                node.style.setProperty('display', 'none', 'important');
+                                console.log('[Jitsi custom-config] MutationObserver suppressed system notification toast');
+                            }
                         }
-                    }
+                    });
                 });
             });
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
-        console.log('[Jitsi custom-config] NotificationObserver attached to document.body');
-        return true;
+            observer.observe(notifContainer, { childList: true, subtree: true });
+            console.log('[Jitsi custom-config] MutationObserver successfully attached to notifications-container');
+            return true;
+        }
+        return false;
     };
 
     // Helper: find the chat badge inner span (actual number) on the toolbar
@@ -1337,7 +1348,7 @@ if (typeof window !== 'undefined') {
 
     // Helper function to scan the DOM and hide any timer-related or praise-related chat messages
     const hideTimerMessages = () => {
-        const systemKeywords = ['__TIMER__', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', 'TIMER_ACTION'];
+        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__'];
 
         const wrappers = document.querySelectorAll('[class*="-chatMessageWrapper"]');
         wrappers.forEach((wrapper) => {
@@ -1353,8 +1364,7 @@ if (typeof window !== 'undefined') {
         // Also scan and hide floating notification toast items
         const notifItems = document.querySelectorAll('#notifications-container > *, [aria-live] > *, [class*="notification-item"], [class*="message-notification"]');
         notifItems.forEach((el) => {
-            const text = el.textContent || '';
-            if (systemKeywords.some(kw => text.includes(kw))) {
+            if (isSystemMessageNode(el)) {
                 if (el.style.display !== 'none') {
                     el.style.setProperty('display', 'none', 'important');
                     console.log('[Jitsi custom-config] Hidden system notification toast item');
@@ -1604,8 +1614,18 @@ setInterval(() => {
                 const label = item.getAttribute('aria-label') || '';
                 const text = item.textContent || '';
                 
-                // Ensure action buttons remain visible by default
-                item.style.setProperty('display', '', '');
+                const isHideAction = label === 'Ẩn bảng' || label === 'Hide board' || label === 'Hide whiteboard' || 
+                                     text.trim() === 'Ẩn bảng' || text.trim() === 'Hide board' || text.trim() === 'Hide whiteboard';
+                                     
+                const isShowAction = label === 'Bảng trắng' || label === 'Bật bảng' || label === 'Mở bảng' || label === 'Whiteboard' ||
+                                     text.trim() === 'Bảng trắng' || text.trim() === 'Bật bảng' || text.trim() === 'Mở bảng' || text.trim() === 'Whiteboard';
+
+                if (isHideAction) {
+                    item.style.setProperty('display', 'none', 'important');
+                } else if (isShowAction) {
+                    // Make sure the "show" action button remains fully visible
+                    item.style.setProperty('display', '', '');
+                }
             });
         });
     } catch (e) {}
@@ -1676,33 +1696,83 @@ setInterval(() => {
         }
     }, 1000);
 
-    // 2. Intercept and suppress "decryptFailed" alerts inside Excalidraw iframes to prevent browser freezing
+    // 2. Intercept and suppress "OperationError / decryptPayload / decryptFailed" alerts & modal dialogs inside Excalidraw and Jitsi
+    const isSuppressedErrorMsg = (msg) => {
+        if (!msg) return false;
+        const s = String(msg).toLowerCase();
+        return s.includes('operationerror') ||
+               s.includes('decryptpayload') ||
+               s.includes('decrypt') ||
+               s.includes('giải mã') ||
+               s.includes('decryptfailed');
+    };
+
+    const overrideWindowErrors = (win) => {
+        if (!win || win.hasOverriddenAlertAndError) return;
+        win.hasOverriddenAlertAndError = true;
+
+        // Override alert()
+        const originalAlert = win.alert;
+        win.alert = function(msg) {
+            if (isSuppressedErrorMsg(msg)) {
+                console.warn('[Jitsi custom-config] Suppressed alert:', msg);
+                return;
+            }
+            if (typeof originalAlert === 'function') {
+                return originalAlert.apply(this, arguments);
+            }
+        };
+
+        // Suppress unhandledrejection
+        win.addEventListener('unhandledrejection', (event) => {
+            const reason = event.reason ? (event.reason.message || String(event.reason)) : '';
+            if (isSuppressedErrorMsg(reason)) {
+                event.preventDefault();
+                event.stopPropagation();
+                console.warn('[Jitsi custom-config] Suppressed unhandled rejection:', reason);
+            }
+        }, true);
+
+        // Suppress onerror
+        win.addEventListener('error', (event) => {
+            const msg = event.message || String(event.error || '');
+            if (isSuppressedErrorMsg(msg)) {
+                event.preventDefault();
+                event.stopPropagation();
+                console.warn('[Jitsi custom-config] Suppressed window error:', msg);
+            }
+        }, true);
+    };
+
+    // Override main window
+    overrideWindowErrors(window);
+
+    // Periodically override all iframe windows & sweep for error modal dialogs
     setInterval(() => {
         try {
             const iframes = document.querySelectorAll('iframe');
             iframes.forEach(iframe => {
                 try {
                     const iframeWindow = iframe.contentWindow;
-                    if (iframeWindow && !iframeWindow.hasOverriddenAlert) {
-                        iframeWindow.hasOverriddenAlert = true;
-                        const originalAlert = iframeWindow.alert;
-                        iframeWindow.alert = function(msg) {
-                            const isDecryptError = msg && (
-                                String(msg).toLowerCase().includes('decrypt') || 
-                                String(msg).toLowerCase().includes('giải mã') || 
-                                String(msg).toLowerCase().includes('decryptfailed')
-                            );
-                            if (isDecryptError) {
-                                console.warn('[Jitsi custom-config] Suppressed decryption failed alert inside Excalidraw:', msg);
-                                return;
+                    if (iframeWindow) overrideWindowErrors(iframeWindow);
+                } catch (e) {}
+
+                // Hide any Excalidraw ErrorDialog modal elements
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                    if (iframeDoc) {
+                        const errorModals = iframeDoc.querySelectorAll('[class*="ErrorDialog"], [class*="error-dialog"], .excalidraw-modal-container');
+                        errorModals.forEach(el => {
+                            const text = el.textContent || '';
+                            if (isSuppressedErrorMsg(text)) {
+                                el.style.setProperty('display', 'none', 'important');
+                                console.log('[Jitsi custom-config] Hidden Excalidraw error modal dialog');
                             }
-                            return originalAlert.apply(this, arguments);
-                        };
-                        console.log('[Jitsi custom-config] Successfully overridden alert inside Excalidraw iframe');
+                        });
                     }
                 } catch (e) {}
             });
         } catch (e) {}
-    }, 1000);
+    }, 500);
 })();
 
