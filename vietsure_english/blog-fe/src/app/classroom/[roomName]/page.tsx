@@ -36,6 +36,8 @@ export default function ClassroomPage() {
   const isHost = isHostUser;
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [isInBreakoutRoom, setIsInBreakoutRoom] = useState(false);
+  const [currentSubRoomName, setCurrentSubRoomName] = useState<string | null>(null);
   const lastPraiseTimeRef = useRef<number>(0);
 
   const toggleFullscreen = () => {
@@ -319,6 +321,26 @@ export default function ClassroomPage() {
       }
     });
 
+    // Track breakout room status for participant
+    apiRef.current.addEventListener('videoConferenceJoined', (event: any) => {
+      console.log('[Room] videoConferenceJoined:', event);
+      const rawCurrentName = decodeURIComponent(String(event.roomName || event.id || '')).trim();
+      const cleanCurrent = rawCurrentName.toLowerCase().replace(/_[gG][vV]_\d+$/i, '');
+      const cleanMain = decodeURIComponent(String(roomName || '')).toLowerCase().trim();
+      
+      if (cleanCurrent && cleanMain && cleanCurrent !== cleanMain) {
+        setIsInBreakoutRoom(true);
+        let subName = rawCurrentName;
+        if (subName.toLowerCase().startsWith(cleanMain)) {
+          subName = subName.substring(cleanMain.length).replace(/^[-_]+/, '').trim();
+        }
+        setCurrentSubRoomName(subName || rawCurrentName);
+      } else {
+        setIsInBreakoutRoom(false);
+        setCurrentSubRoomName(null);
+      }
+    });
+
     // Intercept student hangup clicks and show the custom React popover menu
     apiRef.current.addEventListener('toolbarButtonClicked', (event: any) => {
       if (event.key === 'hangup') {
@@ -346,6 +368,17 @@ export default function ClassroomPage() {
         const index = typeof event.data.index === 'number' ? event.data.index : 0;
         console.log('[Student] PLAY_PRAISE message received with index:', index, ', triggering local animation');
         triggerPraiseAnimation(index);
+      } else if (event.data && event.data.type === 'BREAKOUT_ROOM_STATUS') {
+        console.log('[Room] BREAKOUT_ROOM_STATUS received:', event.data.inBreakout);
+        setIsInBreakoutRoom(!!event.data.inBreakout);
+      } else if (event.data && event.data.type === 'FORCE_END_MEETING_ALL') {
+        console.log('[Room] FORCE_END_MEETING_ALL received, exiting classroom');
+        try {
+          apiRef.current?.executeCommand('hangup');
+        } catch (e) {}
+        setTimeout(() => {
+          router.back();
+        }, 200);
       }
     };
     window.addEventListener('message', handleMessage);
@@ -438,7 +471,7 @@ export default function ClassroomPage() {
                 alt="VietSure English"
                 className="h-7 w-auto object-contain"
               />
-              <p className="text-white/60 text-xs">| Phòng: {roomName}</p>
+              <p className="text-white/60 text-xs">| Phòng: {roomName}{currentSubRoomName ? ` > ${currentSubRoomName}` : ''}</p>
             </div>
           </div>
 
@@ -524,15 +557,38 @@ export default function ClassroomPage() {
                 </button>
               </>
             ) : (
-              <button
-                onClick={() => {
-                  setShowExitConfirm(false);
-                  apiRef.current?.executeCommand('hangup');
-                }}
-                className="w-full bg-[#E0E0E0] hover:bg-[#c9c9c9] text-[#040404] font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors"
-              >
-                Rời khỏi cuộc họp
-              </button>
+              <>
+                {isInBreakoutRoom && (
+                  <button
+                    onClick={() => {
+                      setShowExitConfirm(false);
+                      try {
+                        const iframe = apiRef.current?.getIFrame();
+                        if (iframe && iframe.contentWindow) {
+                          iframe.contentWindow.postMessage({ type: 'LEAVE_BREAKOUT_ROOM', mainRoomName: roomName }, '*');
+                        }
+                        try {
+                          apiRef.current?.executeCommand('joinBreakoutRoom', '');
+                        } catch (e) {}
+                      } catch (e) {
+                        console.error('Failed to leave breakout room:', e);
+                      }
+                    }}
+                    className="w-full bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
+                  >
+                    Rời phòng nhỏ về phòng chính
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setShowExitConfirm(false);
+                    apiRef.current?.executeCommand('hangup');
+                  }}
+                  className="w-full bg-[#E0E0E0] hover:bg-[#c9c9c9] text-[#040404] font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors"
+                >
+                  Rời khỏi cuộc họp
+                </button>
+              </>
             )}
             
             <button

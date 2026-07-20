@@ -24,26 +24,34 @@ if [ -f "$MP4_FILE" ]; then
     FILENAME=$(basename "$MP4_FILE")
     echo "Found video file: $FILENAME"
     
-    # Parse filename. Expected pattern: <ClassCode>_GV_<TeacherID>_<Timestamp>.mp4
-    # Example: MATH101_GV_15_2026-07-05-05-35-46.mp4 (supports case-insensitive _gv_ or _GV_)
+    # Pattern 1: <ClassCode>_GV_<TeacherID>_<Timestamp>.mp4
     if [[ "$FILENAME" =~ ^(.*)_[gG][vV]_([0-9]+)_(.*)\.mp4$ ]]; then
         CLASS_CODE="${BASH_REMATCH[1]}"
         TEACHER_ID="${BASH_REMATCH[2]}"
         TIMESTAMP="${BASH_REMATCH[3]}"
         
-        echo "Parsed: ClassCode=$CLASS_CODE, TeacherID=$TEACHER_ID, Timestamp=$TIMESTAMP"
-        
-        # Upload the video file directly to the structured directory
+        echo "Parsed (Pattern 1): ClassCode=$CLASS_CODE, TeacherID=$TEACHER_ID, Timestamp=$TIMESTAMP"
         rclone copyto "$MP4_FILE" "minio:$MINIO_BUCKET/$TEACHER_ID/$CLASS_CODE/$TIMESTAMP.mp4"
         
-        # Also copy JSON metadata if it exists
         JSON_FILE=$(find "$RECORDING_DIR" -name "*.json" | head -n 1)
         if [ -f "$JSON_FILE" ]; then
             rclone copyto "$JSON_FILE" "minio:$MINIO_BUCKET/$TEACHER_ID/$CLASS_CODE/$TIMESTAMP.json"
         fi
+    # Pattern 2: <ClassCode>_<Timestamp>.mp4 (Standard roomName format)
+    elif [[ "$FILENAME" =~ ^(.*)_([0-9]{4}-[0-9]{2}-[0-9]{2}.*)\.mp4$ ]]; then
+        CLASS_CODE="${BASH_REMATCH[1]}"
+        TIMESTAMP="${BASH_REMATCH[2]}"
+        
+        echo "Parsed (Pattern 2): ClassCode=$CLASS_CODE, Timestamp=$TIMESTAMP"
+        rclone copyto "$MP4_FILE" "minio:$MINIO_BUCKET/recordings/$CLASS_CODE/$TIMESTAMP.mp4"
+        
+        JSON_FILE=$(find "$RECORDING_DIR" -name "*.json" | head -n 1)
+        if [ -f "$JSON_FILE" ]; then
+            rclone copyto "$JSON_FILE" "minio:$MINIO_BUCKET/recordings/$CLASS_CODE/$TIMESTAMP.json"
+        fi
     else
-        echo "Filename does not match expected pattern, copying whole folder to unknown/"
-        rclone copy "$RECORDING_DIR" "minio:$MINIO_BUCKET/unknown/$(basename $RECORDING_DIR)"
+        echo "Copying video to recordings/$FILENAME"
+        rclone copyto "$MP4_FILE" "minio:$MINIO_BUCKET/recordings/$FILENAME"
     fi
 else
     echo "No MP4 file found in $RECORDING_DIR!"

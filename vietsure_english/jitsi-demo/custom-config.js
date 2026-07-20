@@ -1478,6 +1478,44 @@ window.addEventListener('message', (event) => {
             }
         } catch (e) {}
     }
+
+    if (event.data.type === 'LEAVE_BREAKOUT_ROOM') {
+        console.log('[Jitsi custom-config] LEAVE_BREAKOUT_ROOM message received:', event.data);
+        try {
+            if (window.APP && window.APP.store) {
+                const state = window.APP.store.getState();
+                const breakoutState = state['features/breakout-rooms'] || {};
+                const rooms = breakoutState.rooms || {};
+                
+                // Find main room object
+                let mainRoom = Object.values(rooms).find(r => r && (r.isMainRoom || r.id === 'main'));
+                if (!mainRoom && breakoutState.mainRoom) {
+                    mainRoom = breakoutState.mainRoom;
+                }
+                
+                let targetJid = mainRoom?.jid || mainRoom?.id;
+                if (!targetJid) {
+                    const foundMain = Object.values(rooms).find(r => r && !r.isMainRoom === false);
+                    targetJid = foundMain?.jid || foundMain?.id;
+                }
+
+                if (targetJid) {
+                    console.log('[Jitsi custom-config] Moving participant to main room JID:', targetJid);
+                    window.APP.store.dispatch({
+                        type: 'BREAKOUT_ROOMS_MOVE_TO_ROOM',
+                        roomJid: targetJid
+                    });
+                } else {
+                    console.log('[Jitsi custom-config] Fallback: calling APP.conference.leaveBreakoutRoom()');
+                    if (window.APP.conference && typeof window.APP.conference.leaveBreakoutRoom === 'function') {
+                        window.APP.conference.leaveBreakoutRoom();
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('[Jitsi custom-config] Error leaving breakout room:', e);
+        }
+    }
 });
 
 // Highlight speaking participants in real-time based on audio indicator dot opacities (handles unmount state)
@@ -1556,13 +1594,32 @@ setInterval(() => {
 (function() {
     if (typeof window === 'undefined') return;
 
-    // 1. Monitor Jitsi room transition to dispatch RESET_WHITEBOARD
+    // 1. Monitor Jitsi room transition to dispatch RESET_WHITEBOARD and notify parent window of breakout room status
     let lastRoomJID = null;
+    let lastInBreakout = null;
     setInterval(() => {
         try {
             if (window.APP && window.APP.store) {
                 const state = window.APP.store.getState();
-                const currentRoomJID = state['features/base/conference']?.room;
+                const currentRoomJID = String(state['features/base/conference']?.room || '').toLowerCase();
+                const breakoutState = state['features/breakout-rooms'];
+                const mainRoomJid = String(breakoutState?.mainRoom?.jid || breakoutState?.mainRoom?.id || '').toLowerCase();
+                
+                let isInBreakout = false;
+                if (mainRoomJid && currentRoomJID) {
+                    const cleanCurrent = currentRoomJID.split('@')[0];
+                    const cleanMain = mainRoomJid.split('@')[0];
+                    isInBreakout = (cleanCurrent !== cleanMain);
+                } else if (currentRoomJID.includes('breakout')) {
+                    isInBreakout = true;
+                }
+                
+                if (lastInBreakout !== isInBreakout) {
+                    lastInBreakout = isInBreakout;
+                    console.log('[Jitsi custom-config] Posting BREAKOUT_ROOM_STATUS to parent:', isInBreakout, '(current:', currentRoomJID, ', main:', mainRoomJid, ')');
+                    window.parent.postMessage({ type: 'BREAKOUT_ROOM_STATUS', inBreakout: isInBreakout }, '*');
+                }
+
                 if (currentRoomJID && currentRoomJID !== lastRoomJID) {
                     const prevRoom = lastRoomJID;
                     lastRoomJID = currentRoomJID;

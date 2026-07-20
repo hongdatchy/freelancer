@@ -36,6 +36,8 @@ services:
       - ./exports:/app/exports
     depends_on:
       - db2
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - vietsure-network
 
