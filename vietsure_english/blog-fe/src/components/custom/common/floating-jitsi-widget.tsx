@@ -105,6 +105,9 @@ export default function FloatingJitsiWidget() {
   const lastPraiseTimeRef = useRef<number>(0);
   const isTileViewEnabledRef = useRef<boolean>(false);
   const isScreenSharingRef = useRef<boolean>(false);
+  const breakoutRoomsDataRef = useRef<any>(null);
+  const currentSubRoomJidRef = useRef<string>('');
+  const shouldEndConferenceOnMainJoinRef = useRef<boolean>(false);
   const [isInBreakoutRoom, setIsInBreakoutRoom] = useState(false);
   const [currentSubRoomName, setCurrentSubRoomName] = useState<string | null>(null);
 
@@ -368,6 +371,29 @@ export default function FloatingJitsiWidget() {
         console.log('[DEBUG-SHARE] sharedVideoStatusChanged event raw data:', event);
       });
 
+      // Helper to resolve human-readable sub-room name from rooms data
+      const resolveSubRoomName = (cleanCurrent: string, rawCurrentName: string, roomsData: any) => {
+        const roomList = Array.isArray(roomsData) ? roomsData : (roomsData ? Object.values(roomsData) : []);
+        const matched = roomList.find((r: any) => {
+          if (!r || r.isMainRoom) return false;
+          const rId = String(r.id || '').toLowerCase().trim();
+          const rJid = String(r.jid || '').toLowerCase().trim();
+          return (rId && cleanCurrent.includes(rId)) || (rJid && cleanCurrent.includes(rJid));
+        });
+
+        if (matched && matched.name) {
+          return matched.name;
+        }
+        
+        let subName = rawCurrentName;
+        const cleanMain = decodeURIComponent(String(roomName || '')).toLowerCase().trim();
+        if (subName.toLowerCase().startsWith(cleanMain)) {
+          subName = subName.substring(cleanMain.length).replace(/^[-_]+/, '').trim();
+        }
+        const isUuid = /^[0-9a-fA-F-]{20,}$/.test(subName) || subName.length > 20;
+        return !isUuid && subName ? subName : 'Phòng nhỏ';
+      };
+
       // Listen for breakout rooms updates to keep track of room IDs
       apiRef.current.addEventListener('videoConferenceJoined', (event: any) => {
         console.log('[Widget] videoConferenceJoined:', event);
@@ -377,14 +403,34 @@ export default function FloatingJitsiWidget() {
         
         if (cleanCurrent && cleanMain && cleanCurrent !== cleanMain) {
           setIsInBreakoutRoom(true);
-          let subName = rawCurrentName;
-          if (subName.toLowerCase().startsWith(cleanMain)) {
-            subName = subName.substring(cleanMain.length).replace(/^[-_]+/, '').trim();
-          }
-          setCurrentSubRoomName(subName || rawCurrentName);
+          currentSubRoomJidRef.current = cleanCurrent;
+          const resolvedName = resolveSubRoomName(cleanCurrent, rawCurrentName, breakoutRoomsDataRef.current);
+          setCurrentSubRoomName(resolvedName);
         } else {
           setIsInBreakoutRoom(false);
+          currentSubRoomJidRef.current = '';
           setCurrentSubRoomName(null);
+
+          if (shouldEndConferenceOnMainJoinRef.current) {
+            shouldEndConferenceOnMainJoinRef.current = false;
+            try {
+              apiRef.current?.executeCommand('endConference');
+            } catch (e) {}
+          }
+        }
+      });
+
+      apiRef.current.addEventListener('breakoutRoomsUpdated', (event: any) => {
+        console.log('[Widget] breakoutRoomsUpdated:', event);
+        if (event && event.rooms) {
+          breakoutRoomsDataRef.current = event.rooms;
+          const currentJid = currentSubRoomJidRef.current;
+          if (currentJid) {
+            const resolvedName = resolveSubRoomName(currentJid, currentJid, event.rooms);
+            if (resolvedName) {
+              setCurrentSubRoomName(resolvedName);
+            }
+          }
         }
       });
 
@@ -800,33 +846,16 @@ export default function FloatingJitsiWidget() {
                       <button
                         onClick={() => {
                           setShowExitConfirm(false);
-                          try {
-                            const roomsData = breakoutRoomsRef.current;
-                            let roomList: any[] = [];
-                            if (Array.isArray(roomsData)) {
-                              roomList = roomsData;
-                            } else if (roomsData && typeof roomsData === 'object') {
-                              roomList = Object.values(roomsData);
-                            }
-
-                            const subRooms = roomList.filter((r: any) => r && !r.isMainRoom);
-
-                            if (subRooms.length > 0) {
-                              subRooms.forEach((r: any) => {
-                                const targetId = r.id || r.jid || r.roomJid;
-                                if (targetId) {
-                                  apiRef.current?.executeCommand('closeBreakoutRoom', targetId);
-                                }
-                              });
-                              apiRef.current?.executeCommand('closeBreakoutRoom');
-
-                              setTimeout(() => {
-                                apiRef.current?.executeCommand('endConference');
-                              }, 500);
-                            } else {
-                              apiRef.current?.executeCommand('endConference');
-                            }
-                          } catch (err) {
+                          if (isInBreakoutRoom) {
+                            shouldEndConferenceOnMainJoinRef.current = true;
+                            try {
+                              const iframe = apiRef.current?.getIFrame();
+                              if (iframe && iframe.contentWindow) {
+                                iframe.contentWindow.postMessage({ type: 'LEAVE_BREAKOUT_ROOM', mainRoomName: roomName }, '*');
+                              }
+                              apiRef.current?.executeCommand('joinBreakoutRoom', '');
+                            } catch (e) {}
+                          } else {
                             apiRef.current?.executeCommand('endConference');
                           }
                         }}

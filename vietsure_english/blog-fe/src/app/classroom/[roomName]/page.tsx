@@ -39,6 +39,9 @@ export default function ClassroomPage() {
   const [isInBreakoutRoom, setIsInBreakoutRoom] = useState(false);
   const [currentSubRoomName, setCurrentSubRoomName] = useState<string | null>(null);
   const lastPraiseTimeRef = useRef<number>(0);
+  const breakoutRoomsDataRef = useRef<any>(null);
+  const currentSubRoomJidRef = useRef<string>('');
+  const shouldEndConferenceOnMainJoinRef = useRef<boolean>(false);
 
   const toggleFullscreen = () => {
     const element = document.documentElement as any;
@@ -321,6 +324,29 @@ export default function ClassroomPage() {
       }
     });
 
+    // Helper to resolve human-readable sub-room name from rooms data
+    const resolveSubRoomName = (cleanCurrent: string, rawCurrentName: string, roomsData: any) => {
+      const roomList = Array.isArray(roomsData) ? roomsData : (roomsData ? Object.values(roomsData) : []);
+      const matched = roomList.find((r: any) => {
+        if (!r || r.isMainRoom) return false;
+        const rId = String(r.id || '').toLowerCase().trim();
+        const rJid = String(r.jid || '').toLowerCase().trim();
+        return (rId && cleanCurrent.includes(rId)) || (rJid && cleanCurrent.includes(rJid));
+      });
+
+      if (matched && matched.name) {
+        return matched.name;
+      }
+      
+      let subName = rawCurrentName;
+      const cleanMain = decodeURIComponent(String(roomName || '')).toLowerCase().trim();
+      if (subName.toLowerCase().startsWith(cleanMain)) {
+        subName = subName.substring(cleanMain.length).replace(/^[-_]+/, '').trim();
+      }
+      const isUuid = /^[0-9a-fA-F-]{20,}$/.test(subName) || subName.length > 20;
+      return !isUuid && subName ? subName : 'Phòng nhỏ';
+    };
+
     // Track breakout room status for participant
     apiRef.current.addEventListener('videoConferenceJoined', (event: any) => {
       console.log('[Room] videoConferenceJoined:', event);
@@ -330,14 +356,34 @@ export default function ClassroomPage() {
       
       if (cleanCurrent && cleanMain && cleanCurrent !== cleanMain) {
         setIsInBreakoutRoom(true);
-        let subName = rawCurrentName;
-        if (subName.toLowerCase().startsWith(cleanMain)) {
-          subName = subName.substring(cleanMain.length).replace(/^[-_]+/, '').trim();
-        }
-        setCurrentSubRoomName(subName || rawCurrentName);
+        currentSubRoomJidRef.current = cleanCurrent;
+        const resolvedName = resolveSubRoomName(cleanCurrent, rawCurrentName, breakoutRoomsDataRef.current);
+        setCurrentSubRoomName(resolvedName);
       } else {
         setIsInBreakoutRoom(false);
+        currentSubRoomJidRef.current = '';
         setCurrentSubRoomName(null);
+
+        if (shouldEndConferenceOnMainJoinRef.current) {
+          shouldEndConferenceOnMainJoinRef.current = false;
+          try {
+            apiRef.current?.executeCommand('endConference');
+          } catch (e) {}
+        }
+      }
+    });
+
+    apiRef.current.addEventListener('breakoutRoomsUpdated', (event: any) => {
+      console.log('[Room] breakoutRoomsUpdated:', event);
+      if (event && event.rooms) {
+        breakoutRoomsDataRef.current = event.rooms;
+        const currentJid = currentSubRoomJidRef.current;
+        if (currentJid) {
+          const resolvedName = resolveSubRoomName(currentJid, currentJid, event.rooms);
+          if (resolvedName) {
+            setCurrentSubRoomName(resolvedName);
+          }
+        }
       }
     });
 
@@ -540,7 +586,18 @@ export default function ClassroomPage() {
                 <button
                   onClick={() => {
                     setShowExitConfirm(false);
-                    apiRef.current?.executeCommand('endConference');
+                    if (isInBreakoutRoom) {
+                      shouldEndConferenceOnMainJoinRef.current = true;
+                      try {
+                        const iframe = apiRef.current?.getIFrame();
+                        if (iframe && iframe.contentWindow) {
+                          iframe.contentWindow.postMessage({ type: 'LEAVE_BREAKOUT_ROOM', mainRoomName: roomName }, '*');
+                        }
+                        apiRef.current?.executeCommand('joinBreakoutRoom', '');
+                      } catch (e) {}
+                    } else {
+                      apiRef.current?.executeCommand('endConference');
+                    }
                   }}
                   className="w-full bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
                 >
