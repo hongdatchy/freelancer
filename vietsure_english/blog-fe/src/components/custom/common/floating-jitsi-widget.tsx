@@ -112,6 +112,7 @@ export default function FloatingJitsiWidget() {
   const shouldEndConferenceOnMainJoinRef = useRef<boolean>(false);
   const [isInBreakoutRoom, setIsInBreakoutRoom] = useState(false);
   const [currentSubRoomName, setCurrentSubRoomName] = useState<string | null>(null);
+  const [isTileViewActive, setIsTileViewActive] = useState<boolean>(false);
 
 
   useEffect(() => {
@@ -351,6 +352,7 @@ export default function FloatingJitsiWidget() {
       // Track tile view state
       apiRef.current.addEventListener('tileViewChanged', (event: any) => {
         isTileViewEnabledRef.current = event.enabled;
+        setIsTileViewActive(!!event.enabled);
       });
 
       // Auto-disable tile view when host starts screen sharing
@@ -598,68 +600,13 @@ export default function FloatingJitsiWidget() {
   const slotRef = useRef<HTMLDivElement | null>(null);
 
   const handlePiP = async () => {
-    if (!(window as any).documentPictureInPicture) {
-      alert('Trình duyệt chưa hỗ trợ Document PiP. Vui lòng dùng Chrome 116+.');
-      return;
-    }
-    if (isPipActive) {
-      pipWindowRef.current?.close();
-      return;
-    }
-
-    const inner = widgetInnerRef.current;
-    if (!inner) return;
-
-    try {
-      const pipWin = await (window as any).documentPictureInPicture.requestWindow({
-        width: size.width,
-        height: size.height,
-        disallowReturnToOpener: true,
-      });
-      pipWindowRef.current = pipWin;
-
-      // Copy styles so Tailwind works inside PiP window
-      [...document.styleSheets].forEach((sheet) => {
-        try {
-          const css = [...(sheet as CSSStyleSheet).cssRules].map(r => r.cssText).join('');
-          const s = pipWin.document.createElement('style');
-          s.textContent = css;
-          pipWin.document.head.appendChild(s);
-        } catch (_) {
-          if ((sheet as CSSStyleSheet).href) {
-            const l = pipWin.document.createElement('link');
-            l.rel = 'stylesheet';
-            l.href = (sheet as CSSStyleSheet).href!;
-            pipWin.document.head.appendChild(l);
-          }
-        }
-      });
-
-      // Centre content inside PiP window
-      pipWin.document.body.style.cssText =
-        'margin:0;padding:0;width:100vw;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#1d285c;';
-
-      inner.style.width = '100%';
-      inner.style.height = '100%';
-
-      setIsPipActive(true);
-      setMinimized(true);
-
-      // Move DOM to PiP window. Chrome handles adoptNode implicitly.
-      pipWin.document.body.appendChild(inner);
-
-      pipWin.addEventListener('pagehide', () => {
-        setIsPipActive(false);
-        setMinimized(false);
-        // Move back to original slot
-        if (slotRef.current) {
-          slotRef.current.appendChild(inner);
-        }
-        pipWindowRef.current = null;
-      });
-    } catch (err: any) {
-      console.error('[DocumentPiP]', err);
-      alert('Không thể mở PiP: ' + err.message);
+    const jitsiEl = containerRef.current;
+    const iframe = apiRef.current?.getIFrame() || jitsiEl?.querySelector('iframe');
+    if (iframe && iframe.contentWindow) {
+      console.log('[PiP] Sending TRIGGER_COMPOSITE_VIDEO_PIP to Jitsi iframe...');
+      iframe.contentWindow.postMessage({
+        type: 'TRIGGER_COMPOSITE_VIDEO_PIP'
+      }, '*');
     }
   };
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -796,17 +743,19 @@ export default function FloatingJitsiWidget() {
                     )}
                   </button>
                 )}
-                {/* PiP button */}
-                <button
-                  onClick={handlePiP}
-                  className="p-1.5 rounded-lg text-blue-300 hover:text-blue-100 hover:bg-blue-500/20 transition-colors"
-                  title={isPipActive ? 'Đóng PiP' : 'Mở Picture-in-Picture'}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="3" width="20" height="14" rx="2" />
-                    <rect x="12" y="10" width="9" height="6" rx="1" fill="currentColor" stroke="none" />
-                  </svg>
-                </button>
+                {/* PiP button (Hidden when Grid View / Tile View mode is active) */}
+                {!isTileViewActive && (
+                  <button
+                    onClick={handlePiP}
+                    className="p-1.5 rounded-lg text-blue-300 hover:text-blue-100 hover:bg-blue-500/20 transition-colors"
+                    title={isPipActive ? 'Đóng PiP' : 'Mở Picture-in-Picture'}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="3" width="20" height="14" rx="2" />
+                      <rect x="12" y="10" width="9" height="6" rx="1" fill="currentColor" stroke="none" />
+                    </svg>
+                  </button>
+                )}
                 {/* Minimize button (Commented out as currently not needed)
                 {!isPipActive && (
                   <button
