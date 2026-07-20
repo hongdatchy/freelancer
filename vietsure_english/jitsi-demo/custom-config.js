@@ -1202,7 +1202,7 @@ if (typeof window !== 'undefined') {
     // MutationObserver on document.body - catches ALL notifications regardless of Jitsi's internal class names
     const setupNotificationObserver = () => {
         if (!document.body) return false;
-        const KEYWORDS = ['__TIMER__', '__CLK__', '__PRAISE__', '__WHEEL__', 'TIMER_ACTION'];
+        const KEYWORDS = ['__TIMER__', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', 'TIMER_ACTION'];
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 mutation.addedNodes.forEach((node) => {
@@ -1306,6 +1306,7 @@ if (typeof window !== 'undefined') {
             room.on('conference.messageReceived', (id, text, ts) => {
                 const isPraise = text && text.includes('__PRAISE__');
                 const isWheel = text && text.includes('__WHEEL__');
+                const isDice = text && (text.includes('__DICE__') || text.includes('__DICE_COUNT__'));
                 const isTimer = text && (
                     text.includes('__TIMER__') || 
                     text.includes('__CLK__') || 
@@ -1316,6 +1317,13 @@ if (typeof window !== 'undefined') {
                     const index = parts[1] ? parseInt(parts[1], 10) : 0;
                     console.log('[Jitsi custom-config] __PRAISE__ received with index:', index, ', posting to parent');
                     window.parent.postMessage({ type: 'PLAY_PRAISE', index }, '*');
+                } else if (isDice) {
+                    timerMessagesCount++;
+                    if (text.startsWith('__DICE__:')) {
+                        const str = text.slice('__DICE__:'.length);
+                        const results = str.split(',').map(n => parseInt(n, 10)).filter(n => !isNaN(n));
+                        window.parent.postMessage({ type: 'SYNC_DICE_RESULT', results }, '*');
+                    }
                 } else if (isWheel || isTimer) {
                     timerMessagesCount++;
                 } else {
@@ -1351,13 +1359,27 @@ if (typeof window !== 'undefined') {
 
     // Helper function to scan the DOM and hide any timer-related or praise-related chat messages
     const hideTimerMessages = () => {
+        const systemKeywords = ['__TIMER__', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', 'TIMER_ACTION'];
+
         const wrappers = document.querySelectorAll('[class*="-chatMessageWrapper"]');
         wrappers.forEach((wrapper) => {
             const text = wrapper.textContent || '';
-            if (text.includes('__TIMER__') || text.includes('__CLK__') || text.includes('__PRAISE__') || text.includes('__WHEEL__')) {
+            if (systemKeywords.some(kw => text.includes(kw))) {
                 if (wrapper.style.display !== 'none') {
                     wrapper.style.setProperty('display', 'none', 'important');
                     console.log('[Jitsi custom-config] ChatObserver hidden system message wrapper');
+                }
+            }
+        });
+
+        // Also scan and hide floating notification toast items
+        const notifItems = document.querySelectorAll('#notifications-container > *, [aria-live] > *, [class*="notification-item"], [class*="message-notification"]');
+        notifItems.forEach((el) => {
+            const text = el.textContent || '';
+            if (systemKeywords.some(kw => text.includes(kw))) {
+                if (el.style.display !== 'none') {
+                    el.style.setProperty('display', 'none', 'important');
+                    console.log('[Jitsi custom-config] Hidden system notification toast item');
                 }
             }
         });

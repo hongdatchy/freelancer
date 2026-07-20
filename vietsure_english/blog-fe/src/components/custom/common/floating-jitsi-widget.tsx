@@ -5,6 +5,7 @@ import useJitsiStore from '@/state-manager/jitsi-store';
 import useUserLoginStore from '@/state-manager/user-login-store';
 import TimerWidget from '@/components/custom/common/timer-widget';
 import WheelWidget from '@/components/custom/common/wheel-widget';
+import DiceWidget from '@/components/custom/common/dice-widget';
 
 const JITSI_SERVER = process.env.NEXT_PUBLIC_JITSI_SERVER;
 
@@ -499,7 +500,11 @@ export default function FloatingJitsiWidget() {
             apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${randIndex}`);
           }
         } else if (event.data.type === 'TRIGGER_DICE') {
-          console.log('[Parent] TRIGGER_DICE received, ready for dice game component');
+          console.log('[Parent] TRIGGER_DICE received, dispatching toggle-dice-widget');
+          window.dispatchEvent(new CustomEvent('toggle-dice-widget'));
+        } else if (event.data.type === 'SYNC_DICE_RESULT') {
+          console.log('[Parent] SYNC_DICE_RESULT received, dispatching sync-dice-result');
+          window.dispatchEvent(new CustomEvent('sync-dice-result', { detail: { results: event.data.results } }));
         } else if (event.data.type === 'TRIGGER_WHEEL') {
           console.log('[Parent] TRIGGER_WHEEL received, dispatching toggle-wheel-widget');
           window.dispatchEvent(new CustomEvent('toggle-wheel-widget'));
@@ -929,6 +934,7 @@ export default function FloatingJitsiWidget() {
         </div>
       </div>
       <WheelWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} />
+      <DiceWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} />
     </>
   );
 }

@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import useUserLoginStore from '@/state-manager/user-login-store';
 import TimerWidget from '@/components/custom/common/timer-widget';
 import WheelWidget from '@/components/custom/common/wheel-widget';
+import DiceWidget from '@/components/custom/common/dice-widget';
 import { getData } from '@/service/api';
 
 const JITSI_SERVER = process.env.NEXT_PUBLIC_JITSI_SERVER;
@@ -418,6 +419,12 @@ export default function ClassroomPage() {
       } else if (event.data.type === 'TRIGGER_WHEEL') {
         console.log('[Page] TRIGGER_WHEEL received, dispatching toggle-wheel-widget');
         window.dispatchEvent(new CustomEvent('toggle-wheel-widget'));
+      } else if (event.data.type === 'TRIGGER_DICE') {
+        console.log('[Page] TRIGGER_DICE received, dispatching toggle-dice-widget');
+        window.dispatchEvent(new CustomEvent('toggle-dice-widget'));
+      } else if (event.data.type === 'SYNC_DICE_RESULT') {
+        console.log('[Page] SYNC_DICE_RESULT received, dispatching sync-dice-result');
+        window.dispatchEvent(new CustomEvent('sync-dice-result', { detail: { results: event.data.results } }));
       } else if (event.data.type === 'TRIGGER_PRAISE') {
         if (apiRef.current) {
           const randIndex = Math.floor(Math.random() * 5);
@@ -588,6 +595,7 @@ export default function ClassroomPage() {
         <div ref={containerRef} className="w-full h-full" />
         {!isHost && <TimerWidget apiRef={apiRef} isHost={false} apiReady={apiReady} />}
         <WheelWidget apiRef={apiRef} isHost={isHostUser} apiReady={apiReady} />
+        <DiceWidget apiRef={apiRef} isHost={isHostUser} apiReady={apiReady} />
 
         {/* Custom Exit Popover (Matches Jitsi's native look) */}
         {showExitConfirm && (
