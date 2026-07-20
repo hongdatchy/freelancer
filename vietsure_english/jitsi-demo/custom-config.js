@@ -1099,28 +1099,6 @@ if (typeof window !== 'undefined') {
                             isOpen: isWhiteboardOpen
                         });
                     }
-                    
-                    // Detect screenshare changes
-                    const tracks = state['features/base/tracks'] || [];
-                    const hasActiveScreenshare = tracks.some(t => {
-                        const isDesktop = t.videoType === 'desktop' || (t.jitsiTrack && t.jitsiTrack.videoType === 'desktop');
-                        const isMuted = !!t.muted;
-                        return isDesktop && !isMuted;
-                    });
-                    
-                    if (hasActiveScreenshare !== lastActiveScreenshare) {
-                        lastActiveScreenshare = hasActiveScreenshare;
-                        console.log("🖥️🖥️🖥️ [HỌC VIÊN] Giáo viên thay đổi trạng thái chia sẻ màn hình! hasActiveScreenshare =", hasActiveScreenshare);
-                        
-                        // If screenshare starts/stops and whiteboard is active, force open/show whiteboard
-                        if (isWhiteboardOpen) {
-                            console.log("✏️ [HỌC VIÊN] Giáo viên thay đổi share. Bắt buộc hiển thị lại Bảng trắng.");
-                            window.APP.store.dispatch({
-                                type: 'SET_WHITEBOARD_OPEN',
-                                isOpen: true
-                            });
-                        }
-                    }
                 }
             }
         } catch (err) {}
@@ -1626,18 +1604,8 @@ setInterval(() => {
                 const label = item.getAttribute('aria-label') || '';
                 const text = item.textContent || '';
                 
-                const isHideAction = label === 'Ẩn bảng' || label === 'Hide board' || label === 'Hide whiteboard' || 
-                                     text.trim() === 'Ẩn bảng' || text.trim() === 'Hide board' || text.trim() === 'Hide whiteboard';
-                                     
-                const isShowAction = label === 'Bảng trắng' || label === 'Bật bảng' || label === 'Mở bảng' || label === 'Whiteboard' ||
-                                     text.trim() === 'Bảng trắng' || text.trim() === 'Bật bảng' || text.trim() === 'Mở bảng' || text.trim() === 'Whiteboard';
-
-                if (isHideAction) {
-                    item.style.setProperty('display', 'none', 'important');
-                } else if (isShowAction) {
-                    // Make sure the "show" action button remains fully visible
-                    item.style.setProperty('display', '', '');
-                }
+                // Ensure action buttons remain visible by default
+                item.style.setProperty('display', '', '');
             });
         });
     } catch (e) {}
