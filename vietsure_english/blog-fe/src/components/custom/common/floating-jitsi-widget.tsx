@@ -510,7 +510,7 @@ export default function FloatingJitsiWidget() {
             apiRef.current?.executeCommand('hangup');
           } catch (e) {}
           setTimeout(() => {
-            onClose();
+            closeMeetingRef.current();
           }, 200);
         }
       }
