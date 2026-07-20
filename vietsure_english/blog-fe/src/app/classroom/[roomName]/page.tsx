@@ -276,7 +276,7 @@ export default function ClassroomPage() {
           'microphone', 'camera', 'closedcaptions',
           'fodeviceselection', 'chat',
           'settings', 'raisehand', 'filmstrip',
-          'download', 'help', 'whiteboard',
+          'download', 'help', 'whiteboard', 'participants-pane',
           ...(isHostUser ? ['tileview', 'desktop'] : [])
         ],
         buttonsWithNotifyClick: [],

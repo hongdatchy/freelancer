@@ -1552,3 +1552,79 @@ setInterval(() => {
     } catch (e) {}
 }, 200);
 
+// Dynamic breakout room whiteboard key synchronization and alert suppression
+(function() {
+    if (typeof window === 'undefined') return;
+
+    // 1. Monitor Jitsi room transition to dispatch RESET_WHITEBOARD
+    let lastRoomJID = null;
+    setInterval(() => {
+        try {
+            if (window.APP && window.APP.store) {
+                const state = window.APP.store.getState();
+                const currentRoomJID = state['features/base/conference']?.room;
+                if (currentRoomJID && currentRoomJID !== lastRoomJID) {
+                    const prevRoom = lastRoomJID;
+                    lastRoomJID = currentRoomJID;
+                    
+                    if (prevRoom !== null) {
+                        console.log(`[Jitsi custom-config] Room changed from ${prevRoom} to ${currentRoomJID}. Resetting whiteboard...`);
+                        
+                        // Force reset the whiteboard in Jitsi's Redux store
+                        window.APP.store.dispatch({
+                            type: 'RESET_WHITEBOARD'
+                        });
+                        
+                        // If whiteboard is currently open, we close it and re-open it to force Excalidraw to remount with the new key!
+                        const isWhiteboardOpen = !!(state['features/whiteboard'] && state['features/whiteboard'].isOpen);
+                        if (isWhiteboardOpen) {
+                            console.log('[Jitsi custom-config] Whiteboard was open during room change. Force toggling off and on...');
+                            window.APP.store.dispatch({
+                                type: 'SET_WHITEBOARD_OPEN',
+                                isOpen: false
+                            });
+                            setTimeout(() => {
+                                window.APP.store.dispatch({
+                                    type: 'SET_WHITEBOARD_OPEN',
+                                    isOpen: true
+                                });
+                            }, 500);
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('[Jitsi custom-config] Error in room change / whiteboard reset listener:', e);
+        }
+    }, 1000);
+
+    // 2. Intercept and suppress "decryptFailed" alerts inside Excalidraw iframes to prevent browser freezing
+    setInterval(() => {
+        try {
+            const iframes = document.querySelectorAll('iframe');
+            iframes.forEach(iframe => {
+                try {
+                    const iframeWindow = iframe.contentWindow;
+                    if (iframeWindow && !iframeWindow.hasOverriddenAlert) {
+                        iframeWindow.hasOverriddenAlert = true;
+                        const originalAlert = iframeWindow.alert;
+                        iframeWindow.alert = function(msg) {
+                            const isDecryptError = msg && (
+                                String(msg).toLowerCase().includes('decrypt') || 
+                                String(msg).toLowerCase().includes('giải mã') || 
+                                String(msg).toLowerCase().includes('decryptfailed')
+                            );
+                            if (isDecryptError) {
+                                console.warn('[Jitsi custom-config] Suppressed decryption failed alert inside Excalidraw:', msg);
+                                return;
+                            }
+                            return originalAlert.apply(this, arguments);
+                        };
+                        console.log('[Jitsi custom-config] Successfully overridden alert inside Excalidraw iframe');
+                    }
+                } catch (e) {}
+            });
+        } catch (e) {}
+    }, 1000);
+})();
+
