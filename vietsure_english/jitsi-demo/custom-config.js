@@ -1869,6 +1869,56 @@ if (typeof window !== 'undefined') {
         } catch (e) {}
     };
 
+    // Inject PiP button safely overlaying the filmstrip area without altering Jitsi DOM layout
+    const injectPipButtonToFilmstrip = () => {
+        try {
+            if (document.getElementById('jitsi-custom-filmstrip-pip-btn')) return;
+            if (!document.body) return;
+
+            const pipBtn = document.createElement('button');
+            pipBtn.id = 'jitsi-custom-filmstrip-pip-btn';
+            pipBtn.title = 'Bật Picture-in-Picture Gộp Camera';
+            pipBtn.style.cssText = `
+                position: fixed;
+                top: 12px;
+                right: 12px;
+                z-index: 999999;
+                background: linear-gradient(135deg, #FF6B00 0%, #FF8800 100%);
+                color: #ffffff;
+                border: 1px solid rgba(255, 255, 255, 0.4);
+                border-radius: 20px;
+                padding: 6px 14px;
+                font-size: 12px;
+                font-weight: bold;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                transition: transform 0.2s, opacity 0.2s;
+            `;
+            pipBtn.innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <rect x="2" y="3" width="20" height="14" rx="2" />
+                    <rect x="12" y="10" width="9" height="6" rx="1" fill="currentColor" />
+                </svg>
+                <span>PiP Camera</span>
+            `;
+
+            pipBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                console.log('🎥 [Filmstrip PiP] Direct click inside filmstrip!');
+                window.postMessage({ type: 'TRIGGER_COMPOSITE_VIDEO_PIP' }, '*');
+            });
+
+            document.body.appendChild(pipBtn);
+            console.log('✅ [Jitsi] Injected fixed PiP overlay button on document.body!');
+        } catch (e) {}
+    };
+
+    setInterval(injectPipButtonToFilmstrip, 1000);
+
     window.addEventListener('message', async (event) => {
         if (event.data && event.data.type === 'TRIGGER_COMPOSITE_VIDEO_PIP') {
             console.log('🎥 [Jitsi] Received TRIGGER_COMPOSITE_VIDEO_PIP message');
@@ -1973,47 +2023,32 @@ if (typeof window !== 'undefined') {
                                 ctx.drawImage(videoElTile, x + 2, y + 2, itemWidth - 4, itemHeight - 4);
                             } catch (e) {}
                         } else {
-                            // 2. If Camera Video is OFF / Muted: Render Avatar!
-                            const avatarImg = tile.querySelector('img.avatar, img.userAvatar, .avatar-container img, .avatar img');
+                            // 2. If Camera Video is OFF / Muted: Render 100% Origin-Clean Vector Avatar!
                             const nameEl = tile.querySelector('.displayname, #localDisplayName, [id$="DisplayName"]');
                             const name = nameEl ? (nameEl.textContent || '').trim() : `Thành viên ${index + 1}`;
 
-                            let drewAvatarImg = false;
-                            if (avatarImg && avatarImg.complete && avatarImg.naturalWidth > 0) {
-                                try {
-                                    const size = Math.min(itemWidth * 0.45, itemHeight * 0.45, 120);
-                                    const avX = x + (itemWidth - size) / 2;
-                                    const avY = y + (itemHeight - size) / 2 - 12;
+                            const radius = Math.min(itemWidth * 0.2, itemHeight * 0.2, 45);
+                            const centerX = x + itemWidth / 2;
+                            const centerY = y + itemHeight / 2 - 12;
 
-                                    ctx.save();
-                                    ctx.beginPath();
-                                    ctx.arc(avX + size / 2, avY + size / 2, size / 2, 0, Math.PI * 2);
-                                    ctx.closePath();
-                                    ctx.clip();
-                                    ctx.drawImage(avatarImg, avX, avY, size, size);
-                                    ctx.restore();
-                                    drewAvatarImg = true;
-                                } catch (e) {}
+                            // Deterministic background color from user display name
+                            let hash = 0;
+                            for (let i = 0; i < name.length; i++) {
+                                hash = name.charCodeAt(i) + ((hash << 5) - hash);
                             }
+                            const color = `hsl(${Math.abs(hash) % 360}, 65%, 45%)`;
 
-                            // Fallback Avatar Circle with Initial Letter if no avatar image
-                            if (!drewAvatarImg) {
-                                const radius = Math.min(itemWidth * 0.2, itemHeight * 0.2, 45);
-                                const centerX = x + itemWidth / 2;
-                                const centerY = y + itemHeight / 2 - 12;
+                            ctx.fillStyle = color;
+                            ctx.beginPath();
+                            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                            ctx.fill();
 
-                                ctx.fillStyle = '#374151';
-                                ctx.beginPath();
-                                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-                                ctx.fill();
-
-                                const initial = name ? name.charAt(0).toUpperCase() : '?';
-                                ctx.fillStyle = '#ffffff';
-                                ctx.font = `bold ${Math.round(radius * 0.9)}px sans-serif`;
-                                ctx.textAlign = 'center';
-                                ctx.textBaseline = 'middle';
-                                ctx.fillText(initial, centerX, centerY);
-                            }
+                            const initial = name ? name.charAt(0).toUpperCase() : '?';
+                            ctx.fillStyle = '#ffffff';
+                            ctx.font = `bold ${Math.round(radius * 0.9)}px sans-serif`;
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(initial, centerX, centerY);
 
                             // Draw Name under Avatar
                             ctx.fillStyle = '#ffffff';
@@ -2048,11 +2083,27 @@ if (typeof window !== 'undefined') {
                 // Capture canvas stream
                 const stream = canvas.captureStream(25);
                 videoEl.srcObject = stream;
-                await videoEl.play().catch(() => {});
 
-                console.log('🎥 [Jitsi] Requesting PictureInPicture...');
-                await videoEl.requestPictureInPicture();
-                console.log('🎥 [Jitsi] PictureInPicture active!');
+                const triggerPip = () => {
+                    videoEl.play().catch(() => {});
+                    console.log('🎥 [Jitsi] Requesting PictureInPicture...');
+                    videoEl.requestPictureInPicture()
+                        .then(() => {
+                            console.log('🎥 [Jitsi] PictureInPicture active!');
+                        })
+                        .catch((err) => {
+                            console.error('[Jitsi] Composite Video PiP Error:', err);
+                            stopCanvasPip();
+                        });
+                };
+
+                if (videoEl.readyState >= 1) {
+                    triggerPip();
+                } else {
+                    videoEl.onloadedmetadata = () => {
+                        triggerPip();
+                    };
+                }
 
                 videoEl.addEventListener('leavepictureinpicture', () => {
                     console.log('🎥 [Jitsi] Left PictureInPicture');
@@ -2061,7 +2112,6 @@ if (typeof window !== 'undefined') {
             } catch (err) {
                 console.error('[Jitsi] Composite Video PiP Error:', err);
                 stopCanvasPip();
-                alert('Không thể bật PiP gộp video: ' + (err.message || err));
             }
         }
     });
