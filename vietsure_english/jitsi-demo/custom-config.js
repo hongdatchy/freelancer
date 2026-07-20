@@ -116,14 +116,13 @@ if (typeof document !== 'undefined') {
         .is-student button[title*="Hiện bảng"] {
             display: none !important;
         }
-        /* Hide local and remote screenshare filmstrip cards for both Teacher and Student */
-        #filmstripLocalScreenShare,
-        #filmstripLocalScreenShareThumbnail,
-        #filmstripRemoteScreenShare,
-        #filmstripRemoteScreenShareThumbnail,
-        [id*="filmstripLocalScreenShare"],
-        [id*="filmstripRemoteScreenShare"],
-        span.videocontainer:has(#share-desktop) {
+        /* Hide local and remote screenshare cards ONLY for Student */
+        .is-student #filmstripLocalScreenShare,
+        .is-student #filmstripLocalScreenShareThumbnail,
+        .is-student #filmstripRemoteScreenShare,
+        .is-student #filmstripRemoteScreenShareThumbnail,
+        .is-student span.videocontainer[id*="-v0"],
+        span.videocontainer[id*="-v0"] {
             display: none !important;
         }
 
@@ -1433,23 +1432,79 @@ if (typeof window !== 'undefined') {
             });
         } catch (e) {}
 
-        // Hide screenshare filmstrip cards (local & remote) for both Teacher and Student
+        // Hide screenshare filmstrip cards ONLY for Student using exact Jitsi DOM structure
         try {
-            const screenshareElements = document.querySelectorAll(
-                '#filmstripLocalScreenShare, #filmstripLocalScreenShareThumbnail, #filmstripRemoteScreenShare, #filmstripRemoteScreenShareThumbnail, [id*="filmstripLocalScreenShare"], [id*="filmstripRemoteScreenShare"]'
-            );
-            screenshareElements.forEach(el => {
-                if (el && el.style.display !== 'none') {
-                    el.style.setProperty('display', 'none', 'important');
+            const isStudent = document.body.classList.contains('is-student') || 
+                              !!document.querySelector('.is-student') || 
+                              window.location.search.includes('isStudent=true') || 
+                              window.location.search.includes('role=student') ||
+                              (window.APP && window.APP.conference && !window.APP.conference.isLocalModerator());
+
+            if (isStudent) {
+                const allContainers = document.querySelectorAll('span.videocontainer');
+                allContainers.forEach(card => {
+                    const id = card.id || '';
+                    const nameEl = card.querySelector('.displayname');
+                    const nameText = nameEl ? (nameEl.textContent || '') : '';
+                    
+                    const isScreenshareCard = id.includes('-v0') || 
+                                               id === 'filmstripLocalScreenShare' || 
+                                               id === 'filmstripRemoteScreenShare' ||
+                                               nameText.includes('Màn hình của') || 
+                                               nameText.includes('Screen of');
+
+                    if (isScreenshareCard) {
+                        if (card.style.display !== 'none') {
+                            card.style.setProperty('display', 'none', 'important');
+                        }
+                    }
+                });
+
+                // Prioritize auto-showing & auto-pinning Whiteboard on Student side when Screenshare is active
+                const ssContainer = document.querySelector('span.videocontainer[id*="-v0"]') || 
+                                    document.querySelector('#filmstripRemoteScreenShare') ||
+                                    document.querySelector('video[id*="Screenshare"]') ||
+                                    document.querySelector('video[id*="screenshare"]');
+
+                if (ssContainer) {
+                    if (window.APP && window.APP.store) {
+                        const state = window.APP.store.getState();
+                        
+                        // 1. Force whiteboard open if closed
+                        const isWbOpen = !!(state['features/whiteboard'] && state['features/whiteboard'].isOpen);
+                        if (!isWbOpen) {
+                            window.APP.store.dispatch({
+                                type: 'SET_WHITEBOARD_OPEN',
+                                isOpen: true
+                            });
+                        }
+
+                        // 2. Find whiteboard participant ID and pin it
+                        const participants = state['features/base/participants'] || {};
+                        let wbId = null;
+                        Object.values(participants).forEach(p => {
+                            if (p && (p.id === 'whiteboard' || p.name === 'Whiteboard' || p.isWhiteboard)) {
+                                wbId = p.id;
+                            }
+                        });
+                        if (!wbId) wbId = 'whiteboard';
+
+                        const currentPinnedId = state['features/large-video']?.participantId;
+                        if (currentPinnedId !== wbId) {
+                            window.APP.store.dispatch({
+                                type: 'PIN_PARTICIPANT',
+                                participant: { id: wbId }
+                            });
+                        }
+                    }
+
+                    // Fallback DOM pin button click if aria-label is "Whiteboard - Ghim"
+                    const wbPinBtn = document.querySelector('span[aria-label="Whiteboard - Ghim"]');
+                    if (wbPinBtn) {
+                        wbPinBtn.click();
+                    }
                 }
-            });
-            const shareIcons = document.querySelectorAll('#share-desktop');
-            shareIcons.forEach(icon => {
-                const card = icon.closest('.videocontainer');
-                if (card && card.style.display !== 'none') {
-                    card.style.setProperty('display', 'none', 'important');
-                }
-            });
+            }
         } catch (e) {}
 
         // Simulate hover on filmstrip to force Jitsi's React code to render the collapse button
