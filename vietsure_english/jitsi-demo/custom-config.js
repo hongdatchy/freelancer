@@ -1845,9 +1845,10 @@ if (typeof window !== 'undefined') {
             clearInterval(canvasPipInterval);
             canvasPipInterval = null;
         }
-        if (document.pictureInPictureElement) {
+        if (document.pictureInPictureElement || document.webkitPictureInPictureElement) {
             try {
-                document.exitPictureInPicture();
+                const exitFn = document.exitPictureInPicture || document.webkitExitPictureInPicture;
+                if (exitFn) exitFn.call(document);
             } catch (e) {}
         }
         if (canvasPipVideo) {
@@ -1864,7 +1865,10 @@ if (typeof window !== 'undefined') {
 
     window.addEventListener('message', async (event) => {
         if (event.data && event.data.type === 'TRIGGER_COMPOSITE_VIDEO_PIP') {
+            console.log('🎥 [Jitsi] Received TRIGGER_COMPOSITE_VIDEO_PIP message');
+
             if (document.pictureInPictureElement || canvasPipInterval) {
+                console.log('🎥 [Jitsi] PiP active, toggling off...');
                 stopCanvasPip();
                 return;
             }
@@ -1882,12 +1886,13 @@ if (typeof window !== 'undefined') {
                 videoEl.muted = true;
                 videoEl.playsInline = true;
                 videoEl.style.position = 'fixed';
-                videoEl.style.top = '-9999px';
-                videoEl.style.left = '-9999px';
+                videoEl.style.top = '0px';
+                videoEl.style.left = '0px';
                 videoEl.style.width = '1px';
                 videoEl.style.height = '1px';
-                videoEl.style.opacity = '0';
+                videoEl.style.opacity = '0.01';
                 videoEl.style.pointerEvents = 'none';
+                videoEl.style.zIndex = '-9999';
                 document.body.appendChild(videoEl);
                 canvasPipVideo = videoEl;
 
@@ -2034,15 +2039,17 @@ if (typeof window !== 'undefined') {
                 renderFrame();
                 canvasPipInterval = setInterval(renderFrame, 40); // 25 FPS
 
-                // Capture canvas stream and set to video element
+                // Capture canvas stream
                 const stream = canvas.captureStream(25);
                 videoEl.srcObject = stream;
-                await videoEl.play();
+                await videoEl.play().catch(() => {});
 
-                // Trigger native video Picture-in-Picture on the composite video stream
+                console.log('🎥 [Jitsi] Requesting PictureInPicture...');
                 await videoEl.requestPictureInPicture();
+                console.log('🎥 [Jitsi] PictureInPicture active!');
 
                 videoEl.addEventListener('leavepictureinpicture', () => {
+                    console.log('🎥 [Jitsi] Left PictureInPicture');
                     stopCanvasPip();
                 });
             } catch (err) {
