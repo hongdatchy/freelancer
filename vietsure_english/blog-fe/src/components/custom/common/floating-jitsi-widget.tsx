@@ -667,20 +667,15 @@ export default function FloatingJitsiWidget() {
       <div
         style={{
           position: 'fixed',
-          bottom: isMinimized ? `${position.y}px` : 24,
-          right: isMinimized ? `${position.x}px` : 24,
-          top: isMinimized ? undefined : 'unset',
-          left: isMinimized ? undefined : 'unset',
-          width: isMinimized ? undefined : `${size.width}px`,
-          height: isMinimized ? undefined : `${size.height}px`,
+          display: isMinimized ? 'none' : undefined,
+          bottom: 24,
+          right: 24,
+          width: `${size.width}px`,
+          height: `${size.height}px`,
           zIndex: 9999,
         }}
-        className={`${
-          isMinimized
-            ? 'transition-all duration-300 w-16 h-16 rounded-full bg-[#FF6B00] shadow-2xl hover:scale-105 cursor-move flex items-center justify-center border-2 border-white'
-            : 'bg-gradient-to-b from-white to-[#F0F7FF] rounded-2xl overflow-hidden shadow-2xl border border-blue-200/50 flex flex-col'
-        }`}
-        onMouseDown={isMinimized ? handleMouseDown : undefined}
+        className="bg-gradient-to-b from-white to-[#F0F7FF] rounded-2xl overflow-hidden shadow-2xl border border-blue-200/50 flex flex-col"
+        onMouseDown={undefined}
       >
         {/* Top-Left Resize Handle */}
         {!isMinimized && !isPipActive && (
@@ -698,8 +693,8 @@ export default function FloatingJitsiWidget() {
           </div>
         )}
 
-        {/* Minimized button */}
-        <button
+        {/* Minimized button - ẩn đi */}
+        {/* <button
           onClick={() => {
             if (isPipActive) {
               const jitsiEl = containerRef.current;
@@ -722,19 +717,17 @@ export default function FloatingJitsiWidget() {
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             {isPipActive ? (
-              // PiP return icon
               <>
                 <rect x="2" y="3" width="20" height="14" rx="2" />
                 <rect x="12" y="10" width="9" height="6" rx="1" fill="currentColor" stroke="none" />
               </>
             ) : (
-              // Expand icon
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             )}
           </svg>
           <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-ping" />
           <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full" />
-        </button>
+        </button> */}
 
         {/* Slot for widgetInnerRef. React will never try to insert siblings next to widgetInnerRef inside this div. */}
         <div ref={slotRef} className="flex-1 w-full flex" style={{ display: isMinimized ? 'none' : 'flex' }}>
