@@ -624,6 +624,10 @@ export default function FloatingJitsiWidget() {
         console.log('[PiP] PIP_CLOSED event received from Jitsi iframe');
         setIsPipActive(false);
         setMinimized(false);
+        // Bật Grid View lên → nút PiP tự ẩn, user phải tắt Grid View mới dùng PiP lại được
+        if (apiRef.current) {
+          try { apiRef.current.executeCommand('toggleTileView'); } catch (e) {}
+        }
       }
     };
     window.addEventListener('message', handleWindowMessage);
@@ -772,8 +776,22 @@ export default function FloatingJitsiWidget() {
                   </button>
                 )}
 
+                {/* PiP Button - chỉ hiện khi KHÔNG ở Grid View */}
+                {!isTileViewActive && (
+                  <button
+                    onClick={handlePiP}
+                    className="p-1.5 rounded-lg text-blue-300 hover:text-blue-100 hover:bg-blue-500/20 transition-colors"
+                    title="Mở Picture-in-Picture"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="3" width="20" height="14" rx="2" />
+                      <rect x="12" y="10" width="9" height="6" rx="1" fill="currentColor" stroke="none" />
+                    </svg>
+                  </button>
+                )}
+
                 {/* Minimize button */}
-                {!isPipActive && (
+                {/* {!isPipActive && (
                   <button
                     onClick={() => {
                       if (document.fullscreenElement) {
@@ -792,7 +810,7 @@ export default function FloatingJitsiWidget() {
                       <line x1="5" y1="12" x2="19" y2="12" />
                     </svg>
                   </button>
-                )}
+                )} */}
                 {/* Custom Exit Button */}
                 <button
                   onClick={() => setShowExitConfirm(prev => !prev)}
