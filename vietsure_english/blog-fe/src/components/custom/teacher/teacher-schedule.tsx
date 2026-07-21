@@ -288,7 +288,7 @@ export function TeacherScheduleView() {
                     >
                       {visualActive ? (
                         item?.class_code ? (
-                          <span className="text-white font-extrabold text-[11px] block truncate max-w-[85px] px-0.5" title={item.class_code}>
+                          <span className="text-white font-extrabold text-[11px] block truncate px-0.5" title={item.class_code}>
                             {item.class_code}
                           </span>
                         ) : (
