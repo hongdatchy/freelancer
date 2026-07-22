@@ -277,17 +277,115 @@ if (typeof window !== 'undefined') {
     }, 200);
 }
 
-// Hide Student Screenshare button by default, unhide only when Teacher grants permission
+// Control Student Screenshare Toggle for Teacher & Hide by default for Student
 (function setupStudentScreenshareToggle() {
     if (typeof window === 'undefined') return;
 
     window.allowStudentScreenshare = false;
+    window.isStudentShareAllowedByTeacher = false;
+
+    const findShareScreenWrapper = (doc) => {
+        const toolbarContainer = doc.querySelector('.toolbox-content-items');
+        if (toolbarContainer) {
+            const items = toolbarContainer.children;
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                const testId = String(item.getAttribute('data-testid') || '').toLowerCase();
+                const label = String(item.getAttribute('aria-label') || '').toLowerCase();
+                const innerBtn = item.querySelector('[aria-label], [data-testid]');
+                const innerLabel = innerBtn ? String(innerBtn.getAttribute('aria-label') || '').toLowerCase() : '';
+                const innerTestId = innerBtn ? String(innerBtn.getAttribute('data-testid') || '').toLowerCase() : '';
+
+                if (
+                    testId.includes('desktop') || testId.includes('share') ||
+                    label.includes('desktop') || label.includes('share') || label.includes('màn hình') ||
+                    innerTestId.includes('desktop') || innerTestId.includes('share') || innerLabel.includes('màn hình') || innerLabel.includes('share')
+                ) {
+                    return item;
+                }
+            }
+        }
+
+        // Fallback: check querySelectorAll
+        const shareBtn = doc.querySelector(
+            '[data-testid="share-your-screen"], [data-testid="desktop"], [data-testid*="share" i], ' +
+            '[aria-label*="share" i], [aria-label*="Desktop" i], [aria-label*="màn hình" i], [aria-label*="chia sẻ" i]'
+        );
+        if (shareBtn) {
+            return shareBtn.closest('.toolbox-button-wrapper') || shareBtn.closest('.toolbox-button') || shareBtn;
+        }
+        return null;
+    };
+
+    const injectTeacherShareControlBtn = (doc) => {
+        const shareWrapper = findShareScreenWrapper(doc);
+        if (!shareWrapper || !shareWrapper.parentNode) return;
+
+        let btnWrapper = doc.getElementById('custom-teacher-share-control-btn');
+        if (!btnWrapper) {
+            btnWrapper = doc.createElement('div');
+            btnWrapper.className = 'toolbox-button-wrapper';
+            btnWrapper.id = 'custom-teacher-share-control-btn';
+            btnWrapper.style.cssText = 'position: relative; margin: 0 2px; cursor: pointer !important; z-index: 99999;';
+
+            btnWrapper.innerHTML = `
+                <div aria-disabled="false" aria-label="Mở/Khóa quyền Share Học viên" class="toolbox-button" role="button" tabindex="0" title="Mở quyền Share màn hình cho Học viên" style="cursor: pointer !important; position: relative;">
+                    <div class="toolbox-icon" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; pointer-events: none;">
+                        <svg aria-hidden="true" focusable="false" role="img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; pointer-events: none;">
+                            <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                        </svg>
+                    </div>
+                    <span id="teacher-share-status-dot" style="position: absolute; top: 4px; right: 4px; width: 9px; height: 9px; border-radius: 50%; background-color: #ef4444; border: 1.5px solid #141b2d; transition: background-color 0.2s; pointer-events: none;"></span>
+                </div>
+            `;
+
+            const handleToggleClick = (e) => {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+
+                window.isStudentShareAllowedByTeacher = !window.isStudentShareAllowedByTeacher;
+                const isAllowed = window.isStudentShareAllowedByTeacher;
+
+                console.log('📢📢📢 [TEACHER TOOLBAR] Bấm nút Bật/Tắt Share Học viên. allowStudentShare =', isAllowed);
+
+                // Send event to parent window to broadcast via apiRef
+                try {
+                    window.parent.postMessage({ type: 'TEACHER_TOGGLED_STUDENT_SHARE', allowed: isAllowed }, '*');
+                } catch (err) {}
+
+                // Update local toolbar UI
+                updateTeacherShareBtnUI(doc, isAllowed);
+            };
+
+            btnWrapper.addEventListener('click', handleToggleClick, true);
+        }
+
+        if (shareWrapper.nextSibling !== btnWrapper) {
+            shareWrapper.parentNode.insertBefore(btnWrapper, shareWrapper.nextSibling);
+        }
+
+        updateTeacherShareBtnUI(doc, window.isStudentShareAllowedByTeacher);
+    };
+
+    const updateTeacherShareBtnUI = (doc, isAllowed) => {
+        const btnWrapper = doc.getElementById('custom-teacher-share-control-btn');
+        if (!btnWrapper) return;
+        const btn = btnWrapper.querySelector('.toolbox-button');
+        const dot = btnWrapper.querySelector('#teacher-share-status-dot');
+        if (btn) {
+            btn.setAttribute('title', isAllowed ? 'Đang BẬT cho phép Học viên Share (Bấm để Khóa)' : 'Mở quyền Share màn hình cho Học viên');
+        }
+        if (dot) {
+            dot.style.setProperty('background-color', isAllowed ? '#10b981' : '#ef4444', 'important');
+        }
+    };
 
     setInterval(() => {
         try {
-            const isStudent = checkIfStudent();
-            if (!isStudent) return; // Moderator always sees desktop share button
-
             const docs = [document];
             const iframes = document.querySelectorAll('iframe');
             iframes.forEach(iframe => {
@@ -298,21 +396,22 @@ if (typeof window !== 'undefined') {
             });
 
             docs.forEach(doc => {
-                const shareBtns = doc.querySelectorAll(
-                    '[data-testid="share-your-screen"], [data-testid="desktop"], ' +
-                    'button[aria-label*="share"], button[aria-label*="Desktop"], button[aria-label*="màn hình"], button[aria-label*="chia sẻ màn hình"], ' +
-                    '.toolbox-button[aria-label*="desktop"], .toolbox-button[aria-label*="share"], .toolbox-button[aria-label*="màn hình"]'
-                );
-
-                shareBtns.forEach(btn => {
-                    const container = btn.closest('.toolbox-button-wrapper') || btn.closest('.toolbox-button') || btn;
-                    if (!window.allowStudentScreenshare) {
-                        container.style.setProperty('display', 'none', 'important');
-                    } else {
-                        container.style.removeProperty('display');
-                        container.style.setProperty('display', 'inline-flex', 'important');
+                const isStudent = checkIfStudent();
+                if (!isStudent) {
+                    // Teacher view: Inject control button next to Share Screen button
+                    injectTeacherShareControlBtn(doc);
+                } else {
+                    // Student view: Hide share screen button by default
+                    const shareWrapper = findShareScreenWrapper(doc);
+                    if (shareWrapper) {
+                        if (!window.allowStudentScreenshare) {
+                            shareWrapper.style.setProperty('display', 'none', 'important');
+                        } else {
+                            shareWrapper.style.removeProperty('display');
+                            shareWrapper.style.setProperty('display', 'inline-flex', 'important');
+                        }
                     }
-                });
+                }
             });
         } catch (e) {}
     }, 300);

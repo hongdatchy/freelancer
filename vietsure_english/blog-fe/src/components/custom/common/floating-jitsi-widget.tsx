@@ -126,6 +126,25 @@ export default function FloatingJitsiWidget() {
   };
 
   useEffect(() => {
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data && e.data.type === 'TEACHER_TOGGLED_STUDENT_SHARE') {
+        const allowed = !!e.data.allowed;
+        setAllowStudentShare(allowed);
+        if (apiRef.current) {
+          console.log('📢 [Widget Parent] Broadcasting __TOGGLE_STUDENT_SCREENSHARE__ via apiRef:', allowed);
+          try {
+            apiRef.current.executeCommand('sendChatMessage', `__TOGGLE_STUDENT_SCREENSHARE__:${allowed}`);
+          } catch (err) {
+            console.error('[Widget Parent] Failed to sendChatMessage:', err);
+          }
+        }
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  useEffect(() => {
     userRef.current = user;
     closeMeetingRef.current = closeMeeting;
   }, [user, closeMeeting]);
@@ -782,24 +801,6 @@ export default function FloatingJitsiWidget() {
                     </svg>
                   </button>
                 )}
-
-                {/* Toggle Allow Student Screenshare Button */}
-                <button
-                  onClick={handleToggleStudentShare}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all no-drag ${
-                    allowStudentShare
-                      ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-500/35 shadow-sm'
-                      : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
-                  }`}
-                  title={allowStudentShare ? 'Đang BẬT cho phép Học viên Share màn hình (Bấm để Khóa)' : 'Mở quyền Share màn hình cho Học viên'}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="3" width="20" height="14" rx="2" />
-                    <line x1="8" y1="21" x2="16" y2="21" />
-                    <line x1="12" y1="17" x2="12" y2="21" />
-                  </svg>
-                  <span className="hidden sm:inline">{allowStudentShare ? 'Học viên Share: BẬT' : 'Học viên Share: TẮT'}</span>
-                </button>
 
                 {/* Minimize button */}
                 {/* {!isPipActive && (
