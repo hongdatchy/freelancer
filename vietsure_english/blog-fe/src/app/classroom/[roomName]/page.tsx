@@ -301,11 +301,9 @@ export default function ClassroomPage() {
 
       // Set the default filmstrip width to 360px on join if screen width > 1100px
       if (window.innerWidth > 1100) {
-        setTimeout(() => {
-          if (apiRef.current) {
-            apiRef.current.executeCommand('resizeFilmStrip', { width: 360 });
-          }
-        }, 1000);
+        if (apiRef.current) {
+          apiRef.current.executeCommand('resizeFilmStrip', { width: 360 });
+        }
       }
 
       if (isHostUser) {
@@ -318,11 +316,6 @@ export default function ClassroomPage() {
         }, 1000);
       } else {
         // Học viên: tự động bật Grid View khi vào phòng
-        // setTimeout(() => {
-        //   if (apiRef.current) {
-        //     try { apiRef.current.executeCommand('toggleTileView'); } catch (e) {}
-        //   }
-        // }, 1500);
         if (apiRef.current) {
             try { apiRef.current.executeCommand('toggleTileView'); } catch (e) {}
         }

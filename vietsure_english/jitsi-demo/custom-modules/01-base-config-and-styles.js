@@ -1,0 +1,303 @@
+// ==========================================
+// 1. BASE CONFIGURATION & CUSTOM STYLES
+// ==========================================
+
+// Custom configuration appended to config.js inside the Jitsi container
+config.hideLoginButton = true;
+config.defaultLanguage = 'vi';
+config.settingsSections = ['devices', 'moderator', 'profile', 'calendar', 'sounds'];
+config.disableSelfViewSettings = true;
+
+// Suppress the "Error uploading files to backend" console.error spam.
+(function() {
+    const _consoleError = console.error;
+    console.error = function() {
+        const msg = arguments[0] ? String(arguments[0]) : '';
+        if (
+            msg.includes('Error uploading files to backend') ||
+            msg.includes('Missing required meeting details')
+        ) {
+            return; // Suppress this known harmless error silently
+        }
+        return _consoleError.apply(this, arguments);
+    };
+})();
+
+// Force selfBrowserSurface to 'include' to allow sharing the current tab
+if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+    const originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
+    navigator.mediaDevices.getDisplayMedia = function(constraints) {
+        if (!constraints) constraints = {};
+        if (typeof constraints.video === 'boolean' || !constraints.video) {
+            constraints.video = {};
+        }
+        constraints.selfBrowserSurface = 'include';
+        constraints.video.displaySurface = 'browser';
+        
+        return originalGetDisplayMedia(constraints);
+    };
+}
+
+// Inject transparency and layout styles directly to the main Jitsi document
+if (typeof document !== 'undefined') {
+    const style = document.createElement('style');
+    style.id = 'jitsi-whiteboard-custom-style';
+    style.textContent = `
+        /* Make Excalidraw component background transparent ONLY during screenshare */
+        .whiteboard-screenshare-active .excalidraw__canvas-wrapper,
+        .whiteboard-screenshare-active .excalidraw__canvas,
+        .whiteboard-screenshare-active .excalidraw,
+        .whiteboard-screenshare-active .excalidraw-container,
+        .whiteboard-screenshare-active .excalidraw-app {
+            background-color: transparent !important;
+            background: transparent !important;
+        }
+        /* Override Jitsi inline margin-top and height to expand whiteboard space */
+        .whiteboard-container {
+            margin-top: 0px !important;
+            height: 100% !important;
+            position: relative; /* Ensure it can contain the absolute video */
+        }
+        /* Hide Jitsi's top subject pill (room name, timer) to prevent overlapping Excalidraw toolbar */
+        .subject,
+        .subject-info-container,
+        .subject-text {
+            display: none !important;
+        }
+        
+        /* UNCONDITIONAL CSS BLOCKERS FOR ZOOM & SCROLLBARS & HAND TOOL */
+        .zoom-actions,
+        .zoom-controls,
+        .layer-ui__wrapper .zoom-actions,
+        .excalidraw-scrollbars,
+        .Scrollbar,
+        .excalidraw .Scrollbar {
+            display: none !important;
+        }
+        
+        /* Hide hand tool button through all possible element patterns */
+        [data-testid="toolbar-hand"],
+        label:has(input[value="hand"]),
+        .excalidraw label:has(input[value="hand"]),
+        label:has(input[id*="hand"]),
+        .ToolIcon_type_radio:has(input[value="hand"]),
+        button[title*="Hand"],
+        button[title*="Bàn tay"],
+        label[title*="Hand"],
+        label[title*="Bàn tay"],
+        [aria-label*="Hand"],
+        [aria-label*="Bàn tay"] {
+            display: none !important;
+        }
+        
+        /* Hide Excalidraw Main Menu Button (Hamburger button) for both Teacher and Student */
+        .excalidraw button[data-testid="main-menu-trigger"],
+        .excalidraw button[aria-label*="Menu"],
+        .excalidraw button[aria-label*="menu"],
+        .excalidraw .App-menu__button,
+        .excalidraw .main-menu-trigger {
+            display: none !important;
+        }
+
+        /* Hide whiteboard button in student's toolbar (on documentElement or body) */
+        .is-student [data-testid="toolbox-whiteboard"],
+        .is-student .toolbox-button[aria-label*="Whiteboard"],
+        .is-student .toolbox-button[aria-label*="Bảng trắng"],
+        .is-student .toolbox-button[aria-label*="Ẩn bảng"],
+        .is-student .toolbox-button[aria-label*="Hiện bảng"],
+        .is-student button[title*="Whiteboard"],
+        .is-student button[title*="Bảng trắng"],
+        .is-student button[title*="Ẩn bảng"],
+        .is-student button[title*="Hiện bảng"] {
+            display: none !important;
+        }
+        /* Hide local and remote screenshare cards ONLY for Student */
+        .is-student #filmstripLocalScreenShare,
+        .is-student #filmstripLocalScreenShareThumbnail,
+        .is-student #filmstripRemoteScreenShare,
+        .is-student #filmstripRemoteScreenShareThumbnail,
+        .is-student span.videocontainer[id*="-v0"],
+        span.videocontainer[id*="-v0"] {
+            display: none !important;
+        }
+
+        /* Hide Jitsi native invite buttons/items */
+        .invite-button,
+        [class*="invite"],
+        [aria-label*="Invite"],
+        [aria-label*="Mời"],
+        [data-testid="toolbox-invite"],
+        .button-invite,
+        [class*="-invite"] {
+            display: none !important;
+        }
+
+        /* Style our custom Jitsi toolbar clock button to match standard Jitsi buttons */
+        #custom-jitsi-timer-btn {
+            width: 48px !important;
+            min-width: 48px !important;
+            height: 48px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-shrink: 0 !important;
+        }
+        #custom-jitsi-praise-btn {
+            width: 48px !important;
+            min-width: 48px !important;
+            height: 48px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-shrink: 0 !important;
+        }
+        #custom-jitsi-timer-btn .toolbox-button,
+        #custom-jitsi-praise-btn .toolbox-button {
+            width: 40px !important;
+            height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-radius: 6px !important;
+            transition: background-color 0.2s ease !important;
+        }
+        #custom-jitsi-timer-btn .toolbox-button:hover,
+        #custom-jitsi-praise-btn .toolbox-button:hover {
+            background-color: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        /* Prevent main toolbox items container from wrapping or shrinking custom buttons */
+        .toolbox-content-items {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+        }
+
+        /* Reclaim wasted bottom safe area space in mobile landscape */
+        @media (max-height: 480px) and (orientation: landscape) {
+            .toolbox,
+            .new-toolbox,
+            .toolbox-content,
+            .toolbox-content-wrapper {
+                padding-bottom: 2px !important;
+                margin-bottom: 0px !important;
+                height: 48px !important;
+            }
+            .toolbox-content-items {
+                height: 40px !important;
+            }
+        }
+
+        /* Force Jitsi filmstrip containers to always be visible */
+        .filmstrip,
+        .vertical-filmstrip,
+        .horizontal-filmstrip,
+        .filmstrip__videos,
+        [class*="filmstrip"],
+        [class*="Filmstrip"] {
+            opacity: 1 !important;
+            visibility: visible !important;
+            overflow: visible !important;
+        }
+
+        /* Filmstrip card alignment - active ONLY when div with class .filmstrip has width <= 309px */
+        .filmstrip.filmstrip-width-lte-309 #filmstripLocalVideo {
+            margin-top: auto !important;
+            margin-bottom: 0px !important;
+        }
+
+        .filmstrip.filmstrip-width-lte-309 #filmstripLocalScreenShare {
+            margin-top: 0px !important;
+            margin-bottom: 0px !important;
+        }
+
+        /* Override Jitsi bottom:0 on remote videos wrapper div to align from top */
+        .filmstrip.filmstrip-width-lte-309 .remote-videos>div {
+            bottom: auto !important;
+            top: 0px !important;
+        }
+
+        /* Limit remote-videos (top participant area) to 70% of filmstrip height */
+        .filmstrip.filmstrip-width-lte-309 .remote-videos {
+            height: 70% !important;
+            max-height: 70% !important;
+        }
+
+        /* Hide Moderator (M / Quản trị viên) icon on video cards */
+        svg[aria-label*="Quản trị viên"],
+        svg[aria-label*="Moderator"],
+        svg[aria-label*="moderator"] {
+            display: none !important;
+        }
+
+        /* Force ONLY the filmstrip toggle container to be always visible */
+        .filmstrip-toggle-container,
+        [class*="filmstrip-toggle"],
+        [class*="toggle-filmstrip"],
+        [class*="FilmstripToggle"] {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 99999 !important;
+            transform: none !important;
+            transition: none !important;
+        }
+
+        /* Force toggle button visible and rotate chevron */
+        .toggle-filmstrip-button,
+        .filmstrip__toggle,
+        [class*="Filmstrip__toggle"],
+        button[aria-label*="filmstrip"],
+        button[aria-label*="danh sách video"] {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 99999 !important;
+            transform: rotate(90deg) !important;
+        }
+
+        .vertical-filmstrip .filmstrip-toggle-container,
+        .vertical-filmstrip .toggle-filmstrip-button,
+        .vertical-filmstrip .filmstrip__toggle,
+        .vertical-filmstrip button[aria-label*="filmstrip"],
+        .vertical-filmstrip button[aria-label*="danh sách video"] {
+            left: -20px !important;
+            right: auto !important;
+        }
+        .horizontal-filmstrip .filmstrip-toggle-container,
+        .horizontal-filmstrip .toggle-filmstrip-button,
+        .horizontal-filmstrip .filmstrip__toggle,
+        .horizontal-filmstrip button[aria-label*="filmstrip"],
+        .horizontal-filmstrip button[aria-label*="danh sách video"] {
+            bottom: 52px !important;
+            top: auto !important;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Style overrides to make Jitsi background bright (like homepage banner)
+if (typeof window !== 'undefined') {
+    const applyBrightTheme = () => {
+        try {
+            if (!document.getElementById('custom-bright-bg-css')) {
+                const style = document.createElement('style');
+                style.id = 'custom-bright-bg-css';
+                style.textContent = `
+                    #videospace,
+                    #videoconference_page,
+                    .large-video-background,
+                    .filmstrip,
+                    #largeVideoBackgroundContainer {
+                        background: linear-gradient(to bottom, #ffffff 0%, #F0F7FF 100%) !important;
+                        background-color: #F0F7FF !important;
+                    }
+                `;
+                document.head.appendChild(style);
+                console.log("🎨 Applied bright layout background theme.");
+            }
+        } catch (err) {}
+    };
+    
+    applyBrightTheme();
+    setInterval(applyBrightTheme, 2000);
+}

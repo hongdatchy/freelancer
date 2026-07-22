@@ -317,11 +317,9 @@ export default function FloatingJitsiWidget() {
 
         // Set initial filmstrip width to 360px on join if widget width > 1100px
         if (size.width > 1100) {
-          setTimeout(() => {
-            if (apiRef.current) {
-              apiRef.current.executeCommand('resizeFilmStrip', { width: 360 });
-            }
-          }, 1000);
+          if (apiRef.current) {
+            apiRef.current.executeCommand('resizeFilmStrip', { width: 360 });
+          }
         }
 
         if (isHost) {
@@ -334,11 +332,6 @@ export default function FloatingJitsiWidget() {
           }, 1000);
 
           // Auto-enable tile view on join (host only)
-          // setTimeout(() => {
-          //   if (apiRef.current) {
-          //     apiRef.current.executeCommand('toggleTileView');
-          //   }
-          // }, 1500);
           if (apiRef.current) {
             apiRef.current.executeCommand('toggleTileView');
           }
@@ -478,11 +471,9 @@ export default function FloatingJitsiWidget() {
   useEffect(() => {
     if (!isResizing && !isMinimized && apiRef.current && apiReady) {
       if (size.width > 1100) {
-        setTimeout(() => {
-          if (apiRef.current) {
-            apiRef.current.executeCommand('resizeFilmStrip', { width: 360 });
-          }
-        }, 100);
+        if (apiRef.current) {
+          apiRef.current.executeCommand('resizeFilmStrip', { width: 360 });
+        }
       }
     }
   }, [isResizing, isMinimized, size.width, apiReady]);

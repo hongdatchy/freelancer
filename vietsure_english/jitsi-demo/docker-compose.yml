@@ -9,6 +9,7 @@ services:
     volumes:
       - ./custom-config.js:/config/custom-config.js:Z
       - ./custom-interface_config.js:/config/custom-interface_config.js:Z
+      - ./custom-modules:/usr/share/jitsi-meet/custom-modules:Z
       - ${CONFIG}/web:/config:Z
       - ${CONFIG}/web/crontabs:/var/spool/cron/crontabs:Z
       - ${CONFIG}/transcripts:/usr/share/jitsi-meet/transcripts:Z
