@@ -224,10 +224,33 @@ export default function WheelWidget({
     ctx.restore();
   }, [items, rotationAngle, isOpen]);
 
+  const spinAudioRef = useRef<HTMLAudioElement | null>(null);
+  const winAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const stopAllAudio = () => {
+    if (spinAudioRef.current) {
+      spinAudioRef.current.pause();
+      spinAudioRef.current.currentTime = 0;
+    }
+    if (winAudioRef.current) {
+      winAudioRef.current.pause();
+      winAudioRef.current.currentTime = 0;
+    }
+  };
+
   // Execute Spin animation smoothly towards target angle
   const animateSpin = (targetDeg: number, duration: number, winningText: string) => {
+    stopAllAudio();
     setIsSpinning(true);
     setWinner(null);
+
+    // Play spin audio
+    try {
+      const spinAudio = new Audio('/floraphonic-spin-whoosh.mp3');
+      spinAudioRef.current = spinAudio;
+      spinAudio.currentTime = 0;
+      spinAudio.play().catch((err) => console.warn('[Wheel Audio] Spin play failed:', err));
+    } catch (e) {}
 
     const startDeg = currentAngleRef.current;
     const startTime = performance.now();
@@ -249,6 +272,18 @@ export default function WheelWidget({
         setIsSpinning(false);
         setWinner(winningText);
         console.log('[Wheel] Spin completed! Winner:', winningText);
+
+        // Stop spin sound & play winning audio
+        if (spinAudioRef.current) {
+          spinAudioRef.current.pause();
+          spinAudioRef.current.currentTime = 0;
+        }
+        try {
+          const winAudio = new Audio('/scottishperson-sound-effect-happy-birthday-music-box.mp3');
+          winAudioRef.current = winAudio;
+          winAudio.currentTime = 0;
+          winAudio.play().catch((err) => console.warn('[Wheel Audio] Win play failed:', err));
+        } catch (e) {}
       }
     };
 
@@ -272,7 +307,7 @@ export default function WheelWidget({
       case 'SPIN': {
         setIsOpen(true);
         const targetDeg = payload.targetAngle ?? (360 * 5 + 180);
-        const duration = payload.duration ?? 4000;
+        const duration = payload.duration ?? 7000;
         const winText = payload.winningItem || 'Người chiến thắng!';
         animateSpin(targetDeg, duration, winText);
         break;
@@ -324,10 +359,10 @@ export default function WheelWidget({
     // Align pointer (top 270 deg) with winning slice center
     const winSliceCenter = (winIdx + 0.5) * sliceAngle;
     const offsetToTop = 270 - winSliceCenter;
-    const fullSpins = 360 * 6; // 6 full rotations for excitement
+    const fullSpins = 360 * 8; // 8 full rotations for 7-second spin
     const targetDeg = currentAngleRef.current + fullSpins + ((offsetToTop - (currentAngleRef.current % 360) + 360) % 360);
 
-    const duration = 4500;
+    const duration = 7000;
 
     // Broadcast deterministic spin payload to all students
     broadcast({
@@ -367,6 +402,7 @@ export default function WheelWidget({
   };
 
   const handleClose = () => {
+    stopAllAudio();
     setIsOpen(false);
     if (isHost) {
       broadcast({ type: 'WHEEL_ACTION', action: 'CLOSE' });
