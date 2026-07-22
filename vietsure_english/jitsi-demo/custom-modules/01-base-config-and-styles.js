@@ -111,7 +111,7 @@ if (typeof document !== 'undefined') {
         .is-student button[title*="Hiện bảng"] {
             display: none !important;
         }
-        /* Hide local and remote screenshare cards ONLY for Student */
+        /* TODO: Hide local and remote screenshare cards ONLY for Student
         .is-student #filmstripLocalScreenShare,
         .is-student #filmstripLocalScreenShareThumbnail,
         .is-student #filmstripRemoteScreenShare,
@@ -120,6 +120,7 @@ if (typeof document !== 'undefined') {
         span.videocontainer[id*="-v0"] {
             display: none !important;
         }
+        */
 
         /* Hide Jitsi native invite buttons/items */
         .invite-button,
@@ -290,9 +291,42 @@ if (typeof window !== 'undefined') {
                         background: linear-gradient(to bottom, #ffffff 0%, #F0F7FF 100%) !important;
                         background-color: #F0F7FF !important;
                     }
+                    /* Disable clicking/pinning ONLY on video thumbnails inside filmstrip for students */
+                    body.is-student .filmstrip #filmstripLocalVideo,
+                    body.is-student .filmstrip #filmstripLocalScreenShare,
+                    body.is-student .filmstrip .remote-videos .videocontainer {
+                        pointer-events: none !important;
+                    }
                 `;
                 document.head.appendChild(style);
                 console.log("🎨 Applied bright layout background theme.");
+            }
+
+            let isStudent = false;
+            if (window.location.hash && window.location.hash.includes('config.isStudent=true')) {
+                isStudent = true;
+            } else if (window.location.hash && window.location.hash.includes('config.isStudent=false')) {
+                isStudent = false;
+            } else if (typeof config !== 'undefined' && typeof config.isStudent !== 'undefined') {
+                isStudent = !!config.isStudent;
+            }
+            try {
+                if (window.APP && window.APP.store) {
+                    const state = window.APP.store.getState();
+                    const participants = state['features/base/participants'] || [];
+                    const localP = Array.isArray(participants) ? participants.find(p => p && p.local) : Object.values(participants).find((p) => p && p.local);
+                    if (localP && localP.role === 'moderator') {
+                        isStudent = false;
+                    }
+                }
+            } catch (e) {}
+
+            if (document.body) {
+                if (isStudent) {
+                    document.body.classList.add('is-student');
+                } else {
+                    document.body.classList.remove('is-student');
+                }
             }
         } catch (err) {}
     };

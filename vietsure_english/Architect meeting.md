@@ -24,8 +24,8 @@ File `custom-config.js` (inside `jitsi-demo/`) has been modularized into 5 manag
 
 ---
 
-## 3. Strict Rules for Build & Docker Restart Commands
+## 3. Workflow for Build & Docker Restart Commands
 
-> [!CAUTION]
-> - **CHỈ KHI NÀO NGƯỜI DÙNG YÊU CẦU CHẠY LẠI / RESTART** mới được chạy `node build-custom-config.js` và `docker compose restart web`.
-> - Không tự ý chạy `node build-custom-config.js` hay `docker compose restart web` khi chưa có yêu cầu trực tiếp từ người dùng!
+> [!IMPORTANT]
+> - **Tự động gộp & restart khi phát triển**: Khi sửa/thêm code ở `jitsi-demo/custom-modules/`, tự động chạy `node build-custom-config.js` và `docker compose restart web` ngay sau đó để áp dụng thay đổi.
+> - **Ngoại lệ**: Chỉ ngưng code/restart khi người dùng ghi rõ *"không code vội / chỉ trả lời / điều trị nguyên nhân trước"*.

@@ -475,13 +475,12 @@ if (typeof window !== 'undefined') {
                 const state = window.APP.store.getState();
                 const participantsState = state['features/base/participants'] || {};
                 let isStudent = false;
-                
-                for (const id in participantsState) {
-                    const p = participantsState[id];
-                    if (p && p.local && p.name === 'Học viên') {
-                        isStudent = true;
-                        break;
-                    }
+                const localP = Object.values(participantsState).find(p => p && p.local);
+                if (localP) {
+                    isStudent = localP.role !== 'moderator';
+                }
+                if (!isStudent && typeof config !== 'undefined' && typeof config.isStudent !== 'undefined') {
+                    isStudent = !!config.isStudent;
                 }
                 
                 if (isStudent) {
@@ -491,12 +490,45 @@ if (typeof window !== 'undefined') {
                     if (document.body && !document.body.classList.contains('is-student')) {
                         document.body.classList.add('is-student');
                     }
-                    
+                } else {
+                    if (document.documentElement && document.documentElement.classList.contains('is-student')) {
+                        document.documentElement.classList.remove('is-student');
+                    }
+                    if (document.body && document.body.classList.contains('is-student')) {
+                        document.body.classList.remove('is-student');
+                    }
+                }
+                
+                if (isStudent) {
                     const whiteboardState = state['features/whiteboard'];
                     const isWhiteboardOpen = !!(whiteboardState && whiteboardState.isOpen);
+                    const isTileView = !!(state['features/video-layout'] && state['features/video-layout'].tileViewEnabled);
                     
+                    if (isWhiteboardOpen) {
+                        // When Whiteboard is active: Turn OFF Grid View & Pin Whiteboard for Student
+                        if (isTileView) {
+                            window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: false });
+                        }
+                        const currentPinned = state['features/large-video']?.participantId;
+                        if (currentPinned !== 'whiteboard') {
+                            console.log("📌 [HỌC VIÊN] Tự động ghim Bảng trắng làm màn hình chính 100%");
+                            window.APP.store.dispatch({
+                                type: 'PIN_PARTICIPANT',
+                                participant: { id: 'whiteboard' }
+                            });
+                        }
+                    } else {
+                        // When Whiteboard is CLOSED: Enable Grid View for Student
+                        if (!isTileView && !window.hasAutoEnabledTileViewOnWbClose) {
+                            window.hasAutoEnabledTileViewOnWbClose = true;
+                            console.log("🔳 [HỌC VIÊN] Bảng trắng tắt -> Tự động mở chế độ Lưới (Grid View)");
+                            window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: true });
+                        }
+                    }
+
                     if (isWhiteboardOpen !== lastWhiteboardOpen) {
                         lastWhiteboardOpen = isWhiteboardOpen;
+                        window.hasAutoEnabledTileViewOnWbClose = false;
                         console.log("📢📢📢 [HỌC VIÊN] Trạng thái Bảng trắng thay đổi: isOpen =", isWhiteboardOpen);
                         window.APP.store.dispatch({
                             type: 'SET_WHITEBOARD_OPEN',

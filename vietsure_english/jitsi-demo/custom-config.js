@@ -119,7 +119,7 @@ if (typeof document !== 'undefined') {
         .is-student button[title*="Hiện bảng"] {
             display: none !important;
         }
-        /* Hide local and remote screenshare cards ONLY for Student */
+        /* TODO: Hide local and remote screenshare cards ONLY for Student
         .is-student #filmstripLocalScreenShare,
         .is-student #filmstripLocalScreenShareThumbnail,
         .is-student #filmstripRemoteScreenShare,
@@ -128,6 +128,7 @@ if (typeof document !== 'undefined') {
         span.videocontainer[id*="-v0"] {
             display: none !important;
         }
+        */
 
         /* Hide Jitsi native invite buttons/items */
         .invite-button,
@@ -298,9 +299,42 @@ if (typeof window !== 'undefined') {
                         background: linear-gradient(to bottom, #ffffff 0%, #F0F7FF 100%) !important;
                         background-color: #F0F7FF !important;
                     }
+                    /* Disable clicking/pinning ONLY on video thumbnails inside filmstrip for students */
+                    body.is-student .filmstrip #filmstripLocalVideo,
+                    body.is-student .filmstrip #filmstripLocalScreenShare,
+                    body.is-student .filmstrip .remote-videos .videocontainer {
+                        pointer-events: none !important;
+                    }
                 `;
                 document.head.appendChild(style);
                 console.log("🎨 Applied bright layout background theme.");
+            }
+
+            let isStudent = false;
+            if (window.location.hash && window.location.hash.includes('config.isStudent=true')) {
+                isStudent = true;
+            } else if (window.location.hash && window.location.hash.includes('config.isStudent=false')) {
+                isStudent = false;
+            } else if (typeof config !== 'undefined' && typeof config.isStudent !== 'undefined') {
+                isStudent = !!config.isStudent;
+            }
+            try {
+                if (window.APP && window.APP.store) {
+                    const state = window.APP.store.getState();
+                    const participants = state['features/base/participants'] || [];
+                    const localP = Array.isArray(participants) ? participants.find(p => p && p.local) : Object.values(participants).find((p) => p && p.local);
+                    if (localP && localP.role === 'moderator') {
+                        isStudent = false;
+                    }
+                }
+            } catch (e) {}
+
+            if (document.body) {
+                if (isStudent) {
+                    document.body.classList.add('is-student');
+                } else {
+                    document.body.classList.remove('is-student');
+                }
             }
         } catch (err) {}
     };
@@ -788,13 +822,12 @@ if (typeof window !== 'undefined') {
                 const state = window.APP.store.getState();
                 const participantsState = state['features/base/participants'] || {};
                 let isStudent = false;
-                
-                for (const id in participantsState) {
-                    const p = participantsState[id];
-                    if (p && p.local && p.name === 'Học viên') {
-                        isStudent = true;
-                        break;
-                    }
+                const localP = Object.values(participantsState).find(p => p && p.local);
+                if (localP) {
+                    isStudent = localP.role !== 'moderator';
+                }
+                if (!isStudent && typeof config !== 'undefined' && typeof config.isStudent !== 'undefined') {
+                    isStudent = !!config.isStudent;
                 }
                 
                 if (isStudent) {
@@ -804,12 +837,45 @@ if (typeof window !== 'undefined') {
                     if (document.body && !document.body.classList.contains('is-student')) {
                         document.body.classList.add('is-student');
                     }
-                    
+                } else {
+                    if (document.documentElement && document.documentElement.classList.contains('is-student')) {
+                        document.documentElement.classList.remove('is-student');
+                    }
+                    if (document.body && document.body.classList.contains('is-student')) {
+                        document.body.classList.remove('is-student');
+                    }
+                }
+                
+                if (isStudent) {
                     const whiteboardState = state['features/whiteboard'];
                     const isWhiteboardOpen = !!(whiteboardState && whiteboardState.isOpen);
+                    const isTileView = !!(state['features/video-layout'] && state['features/video-layout'].tileViewEnabled);
                     
+                    if (isWhiteboardOpen) {
+                        // When Whiteboard is active: Turn OFF Grid View & Pin Whiteboard for Student
+                        if (isTileView) {
+                            window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: false });
+                        }
+                        const currentPinned = state['features/large-video']?.participantId;
+                        if (currentPinned !== 'whiteboard') {
+                            console.log("📌 [HỌC VIÊN] Tự động ghim Bảng trắng làm màn hình chính 100%");
+                            window.APP.store.dispatch({
+                                type: 'PIN_PARTICIPANT',
+                                participant: { id: 'whiteboard' }
+                            });
+                        }
+                    } else {
+                        // When Whiteboard is CLOSED: Enable Grid View for Student
+                        if (!isTileView && !window.hasAutoEnabledTileViewOnWbClose) {
+                            window.hasAutoEnabledTileViewOnWbClose = true;
+                            console.log("🔳 [HỌC VIÊN] Bảng trắng tắt -> Tự động mở chế độ Lưới (Grid View)");
+                            window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: true });
+                        }
+                    }
+
                     if (isWhiteboardOpen !== lastWhiteboardOpen) {
                         lastWhiteboardOpen = isWhiteboardOpen;
+                        window.hasAutoEnabledTileViewOnWbClose = false;
                         console.log("📢📢📢 [HỌC VIÊN] Trạng thái Bảng trắng thay đổi: isOpen =", isWhiteboardOpen);
                         window.APP.store.dispatch({
                             type: 'SET_WHITEBOARD_OPEN',

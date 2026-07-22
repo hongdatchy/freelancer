@@ -335,27 +335,29 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
             <span style={{ fontSize: 18 }}>🎲</span>
             <span style={{ color: '#e2e8f0', fontWeight: 700, fontSize: 14, letterSpacing: 0.5 }}>Xí ngầu</span>
           </div>
-          <button
-            onMouseDown={e => e.stopPropagation()}
-            onClick={() => setIsOpen(false)}
-            style={{
-              background: 'rgba(255,255,255,0.08)',
-              border: 'none',
-              color: '#94a3b8',
-              cursor: 'pointer',
-              borderRadius: 6,
-              width: 24,
-              height: 24,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 13,
-              lineHeight: 1,
-              transition: 'background 0.2s',
-            }}
-          >
-            ✕
-          </button>
+          {isHost && (
+            <button
+              onMouseDown={e => e.stopPropagation()}
+              onClick={() => setIsOpen(false)}
+              style={{
+                background: 'rgba(255,255,255,0.08)',
+                border: 'none',
+                color: '#94a3b8',
+                cursor: 'pointer',
+                borderRadius: 6,
+                width: 24,
+                height: 24,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 13,
+                lineHeight: 1,
+                transition: 'background 0.2s',
+              }}
+            >
+              ✕
+            </button>
+          )}
         </div>
 
         {/* Dice count selector - host only */}

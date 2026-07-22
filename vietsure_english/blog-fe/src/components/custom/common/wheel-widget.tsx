@@ -406,15 +406,17 @@ export default function WheelWidget({
                   ✏️
                 </button>
               )}
-              <button
-                onClick={handleClose}
-                className="p-1 text-slate-400 hover:text-white transition-colors rounded hover:bg-white/10"
-                title="Đóng"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              {isHost && (
+                <button
+                  onClick={handleClose}
+                  className="p-1 text-slate-400 hover:text-white transition-colors rounded hover:bg-white/10"
+                  title="Đóng"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
 

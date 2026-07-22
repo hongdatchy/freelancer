@@ -219,11 +219,6 @@ export default function ClassroomPage() {
     apiRef.current.addEventListener('videoConferenceJoined', () => {
       setApiReady(true);
 
-      // Auto-enable Grid View mode directly on student join
-      try {
-        apiRef.current.executeCommand('toggleTileView');
-      } catch (e) {}
-
       // Set the default filmstrip width to 360px on join if screen width > 1100px
       if (window.innerWidth > 1100) {
         setTimeout(() => {
