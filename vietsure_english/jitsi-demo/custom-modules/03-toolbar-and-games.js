@@ -111,28 +111,32 @@ const createToolbarToolsButton = (doc) => {
     btnWrapper.style.position = 'relative';
     
     btnWrapper.innerHTML = `
-        <div aria-disabled="false" aria-label="Trò chơi & Công cụ" class="toolbox-button" role="button" tabindex="0" title="Trò chơi & Công cụ lớp học" style="cursor: pointer;">
-            <div class="toolbox-icon" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
-                <svg aria-hidden="true" focusable="false" role="img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 21px; height: 21px;">
-                    <line x1="6" y1="12" x2="10" y2="12"></line>
-                    <line x1="8" y1="10" x2="8" y2="14"></line>
-                    <circle cx="15" cy="11" r="1" fill="currentColor"></circle>
-                    <circle cx="17.5" cy="13.5" r="1" fill="currentColor"></circle>
-                    <rect x="2" y="6" width="20" height="12" rx="4"></rect>
-                </svg>
+        <div aria-disabled="false" aria-label="Trò chơi & Công cụ" class="toolbox-button" tabindex="0" role="button" title="Trò chơi & Công cụ lớp học">
+            <div>
+                <div class="toolbox-icon">
+                    <div class="jitsi-icon jitsi-icon-default">
+                        <svg aria-hidden="true" height="24" width="24" viewBox="0 0 24 24" style="fill: none !important; stroke: currentColor !important;" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="2" y="6" width="20" height="12" rx="4" style="fill: none !important; stroke: currentColor !important;"></rect>
+                            <line x1="6" y1="12" x2="10" y2="12" style="stroke: currentColor !important;"></line>
+                            <line x1="8" y1="10" x2="8" y2="14" style="stroke: currentColor !important;"></line>
+                            <circle cx="15" cy="11" r="1" style="fill: currentColor !important; stroke: none !important;"></circle>
+                            <circle cx="17.5" cy="13.5" r="1" style="fill: currentColor !important; stroke: none !important;"></circle>
+                        </svg>
+                    </div>
+                </div>
             </div>
         </div>
-        <div id="custom-jitsi-tools-menu" style="display: none; position: absolute; bottom: 56px; left: 50%; transform: translateX(-50%); background: #141b2d; border: 1px solid rgba(255,255,255,0.18); border-radius: 12px; padding: 6px; width: 195px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); z-index: 99999; font-family: system-ui, -apple-system, sans-serif;">
-            <button id="tool-item-timer" style="display: flex; align-items: center; gap: 8px; width: 100%; background: transparent; border: none; color: #fff; padding: 8px 10px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='transparent'">
+        <div id="custom-jitsi-tools-menu" style="display: none; position: absolute; bottom: 56px; left: 50%; transform: translateX(-50%); background: #141414; border: 1px solid rgba(255,255,255,0.18); border-radius: 12px; padding: 6px; width: 195px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); z-index: 99999; font-family: -apple-system,BlinkMacSystemFont,open_sanslight,Helvetica Neue,Helvetica,Arial,sans-serif!important;">
+            <button id="tool-item-timer" style="display: flex; align-items: center; gap: 8px; width: 100%; background: transparent; border: none; color: #fff; padding: 8px 10px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='#292929'" onmouseout="this.style.background='transparent'">
                 <span style="font-size: 15px;">⏱️</span> Đồng hồ đếm ngược
             </button>
-            <button id="tool-item-praise" style="display: flex; align-items: center; gap: 8px; width: 100%; background: transparent; border: none; color: #fff; padding: 8px 10px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='transparent'">
+            <button id="tool-item-praise" style="display: flex; align-items: center; gap: 8px; width: 100%; background: transparent; border: none; color: #fff; padding: 8px 10px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='#292929'" onmouseout="this.style.background='transparent'">
                 <span style="font-size: 15px;">⭐</span> Khen thưởng học viên
             </button>
-            <button id="tool-item-dice" style="display: flex; align-items: center; gap: 8px; width: 100%; background: transparent; border: none; color: #fff; padding: 8px 10px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='transparent'">
+            <button id="tool-item-dice" style="display: flex; align-items: center; gap: 8px; width: 100%; background: transparent; border: none; color: #fff; padding: 8px 10px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='#292929'" onmouseout="this.style.background='transparent'">
                 <span style="font-size: 15px;">🎲</span> Đổ Xí Ngầu (Dice)
             </button>
-            <button id="tool-item-wheel" style="display: flex; align-items: center; gap: 8px; width: 100%; background: transparent; border: none; color: #fff; padding: 8px 10px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='transparent'">
+            <button id="tool-item-wheel" style="display: flex; align-items: center; gap: 8px; width: 100%; background: transparent; border: none; color: #fff; padding: 8px 10px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='#292929'" onmouseout="this.style.background='transparent'">
                 <span style="font-size: 15px;">🎡</span> Vòng quay may mắn
             </button>
         </div>
@@ -326,18 +330,22 @@ if (typeof window !== 'undefined') {
             btnWrapper = doc.createElement('div');
             btnWrapper.className = 'toolbox-button-wrapper';
             btnWrapper.id = 'custom-teacher-share-control-btn';
-            btnWrapper.style.cssText = 'position: relative; margin: 0 2px; cursor: pointer !important; z-index: 99999;';
+            btnWrapper.style.cssText = 'position: relative; cursor: pointer !important; z-index: 99999;';
 
             btnWrapper.innerHTML = `
-                <div aria-disabled="false" aria-label="Mở/Khóa quyền Share Học viên" class="toolbox-button" role="button" tabindex="0" title="Mở quyền Share màn hình cho Học viên" style="cursor: pointer !important; position: relative;">
-                    <div class="toolbox-icon" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; pointer-events: none;">
-                        <svg aria-hidden="true" focusable="false" role="img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; pointer-events: none;">
-                            <rect x="2" y="3" width="20" height="14" rx="2"></rect>
-                            <line x1="8" y1="21" x2="16" y2="21"></line>
-                            <line x1="12" y1="17" x2="12" y2="21"></line>
-                        </svg>
+                <div aria-disabled="false" aria-label="Mở/Khóa quyền Share Học viên" class="toolbox-button" tabindex="0" role="button" title="Mở quyền Share màn hình cho Học viên">
+                    <div style="position: relative;">
+                        <div class="toolbox-icon">
+                            <div class="jitsi-icon jitsi-icon-default">
+                                <svg aria-hidden="true" height="24" width="24" viewBox="0 0 24 24" style="fill: none !important; stroke: currentColor !important;" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="2" y="3" width="20" height="14" rx="2" style="fill: none !important; stroke: currentColor !important;"></rect>
+                                    <line x1="8" y1="21" x2="16" y2="21" style="stroke: currentColor !important;"></line>
+                                    <line x1="12" y1="17" x2="12" y2="21" style="stroke: currentColor !important;"></line>
+                                </svg>
+                            </div>
+                        </div>
+                        <span id="teacher-share-status-dot" style="position: absolute; top: -1px; right: -1px; width: 8px; height: 8px; border-radius: 50%; background-color: #ef4444; border: 1.5px solid #141414; transition: background-color 0.2s; pointer-events: none;"></span>
                     </div>
-                    <span id="teacher-share-status-dot" style="position: absolute; top: 4px; right: 4px; width: 9px; height: 9px; border-radius: 50%; background-color: #ef4444; border: 1.5px solid #141b2d; transition: background-color 0.2s; pointer-events: none;"></span>
                 </div>
             `;
 
