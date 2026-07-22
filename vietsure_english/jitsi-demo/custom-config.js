@@ -1504,6 +1504,47 @@ if (typeof window !== 'undefined') {
     }, 200);
 }
 
+// Hide Student Screenshare button by default, unhide only when Teacher grants permission
+(function setupStudentScreenshareToggle() {
+    if (typeof window === 'undefined') return;
+
+    window.allowStudentScreenshare = false;
+
+    setInterval(() => {
+        try {
+            const isStudent = checkIfStudent();
+            if (!isStudent) return; // Moderator always sees desktop share button
+
+            const docs = [document];
+            const iframes = document.querySelectorAll('iframe');
+            iframes.forEach(iframe => {
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                    if (iframeDoc) docs.push(iframeDoc);
+                } catch (e) {}
+            });
+
+            docs.forEach(doc => {
+                const shareBtns = doc.querySelectorAll(
+                    '[data-testid="share-your-screen"], [data-testid="desktop"], ' +
+                    'button[aria-label*="share"], button[aria-label*="Desktop"], button[aria-label*="màn hình"], button[aria-label*="chia sẻ màn hình"], ' +
+                    '.toolbox-button[aria-label*="desktop"], .toolbox-button[aria-label*="share"], .toolbox-button[aria-label*="màn hình"]'
+                );
+
+                shareBtns.forEach(btn => {
+                    const container = btn.closest('.toolbox-button-wrapper') || btn.closest('.toolbox-button') || btn;
+                    if (!window.allowStudentScreenshare) {
+                        container.style.setProperty('display', 'none', 'important');
+                    } else {
+                        container.style.removeProperty('display');
+                        container.style.setProperty('display', 'inline-flex', 'important');
+                    }
+                });
+            });
+        } catch (e) {}
+    }, 300);
+})();
+
 
 /* --- MODULE: 04-pip-manager.js --- */
 // ==========================================
@@ -1939,11 +1980,15 @@ if (typeof window !== 'undefined') {
             text.includes('__CLK__') ||
             text.includes('__PRAISE__') ||
             text.includes('__WHEEL__') ||
+            text.includes('__DICE__') ||
+            text.includes('__TOGGLE_STUDENT_SCREENSHARE__') ||
             html.includes('__TIMER__') ||
             html.includes('TIMER_ACTION') ||
             html.includes('__CLK__') ||
             html.includes('__PRAISE__') ||
-            html.includes('__WHEEL__')
+            html.includes('__WHEEL__') ||
+            html.includes('__DICE__') ||
+            html.includes('__TOGGLE_STUDENT_SCREENSHARE__')
         );
     };
 
@@ -1952,7 +1997,7 @@ if (typeof window !== 'undefined') {
             document.querySelector('[aria-live="polite"]') ||
             document.querySelector('[aria-live="assertive"]');
         if (notifContainer) {
-            const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__'];
+            const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__'];
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     mutation.addedNodes.forEach((node) => {
@@ -2052,6 +2097,7 @@ if (typeof window !== 'undefined') {
                     msgText = text.text;
                 }
 
+                const isToggleStudentShare = msgText.startsWith('__TOGGLE_STUDENT_SCREENSHARE__:');
                 const isPraise = msgText.includes('__PRAISE__');
                 const isWheel = msgText.includes('__WHEEL__');
                 const isDice = msgText.includes('__DICE__') || msgText.includes('__DICE_COUNT__');
@@ -2060,7 +2106,12 @@ if (typeof window !== 'undefined') {
                                 msgText.includes('TIMER_ACTION');
 
                 if (!isFromMe) {
-                    if (isPraise) {
+                    if (isToggleStudentShare) {
+                        const allowed = msgText.includes(':true');
+                        console.log('[Jitsi custom-config] __TOGGLE_STUDENT_SCREENSHARE__ received:', allowed);
+                        window.allowStudentScreenshare = allowed;
+                        window.parent.postMessage({ type: 'STUDENT_SCREENSHARE_PERMITTED', allowed }, '*');
+                    } else if (isPraise) {
                         const parts = msgText.split(':');
                         const index = parts[1] ? parseInt(parts[1], 10) : 0;
                         console.log('[Jitsi custom-config] __PRAISE__ received with index:', index);
@@ -2096,7 +2147,7 @@ if (typeof window !== 'undefined') {
                     } else if (isTimer) {
                         timerMessagesCount++;
                     }
-                } else if (isPraise || isDice || isWheel || isTimer) {
+                } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare) {
                     timerMessagesCount++;
                 } else {
                     realMessagesCount++;
@@ -2126,7 +2177,7 @@ if (typeof window !== 'undefined') {
     }
 
     const hideTimerMessages = () => {
-        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__'];
+        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__'];
 
         const wrappers = document.querySelectorAll('[class*="-chatMessageWrapper"]');
         wrappers.forEach((wrapper) => {

@@ -43,6 +43,15 @@ export default function ClassroomPage() {
   const currentSubRoomJidRef = useRef<string>('');
   const shouldEndConferenceOnMainJoinRef = useRef<boolean>(false);
 
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(prev => (prev === msg ? null : prev));
+    }, 4000);
+  };
+
   const toggleFullscreen = () => {
     const element = document.documentElement as any;
     const doc = document as any;
@@ -344,6 +353,9 @@ export default function ClassroomPage() {
       } else if (event.data.type === 'BREAKOUT_ROOM_STATUS') {
         console.log('[Room] BREAKOUT_ROOM_STATUS received:', event.data.inBreakout);
         setIsInBreakoutRoom(!!event.data.inBreakout);
+      } else if (event.data.type === 'STUDENT_SCREENSHARE_PERMITTED') {
+        const allowed = event.data.allowed;
+        showToast(allowed ? '🎉 Giáo viên đã cho phép bạn chia sẻ màn hình!' : '🔒 Giáo viên đã khóa quyền chia sẻ màn hình.');
       } else if (event.data.type === 'FORCE_END_MEETING_ALL') {
         console.log('[Room] FORCE_END_MEETING_ALL received, exiting classroom');
         try {
@@ -544,6 +556,14 @@ export default function ClassroomPage() {
           </div>
         )}
       </div>
+
+      {/* Toast Notification Banner for Student */}
+      {toastMessage && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-[9999999] bg-slate-900/90 text-white px-5 py-3 rounded-2xl shadow-2xl border border-purple-500/40 backdrop-blur-md flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200">
+          <span className="text-xl">📢</span>
+          <span className="text-sm font-semibold tracking-wide">{toastMessage}</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -276,3 +276,44 @@ if (typeof window !== 'undefined') {
         } catch (e) {}
     }, 200);
 }
+
+// Hide Student Screenshare button by default, unhide only when Teacher grants permission
+(function setupStudentScreenshareToggle() {
+    if (typeof window === 'undefined') return;
+
+    window.allowStudentScreenshare = false;
+
+    setInterval(() => {
+        try {
+            const isStudent = checkIfStudent();
+            if (!isStudent) return; // Moderator always sees desktop share button
+
+            const docs = [document];
+            const iframes = document.querySelectorAll('iframe');
+            iframes.forEach(iframe => {
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                    if (iframeDoc) docs.push(iframeDoc);
+                } catch (e) {}
+            });
+
+            docs.forEach(doc => {
+                const shareBtns = doc.querySelectorAll(
+                    '[data-testid="share-your-screen"], [data-testid="desktop"], ' +
+                    'button[aria-label*="share"], button[aria-label*="Desktop"], button[aria-label*="màn hình"], button[aria-label*="chia sẻ màn hình"], ' +
+                    '.toolbox-button[aria-label*="desktop"], .toolbox-button[aria-label*="share"], .toolbox-button[aria-label*="màn hình"]'
+                );
+
+                shareBtns.forEach(btn => {
+                    const container = btn.closest('.toolbox-button-wrapper') || btn.closest('.toolbox-button') || btn;
+                    if (!window.allowStudentScreenshare) {
+                        container.style.setProperty('display', 'none', 'important');
+                    } else {
+                        container.style.removeProperty('display');
+                        container.style.setProperty('display', 'inline-flex', 'important');
+                    }
+                });
+            });
+        } catch (e) {}
+    }, 300);
+})();
