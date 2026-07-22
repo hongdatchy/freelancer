@@ -1722,16 +1722,19 @@ const setupToolbarButtonLabels = (doc) => {
             const innerBtn = item.querySelector('[aria-label], [data-testid]');
             const innerTestId = innerBtn ? String(innerBtn.getAttribute('data-testid') || '').toLowerCase() : '';
             const innerAria = innerBtn ? String(innerBtn.getAttribute('aria-label') || '').toLowerCase() : '';
+            const fullHtml = String(item.outerHTML || '').toLowerCase();
 
-            const combined = `${testId} ${aria} ${innerTestId} ${innerAria}`;
+            const combined = `${testId} ${aria} ${innerTestId} ${innerAria} ${fullHtml}`;
 
             if (combined.includes('mic')) labelText = 'Mic';
-            else if (combined.includes('cam') || combined.includes('video')) labelText = 'Camera';
+            else if (combined.includes('camera') || combined.includes('cam') || combined.includes('bật/tắt video')) labelText = 'Camera';
+            else if (combined.includes('sharedvideo') || combined.includes('chia sẻ video') || combined.includes('phát video')) labelText = 'Phát Video';
             else if (combined.includes('desktop') || combined.includes('share') || combined.includes('màn hình')) labelText = 'Share';
-            else if (combined.includes('chat') || combined.includes('trò chuyện')) labelText = 'Chat';
-            else if (combined.includes('hand') || combined.includes('giơ tay')) labelText = 'Giơ tay';
+            else if (combined.includes('chat') || combined.includes('trò chuyện') || combined.includes('hội thoại')) labelText = 'Chat';
+            else if (combined.includes('raisehand') || combined.includes('hand') || combined.includes('giơ tay') || combined.includes('hạ tay')) labelText = 'Giơ tay';
             else if (combined.includes('participant') || combined.includes('thành viên') || combined.includes('người tham gia')) labelText = 'Thành viên';
             else if (combined.includes('tile') || combined.includes('lưới')) labelText = 'Khung hình';
+            else if (combined.includes('cấu hình') || combined.includes('setting') || combined.includes('cài đặt') || combined.includes('device') || combined.includes('thiết bị') || combined.includes('tùy chọn')) labelText = 'Cài đặt';
             else if (combined.includes('overflow') || combined.includes('more') || combined.includes('khác')) labelText = 'Mở rộng';
         }
 
