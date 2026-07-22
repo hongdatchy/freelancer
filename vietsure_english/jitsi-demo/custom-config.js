@@ -1094,9 +1094,24 @@ if (typeof window !== 'undefined') {
 
             docs.forEach(doc => {
                 const excalidrawContainer = doc.querySelector('.excalidraw') || doc.querySelector('.excalidraw-container') || doc.querySelector('.whiteboard-container');
-                if (!excalidrawContainer) {
-                    const existingBtn = doc.getElementById('custom-pen-toggle-btn');
+                const existingBtn = doc.getElementById('custom-pen-toggle-btn');
+
+                // Check accurately if screenshare is active (via class on body or live desktop video track)
+                const isScreenshareActive = !!(
+                    (document.body && document.body.classList.contains('whiteboard-screenshare-active')) ||
+                    (doc.body && doc.body.classList.contains('whiteboard-screenshare-active')) ||
+                    (window.videoBgElement && window.videoBgElement.srcObject && window.videoBgElement.srcObject.getVideoTracks && window.videoBgElement.srcObject.getVideoTracks().some(t => t.readyState === 'live' && t.enabled))
+                );
+
+                // IF NOT SCREENSHARING or NO WHITEBOARD: Hide pen button & restore original toolbar
+                if (!excalidrawContainer || !isScreenshareActive) {
                     if (existingBtn) existingBtn.style.setProperty('display', 'none', 'important');
+                    if (excalidrawContainer) {
+                        const toolbars = doc.querySelectorAll('.shapes-section, .App-toolbar, .App-toolbar-content, [data-testid="toolbar-section"]');
+                        toolbars.forEach(tb => {
+                            tb.style.removeProperty('display');
+                        });
+                    }
                     return;
                 }
 
@@ -1119,7 +1134,7 @@ if (typeof window !== 'undefined') {
                         /* Floating Pen Toggle Button - Bottom Left Corner */
                         .custom-pen-toggle-btn {
                             position: fixed !important;
-                            bottom: 24px !important;
+                            bottom: 85px !important;
                             left: 24px !important;
                             width: 52px !important;
                             height: 52px !important;
