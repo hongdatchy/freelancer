@@ -24,15 +24,8 @@ File `custom-config.js` (inside `jitsi-demo/`) has been modularized into 5 manag
 
 ---
 
-## 3. Commands to Rebuild & Restart Jitsi Custom Config
+## 3. Strict Rules for Build & Docker Restart Commands
 
-Whenever code inside `jitsi-demo/custom-modules/` is edited or updated, run the following 2 commands to apply changes:
-
-```bash
-# Step 1: Re-bundle module files into custom-config.js
-cd jitsi-demo
-node build-custom-config.js
-
-# Step 2: Restart the Jitsi Web Docker container
-docker compose restart web
-```
+> [!CAUTION]
+> - **CHỈ KHI NÀO NGƯỜI DÙNG YÊU CẦU CHẠY LẠI / RESTART** mới được chạy `node build-custom-config.js` và `docker compose restart web`.
+> - Không tự ý chạy `node build-custom-config.js` hay `docker compose restart web` khi chưa có yêu cầu trực tiếp từ người dùng!

@@ -199,7 +199,7 @@ if (typeof document !== 'undefined') {
             overflow: visible !important;
         }
 
-        /* Filmstrip card alignment - active ONLY when div with class .filmstrip has width <= 309px */
+        /* TODO: Filmstrip card alignment - active ONLY when div with class .filmstrip has width <= 309px
         .filmstrip.filmstrip-width-lte-309 #filmstripLocalVideo {
             margin-top: auto !important;
             margin-bottom: 0px !important;
@@ -210,17 +210,16 @@ if (typeof document !== 'undefined') {
             margin-bottom: 0px !important;
         }
 
-        /* Override Jitsi bottom:0 on remote videos wrapper div to align from top */
         .filmstrip.filmstrip-width-lte-309 .remote-videos>div {
             bottom: auto !important;
             top: 0px !important;
         }
 
-        /* Limit remote-videos (top participant area) to 70% of filmstrip height */
         .filmstrip.filmstrip-width-lte-309 .remote-videos {
             height: 70% !important;
             max-height: 70% !important;
         }
+        */
 
         /* Hide Moderator (M / Quản trị viên) icon on video cards */
         svg[aria-label*="Quản trị viên"],
