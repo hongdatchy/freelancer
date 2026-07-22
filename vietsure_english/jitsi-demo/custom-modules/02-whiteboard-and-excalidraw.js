@@ -727,3 +727,136 @@ if (typeof window !== 'undefined') {
         } catch (e) {}
     }, 500);
 })();
+
+// Floating Pen Toggle Button for Excalidraw Toolbar
+(function setupExcalidrawToolbarToggle() {
+    if (typeof window === 'undefined') return;
+
+    let isToolbarVisible = false; // Default HIDDEN
+
+    setInterval(() => {
+        try {
+            const docs = [document];
+            const iframes = document.querySelectorAll('iframe');
+            iframes.forEach(iframe => {
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                    if (iframeDoc) docs.push(iframeDoc);
+                } catch (e) {}
+            });
+
+            docs.forEach(doc => {
+                const excalidrawContainer = doc.querySelector('.excalidraw') || doc.querySelector('.excalidraw-container') || doc.querySelector('.whiteboard-container');
+                if (!excalidrawContainer) {
+                    const existingBtn = doc.getElementById('custom-pen-toggle-btn');
+                    if (existingBtn) existingBtn.style.setProperty('display', 'none', 'important');
+                    return;
+                }
+
+                // Apply toolbar visibility state directly to toolbar elements
+                const toolbars = doc.querySelectorAll('.shapes-section, .App-toolbar, .App-toolbar-content, [data-testid="toolbar-section"]');
+                toolbars.forEach(tb => {
+                    if (!isToolbarVisible) {
+                        tb.style.setProperty('display', 'none', 'important');
+                    } else {
+                        tb.style.removeProperty('display');
+                        tb.style.setProperty('display', 'flex', 'important');
+                    }
+                });
+
+                // Inject CSS for floating pen button styling (Bottom Left Corner)
+                if (!doc.getElementById('custom-excalidraw-toggle-css')) {
+                    const style = doc.createElement('style');
+                    style.id = 'custom-excalidraw-toggle-css';
+                    style.textContent = `
+                        /* Floating Pen Toggle Button - Bottom Left Corner */
+                        .custom-pen-toggle-btn {
+                            position: fixed !important;
+                            bottom: 24px !important;
+                            left: 24px !important;
+                            width: 52px !important;
+                            height: 52px !important;
+                            border-radius: 50% !important;
+                            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+                            color: #ffffff !important;
+                            display: flex !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.5), 0 4px 12px rgba(0,0,0,0.3) !important;
+                            cursor: pointer !important;
+                            z-index: 9999999 !important;
+                            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                            border: 2.5px solid rgba(255, 255, 255, 0.35) !important;
+                            user-select: none !important;
+                        }
+                        .custom-pen-toggle-btn:hover {
+                            transform: scale(1.08) !important;
+                            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.65) !important;
+                        }
+                        .custom-pen-toggle-btn:active {
+                            transform: scale(0.94) !important;
+                        }
+                        .custom-pen-toggle-btn.active {
+                            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+                            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5) !important;
+                        }
+                    `;
+                    doc.head.appendChild(style);
+                }
+
+                // Create or update floating toggle button at bottom left
+                let toggleBtn = doc.getElementById('custom-pen-toggle-btn');
+                if (!toggleBtn) {
+                    toggleBtn = doc.createElement('div');
+                    toggleBtn.id = 'custom-pen-toggle-btn';
+                    toggleBtn.className = 'custom-pen-toggle-btn';
+                    toggleBtn.title = 'Hiện/Ẩn Thanh công cụ vẽ';
+                    toggleBtn.innerHTML = `
+                        <svg aria-hidden="true" focusable="false" role="img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                        </svg>
+                    `;
+
+                    toggleBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        isToolbarVisible = !isToolbarVisible;
+
+                        // Instantly toggle all toolbar elements across all documents
+                        docs.forEach(d => {
+                            const tbs = d.querySelectorAll('.shapes-section, .App-toolbar, .App-toolbar-content, [data-testid="toolbar-section"]');
+                            tbs.forEach(tb => {
+                                if (isToolbarVisible) {
+                                    tb.style.removeProperty('display');
+                                    tb.style.setProperty('display', 'flex', 'important');
+                                } else {
+                                    tb.style.setProperty('display', 'none', 'important');
+                                }
+                            });
+                            const btn = d.getElementById('custom-pen-toggle-btn');
+                            if (btn) {
+                                if (isToolbarVisible) {
+                                    btn.classList.add('active');
+                                } else {
+                                    btn.classList.remove('active');
+                                }
+                            }
+                        });
+                    });
+
+                    (doc.body || excalidrawContainer).appendChild(toggleBtn);
+                    console.log('[Jitsi custom-config] Custom Excalidraw floating Pen button injected at Bottom Left');
+                } else {
+                    toggleBtn.style.setProperty('display', 'flex', 'important');
+                    if (isToolbarVisible) {
+                        toggleBtn.classList.add('active');
+                    } else {
+                        toggleBtn.classList.remove('active');
+                    }
+                }
+            });
+        } catch (e) {}
+    }, 400);
+})();
