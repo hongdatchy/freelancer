@@ -316,6 +316,16 @@ export default function ClassroomPage() {
             });
           }
         }, 1000);
+      } else {
+        // Học viên: tự động bật Grid View khi vào phòng
+        // setTimeout(() => {
+        //   if (apiRef.current) {
+        //     try { apiRef.current.executeCommand('toggleTileView'); } catch (e) {}
+        //   }
+        // }, 1500);
+        if (apiRef.current) {
+            try { apiRef.current.executeCommand('toggleTileView'); } catch (e) {}
+        }
       }
 
       if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
@@ -477,6 +487,7 @@ export default function ClassroomPage() {
           </div>
           
           <div className="text-center space-y-1.5 mt-2">
+            <p className="text-[#FF6B00] text-2xl font-bold tracking-wide">Vietsure English</p>
             <h2 className="text-[#2E357F] text-xl font-extrabold">Chào mừng bạn đến với lớp học!</h2>
             <p className="text-slate-500 text-sm">Vui lòng nhập tên của bạn để bắt đầu buổi học cùng giáo viên nhé.</p>
           </div>

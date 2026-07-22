@@ -62,11 +62,11 @@ export default function FloatingJitsiWidget() {
     if (!isResizing) return;
     const deltaX = resizeStartRef.current.mouseX - e.clientX;
     const deltaY = resizeStartRef.current.mouseY - e.clientY;
-    
+
     // Limits: min size 320x400, max size cannot overflow the screen viewport boundaries
     const newWidth = Math.max(320, Math.min(window.innerWidth - 48, resizeStartRef.current.width + deltaX));
     const newHeight = Math.max(400, Math.min(window.innerHeight - 48, resizeStartRef.current.height + deltaY));
-    
+
     setSize({ width: newWidth, height: newHeight });
   };
 
@@ -75,10 +75,10 @@ export default function FloatingJitsiWidget() {
     const touch = e.touches[0];
     const deltaX = resizeStartRef.current.mouseX - touch.clientX;
     const deltaY = resizeStartRef.current.mouseY - touch.clientY;
-    
+
     const newWidth = Math.max(320, Math.min(window.innerWidth - 48, resizeStartRef.current.width + deltaX));
     const newHeight = Math.max(400, Math.min(window.innerHeight - 48, resizeStartRef.current.height + deltaY));
-    
+
     setSize({ width: newWidth, height: newHeight });
   };
 
@@ -171,18 +171,18 @@ export default function FloatingJitsiWidget() {
           nbf: now - 60, // allow 1 min clock skew
           exp: now + 86400 // 24 hours valid
         };
-        
+
         const base64UrlEncode = (obj: any) => {
           const str = JSON.stringify(obj);
           // Encode UTF-8 characters safely for btoa
-          const encoded = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, 
+          const encoded = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
             (match, p1) => String.fromCharCode(parseInt(p1, 16))
           );
           return btoa(encoded).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
         };
         const encodedHeader = base64UrlEncode(header);
         const encodedPayload = base64UrlEncode(payload);
-        
+
         const secret = "vietsure_secret_key_2026";
         const encoder = new TextEncoder();
         const key = await crypto.subtle.importKey(
@@ -192,16 +192,16 @@ export default function FloatingJitsiWidget() {
           false,
           ["sign"]
         );
-        
+
         const signature = await crypto.subtle.sign(
           "HMAC",
           key,
           encoder.encode(`${encodedHeader}.${encodedPayload}`)
         );
-        
+
         const encodedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)))
           .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-          
+
         return `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
       };
 
@@ -263,12 +263,12 @@ export default function FloatingJitsiWidget() {
         // If the participant is the YouTube shared video virtual participant
         if (event.id === 'shared-video' && apiRef.current) {
           console.log('[Jitsi] YouTube shared video participant joined:', event.id);
-          
+
           // Check if local screen sharing is active by searching DOM
           const iframe = apiRef.current.getIFrame();
           const iframeDoc = iframe?.contentDocument || iframe?.contentWindow?.document;
           const isLocalScreenSharing = !!iframeDoc?.getElementById('filmstripLocalScreenShareThumbnail');
-          
+
           console.log('[Jitsi] Screen share status when video joined:', isLocalScreenSharing);
           if (isLocalScreenSharing) {
             console.log('[Jitsi] Toggling screen sharing off due to video join');
@@ -309,7 +309,7 @@ export default function FloatingJitsiWidget() {
           if (payload.type === 'SET_WHITEBOARD_BACKGROUND') {
             setBgImage(payload.imageUrl);
           }
-        } catch (err) {}
+        } catch (err) { }
       });
 
       apiRef.current.addEventListener('videoConferenceJoined', () => {
@@ -334,11 +334,14 @@ export default function FloatingJitsiWidget() {
           }, 1000);
 
           // Auto-enable tile view on join (host only)
-          setTimeout(() => {
-            if (apiRef.current) {
-              apiRef.current.executeCommand('toggleTileView');
-            }
-          }, 1500);
+          // setTimeout(() => {
+          //   if (apiRef.current) {
+          //     apiRef.current.executeCommand('toggleTileView');
+          //   }
+          // }, 1500);
+          if (apiRef.current) {
+            apiRef.current.executeCommand('toggleTileView');
+          }
         }
 
         if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
@@ -388,7 +391,7 @@ export default function FloatingJitsiWidget() {
         if (matched && matched.name) {
           return matched.name;
         }
-        
+
         let subName = rawCurrentName;
         const cleanMain = decodeURIComponent(String(roomName || '')).toLowerCase().trim();
         if (subName.toLowerCase().startsWith(cleanMain)) {
@@ -404,7 +407,7 @@ export default function FloatingJitsiWidget() {
         const rawCurrentName = decodeURIComponent(String(event.roomName || event.id || '')).trim();
         const cleanCurrent = rawCurrentName.toLowerCase().replace(/_[gG][vV]_\d+$/i, '');
         const cleanMain = decodeURIComponent(String(roomName || '')).toLowerCase().trim();
-        
+
         if (cleanCurrent && cleanMain && cleanCurrent !== cleanMain) {
           setIsInBreakoutRoom(true);
           currentSubRoomJidRef.current = cleanCurrent;
@@ -419,7 +422,7 @@ export default function FloatingJitsiWidget() {
             shouldEndConferenceOnMainJoinRef.current = false;
             try {
               apiRef.current?.executeCommand('endConference');
-            } catch (e) {}
+            } catch (e) { }
           }
         }
       });
@@ -521,7 +524,7 @@ export default function FloatingJitsiWidget() {
           console.log('[Widget] FORCE_END_MEETING_ALL received, closing widget');
           try {
             apiRef.current?.executeCommand('hangup');
-          } catch (e) {}
+          } catch (e) { }
           setTimeout(() => {
             closeMeetingRef.current();
           }, 200);
@@ -626,7 +629,7 @@ export default function FloatingJitsiWidget() {
         setMinimized(false);
         // Bật Grid View lên → nút PiP tự ẩn, user phải tắt Grid View mới dùng PiP lại được
         if (apiRef.current) {
-          try { apiRef.current.executeCommand('toggleTileView'); } catch (e) {}
+          try { apiRef.current.executeCommand('toggleTileView'); } catch (e) { }
         }
       }
     };
@@ -811,7 +814,7 @@ export default function FloatingJitsiWidget() {
                   title="Thoát cuộc họp"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M15.5354 14.2137C15.7419 15.0465 15.9228 15.4474 16.4337 15.8121C16.8922 16.1384 19.3358 16.5121 20.3023 16.4997C20.811 16.4933 21.2542 16.3621 21.6056 16.0384L21.6232 16.0217C22.4813 15.1709 22.6574 12.8488 22.3762 11.6107C22.2078 10.4059 21.3703 9.47571 19.9807 8.85603L19.7682 8.76541C16.0438 7.06296 7.96818 7.0911 4.2181 8.77268C2.73412 9.36142 1.82253 10.3345 1.61993 11.6621C1.35005 12.7299 1.50796 15.133 2.37837 16.0151C2.75243 16.3607 3.19644 16.492 3.70455 16.4986C4.66973 16.5111 7.11478 16.1372 7.57192 15.8123C8.04127 15.4779 8.23266 15.113 8.42034 14.413L8.48734 14.1503C8.61337 13.6444 8.68996 13.4979 8.88053 13.4009C10.9611 12.4505 13.0448 12.4503 15.1496 13.4114C15.3001 13.4887 15.3773 13.6153 15.4834 14.0097L15.5354 14.2137ZM7.03286 13.7836C7.09435 13.537 7.18016 13.2139 7.33129 12.9257C7.53766 12.5321 7.83388 12.2506 8.19985 12.0642L8.22827 12.0497L8.25728 12.0365C10.7362 10.9041 13.2746 10.9063 15.7726 12.0469L15.8041 12.0613L15.8348 12.0771C16.172 12.2502 16.4436 12.5087 16.6381 12.8519C16.7893 13.1187 16.8744 13.4061 16.9319 13.6203L16.9344 13.6297L16.9913 13.8528C17.0895 14.2487 17.1504 14.4019 17.1903 14.4759C17.2045 14.5022 17.2134 14.5129 17.22 14.5202"/>
+                    <path fillRule="evenodd" clipRule="evenodd" d="M15.5354 14.2137C15.7419 15.0465 15.9228 15.4474 16.4337 15.8121C16.8922 16.1384 19.3358 16.5121 20.3023 16.4997C20.811 16.4933 21.2542 16.3621 21.6056 16.0384L21.6232 16.0217C22.4813 15.1709 22.6574 12.8488 22.3762 11.6107C22.2078 10.4059 21.3703 9.47571 19.9807 8.85603L19.7682 8.76541C16.0438 7.06296 7.96818 7.0911 4.2181 8.77268C2.73412 9.36142 1.82253 10.3345 1.61993 11.6621C1.35005 12.7299 1.50796 15.133 2.37837 16.0151C2.75243 16.3607 3.19644 16.492 3.70455 16.4986C4.66973 16.5111 7.11478 16.1372 7.57192 15.8123C8.04127 15.4779 8.23266 15.113 8.42034 14.413L8.48734 14.1503C8.61337 13.6444 8.68996 13.4979 8.88053 13.4009C10.9611 12.4505 13.0448 12.4503 15.1496 13.4114C15.3001 13.4887 15.3773 13.6153 15.4834 14.0097L15.5354 14.2137ZM7.03286 13.7836C7.09435 13.537 7.18016 13.2139 7.33129 12.9257C7.53766 12.5321 7.83388 12.2506 8.19985 12.0642L8.22827 12.0497L8.25728 12.0365C10.7362 10.9041 13.2746 10.9063 15.7726 12.0469L15.8041 12.0613L15.8348 12.0771C16.172 12.2502 16.4436 12.5087 16.6381 12.8519C16.7893 13.1187 16.8744 13.4061 16.9319 13.6203L16.9344 13.6297L16.9913 13.8528C17.0895 14.2487 17.1504 14.4019 17.1903 14.4759C17.2045 14.5022 17.2134 14.5129 17.22 14.5202" />
                   </svg>
                 </button>
               </div>
@@ -823,7 +826,7 @@ export default function FloatingJitsiWidget() {
 
               {/* Custom Exit Popover for Teacher */}
               {showExitConfirm && (
-                <div 
+                <div
                   className="absolute top-[10px] right-[10px] bg-[#141414] p-3 rounded-xl flex flex-col items-center shadow-[0_4px_16px_rgba(0,0,0,0.5)] border border-white/10 w-[260px] z-[99999] no-drag"
                   style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
                 >
@@ -840,7 +843,7 @@ export default function FloatingJitsiWidget() {
                                 iframe.contentWindow.postMessage({ type: 'LEAVE_BREAKOUT_ROOM', mainRoomName: roomName }, '*');
                               }
                               apiRef.current?.executeCommand('joinBreakoutRoom', '');
-                            } catch (e) {}
+                            } catch (e) { }
                           } else {
                             apiRef.current?.executeCommand('endConference');
                           }
@@ -872,7 +875,7 @@ export default function FloatingJitsiWidget() {
                               }
                               try {
                                 apiRef.current?.executeCommand('joinBreakoutRoom', '');
-                              } catch (e) {}
+                              } catch (e) { }
                             } catch (e) {
                               console.error('Failed to leave breakout room:', e);
                             }
@@ -899,7 +902,7 @@ export default function FloatingJitsiWidget() {
                   >
                     Hủy
                   </button>
-                  
+
                   {/* Arrow pointing up */}
                   <div className="absolute bottom-full right-[20px] w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[8px] border-b-[#141414]"></div>
                 </div>

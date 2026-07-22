@@ -12,7 +12,7 @@ type HeroSectionProps = {
 };
 
 // Các cụm chữ luân phiên hiển thị thay cho "CHẤT LƯỢNG CAO"
-const ROTATING_TITLES = ['CHẤT LƯỢNG CAO', 'TỰ TIN GIAO TIẾP', 'HIỆU QUẢ VƯỢT TRỘI', 'HỌC 1-1 VÀ 1-4'];
+const ROTATING_TITLES = ['HỌC 1-1 VÀ 1-4', 'CHẤT LƯỢNG CAO'];
 
 export default function HeroSection({
   buttonText = 'TÌM HIỂU THÊM',
@@ -28,7 +28,7 @@ export default function HeroSection({
   useEffect(() => {
     const interval = setInterval(() => {
       setTitleIndex((prev) => (prev + 1) % ROTATING_TITLES.length);
-    }, 5000);
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -40,18 +40,18 @@ export default function HeroSection({
 
       <div className="w-full relative z-10 flex flex-col gap-12 lg:gap-16">
         <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-10 w-full">
-          
+
           {/* LeftContent - Visuals */}
           <div className="w-full lg:w-[45%] flex justify-start -ml-3 md:-ml-5 lg:-ml-6" data-purpose="hero-image-container">
-            <div 
+            <div
               className="relative w-full shadow-[0_0_40px_rgba(59,130,246,0.35)] rounded-r-[40px] overflow-hidden"
               style={{ aspectRatio: "800/540" }}
             >
               {/* Main Hero Image */}
-              <Image 
-                alt="VietSure English Online Class - Teacher and students with penguin mascot" 
-                className="w-full h-full object-cover" 
-                data-purpose="primary-hero-image" 
+              <Image
+                alt="VietSure English Online Class - Teacher and students with penguin mascot"
+                className="w-full h-full object-cover"
+                data-purpose="primary-hero-image"
                 src="/images/Rectangle.png"
                 width={800}
                 height={600}
@@ -90,13 +90,13 @@ export default function HeroSection({
                 <span className="md:hidden">CHO TRẺ 4 - 12+ TẠI VN</span>
               </p>
             </div>
-            
+
             {/* Call to Action Button */}
             <div className="pt-2 lg:pt-8" data-purpose="cta-container">
               {showButton && (
-                <a 
-                  className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-bold py-2.5 px-6 md:py-4 md:px-10 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg text-sm md:text-lg uppercase" 
-                  href={buttonHref} 
+                <a
+                  className="inline-block bg-[#2E357F] hover:bg-[#3F489A] text-white font-bold py-2.5 px-6 md:py-4 md:px-10 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg text-sm md:text-lg uppercase"
+                  href={buttonHref}
                   role="button"
                 >
                   {buttonText}
@@ -115,9 +115,9 @@ export default function HeroSection({
 
       {/* Decorative Mascot Faded Background */}
       <div aria-hidden="true" className="absolute right-[-5%] bottom-[-5%] w-1/3 opacity-15 pointer-events-none hidden lg:block">
-        <Image 
-          alt="" 
-          className="w-full h-auto" 
+        <Image
+          alt=""
+          className="w-full h-auto"
           src="/images/hao-hung-san-sang.png"
           width={400}
           height={300}
