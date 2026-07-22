@@ -133,6 +133,44 @@ if (typeof document !== 'undefined') {
             display: none !important;
         }
 
+        /* Custom Tooltip Popup on Hover (Matches Jitsi Native Tooltip Style Exactly) */
+        .custom-tooltip-popup {
+            position: absolute !important;
+            bottom: calc(100% + 10px) !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            background-color: #040404 !important;
+            color: #ffffff !important;
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+            font-size: 12px !important;
+            font-weight: 400 !important;
+            line-height: 1.2 !important;
+            font-family: -apple-system, BlinkMacSystemFont, open_sanslight, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+            white-space: nowrap !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+            pointer-events: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            transition: opacity 0.12s ease-in-out, visibility 0.12s ease-in-out !important;
+            z-index: 999999 !important;
+        }
+
+        .toolbox-button-wrapper:hover .custom-tooltip-popup {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        /* Standardize button hover background for custom buttons */
+        .toolbox-content-items .toolbox-button {
+            transition: background-color 0.16s ease-in-out !important;
+            border-radius: 6px !important;
+        }
+
+        .toolbox-content-items .toolbox-button:hover {
+            background-color: rgba(255, 255, 255, 0.15) !important;
+        }
+
         /* Style our custom Jitsi toolbar clock button to match standard Jitsi buttons */
         #custom-jitsi-timer-btn {
             width: 48px !important;

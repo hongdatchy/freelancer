@@ -126,6 +126,7 @@ const createToolbarToolsButton = (doc) => {
                 </div>
             </div>
         </div>
+        <div class="custom-tooltip-popup">Trò chơi & Công cụ lớp học</div>
         <div id="custom-jitsi-tools-menu" style="display: none; position: absolute; bottom: 56px; left: 50%; transform: translateX(-50%); background: #141414; border: 1px solid rgba(255,255,255,0.18); border-radius: 12px; padding: 6px; width: 195px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); z-index: 99999; font-family: -apple-system,BlinkMacSystemFont,open_sanslight,Helvetica Neue,Helvetica,Arial,sans-serif!important;">
             <button id="tool-item-timer" style="display: flex; align-items: center; gap: 8px; width: 100%; background: transparent; border: none; color: #fff; padding: 8px 10px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='#292929'" onmouseout="this.style.background='transparent'">
                 <span style="font-size: 15px;">⏱️</span> Đồng hồ đếm ngược
@@ -333,7 +334,7 @@ if (typeof window !== 'undefined') {
             btnWrapper.style.cssText = 'position: relative; cursor: pointer !important; z-index: 99999;';
 
             btnWrapper.innerHTML = `
-                <div aria-disabled="false" aria-label="Mở/Khóa quyền Share Học viên" class="toolbox-button" tabindex="0" role="button" title="Mở quyền Share màn hình cho Học viên">
+                <div aria-disabled="false" aria-label="Mở/Khóa quyền Share Học viên" class="toolbox-button" tabindex="0" role="button">
                     <div style="position: relative;">
                         <div class="toolbox-icon">
                             <div class="jitsi-icon jitsi-icon-default">
@@ -347,6 +348,7 @@ if (typeof window !== 'undefined') {
                         <span id="teacher-share-status-dot" style="position: absolute; top: -1px; right: -1px; width: 8px; height: 8px; border-radius: 50%; background-color: #ef4444; border: 1.5px solid #141414; transition: background-color 0.2s; pointer-events: none;"></span>
                     </div>
                 </div>
+                <div class="custom-tooltip-popup">Mở quyền Share màn hình cho Học viên</div>
             `;
 
             const handleToggleClick = (e) => {
@@ -384,11 +386,16 @@ if (typeof window !== 'undefined') {
         if (!btnWrapper) return;
         const btn = btnWrapper.querySelector('.toolbox-button');
         const dot = btnWrapper.querySelector('#teacher-share-status-dot');
+        const tooltip = btnWrapper.querySelector('.custom-tooltip-popup');
+        const titleText = isAllowed ? 'Đang BẬT cho phép Học viên Share (Bấm để Khóa)' : 'Mở quyền Share màn hình cho Học viên';
         if (btn) {
-            btn.setAttribute('title', isAllowed ? 'Đang BẬT cho phép Học viên Share (Bấm để Khóa)' : 'Mở quyền Share màn hình cho Học viên');
+            btn.setAttribute('aria-label', titleText);
         }
         if (dot) {
             dot.style.setProperty('background-color', isAllowed ? '#10b981' : '#ef4444', 'important');
+        }
+        if (tooltip) {
+            tooltip.textContent = titleText;
         }
     };
 
@@ -420,7 +427,59 @@ if (typeof window !== 'undefined') {
                         }
                     }
                 }
+
+                // Auto-show text labels under every toolbar button without hover
+                setupToolbarButtonLabels(doc);
             });
         } catch (e) {}
     }, 300);
 })();
+
+// Automatically show persistent text labels under each Jitsi toolbar button
+const setupToolbarButtonLabels = (doc) => {
+    const toolbarContainer = doc.querySelector('.toolbox-content-items');
+    if (!toolbarContainer) return;
+
+    const items = toolbarContainer.children;
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.id === 'custom-jitsi-divider') continue;
+
+        let labelText = '';
+        if (item.id === 'custom-jitsi-tools-btn') {
+            labelText = 'Công cụ';
+        } else if (item.id === 'custom-teacher-share-control-btn') {
+            labelText = 'Quyền Share';
+        } else {
+            const testId = String(item.getAttribute('data-testid') || '').toLowerCase();
+            const aria = String(item.getAttribute('aria-label') || '').toLowerCase();
+            const innerBtn = item.querySelector('[aria-label], [data-testid]');
+            const innerTestId = innerBtn ? String(innerBtn.getAttribute('data-testid') || '').toLowerCase() : '';
+            const innerAria = innerBtn ? String(innerBtn.getAttribute('aria-label') || '').toLowerCase() : '';
+
+            const combined = `${testId} ${aria} ${innerTestId} ${innerAria}`;
+
+            if (combined.includes('mic')) labelText = 'Mic';
+            else if (combined.includes('cam') || combined.includes('video')) labelText = 'Camera';
+            else if (combined.includes('desktop') || combined.includes('share') || combined.includes('màn hình')) labelText = 'Share';
+            else if (combined.includes('chat') || combined.includes('trò chuyện')) labelText = 'Chat';
+            else if (combined.includes('hand') || combined.includes('giơ tay')) labelText = 'Giơ tay';
+            else if (combined.includes('participant') || combined.includes('thành viên') || combined.includes('người tham gia')) labelText = 'Thành viên';
+            else if (combined.includes('tile') || combined.includes('lưới')) labelText = 'Khung hình';
+            else if (combined.includes('overflow') || combined.includes('more') || combined.includes('khác')) labelText = 'Mở rộng';
+        }
+
+        if (labelText) {
+            let labelEl = item.querySelector('.custom-toolbar-label');
+            if (!labelEl) {
+                labelEl = doc.createElement('span');
+                labelEl.className = 'custom-toolbar-label';
+                labelEl.style.cssText = 'display: block; font-size: 10px; line-height: 11px; color: rgba(255, 255, 255, 0.85); text-align: center; margin-top: 1px; white-space: nowrap; font-family: -apple-system,BlinkMacSystemFont,open_sanslight,Helvetica Neue,Helvetica,Arial,sans-serif !important; font-weight: 500; pointer-events: none; user-select: none;';
+                item.appendChild(labelEl);
+            }
+            if (labelEl.textContent !== labelText) {
+                labelEl.textContent = labelText;
+            }
+        }
+    }
+};
