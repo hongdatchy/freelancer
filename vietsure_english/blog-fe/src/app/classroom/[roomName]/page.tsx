@@ -206,6 +206,7 @@ export default function ClassroomPage() {
         startWithVideoMuted: false,
         disableDeepLinking: true,
         prejoinPageEnabled: false,
+        startTileView: true,
         defaultLanguage: 'vi',
         settingsSections: ['devices', 'moderator', 'profile', 'calendar', 'sounds'],
         disableSelfViewSettings: true,
@@ -236,6 +237,25 @@ export default function ClassroomPage() {
           }
         }, 1000);
       }
+
+      // If whiteboard is active on join, turn OFF tile view so whiteboard is focused
+      setTimeout(() => {
+        if (apiRef.current) {
+          try {
+            const iframe = apiRef.current.getIFrame();
+            const iframeDoc = iframe?.contentDocument || iframe?.contentWindow?.document;
+            const isWhiteboardOpen = !!(
+              iframeDoc?.querySelector('.excalidraw') ||
+              iframeDoc?.querySelector('#whiteboard-wrapper') ||
+              iframeDoc?.querySelector('.whiteboard-container')
+            );
+            if (isWhiteboardOpen) {
+              console.log('[Student Jitsi] Whiteboard IS active, turning OFF Grid View to show Whiteboard');
+              apiRef.current.executeCommand('setTileView', false);
+            }
+          } catch (e) {}
+        }
+      }, 800);
 
       if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
         apiRef.current.getIFrame().contentWindow.postMessage({

@@ -5,6 +5,7 @@
 // Custom configuration appended to config.js inside the Jitsi container
 config.hideLoginButton = true;
 config.defaultLanguage = 'vi';
+config.startTileView = true;
 config.settingsSections = ['devices', 'moderator', 'profile', 'calendar', 'sounds'];
 config.disableSelfViewSettings = true;
 
@@ -162,6 +163,15 @@ if (typeof document !== 'undefined') {
         }
 
         /* Standardize button hover background for custom buttons */
+        .toolbox-content-items {
+            overflow: visible !important;
+        }
+
+        .toolbox-content-items .toolbox-button-wrapper {
+            position: relative !important;
+            overflow: visible !important;
+        }
+
         .toolbox-content-items .toolbox-button {
             transition: background-color 0.16s ease-in-out !important;
             border-radius: 6px !important;
@@ -169,6 +179,26 @@ if (typeof document !== 'undefined') {
 
         .toolbox-content-items .toolbox-button:hover {
             background-color: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        /* Persistent text labels strictly positioned below each toolbar button */
+        .custom-toolbar-label {
+            position: absolute !important;
+            top: 40px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            font-size: 10px !important;
+            line-height: 11px !important;
+            color: rgba(255, 255, 255, 0.85) !important;
+            text-align: center !important;
+            white-space: nowrap !important;
+            font-family: -apple-system, BlinkMacSystemFont, open_sanslight, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+            font-weight: 500 !important;
+            pointer-events: none !important;
+            user-select: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            z-index: 10 !important;
         }
 
         /* Style our custom Jitsi toolbar clock button to match standard Jitsi buttons */

@@ -251,6 +251,7 @@ export default function FloatingJitsiWidget() {
           startWithVideoMuted: false,
           disableDeepLinking: true,
           prejoinPageEnabled: false,
+          startTileView: true,
           disablePolls: false,
           defaultLanguage: 'vi',
           settingsSections: ['devices', 'moderator', 'profile', 'calendar', 'sounds'],
@@ -358,10 +359,12 @@ export default function FloatingJitsiWidget() {
           }
         }, 1000);
 
-        // Auto-enable tile view on join
-        if (apiRef.current) {
-          apiRef.current.executeCommand('toggleTileView');
-        }
+        // Ensure Grid View is enabled on join / rejoin
+        setTimeout(() => {
+          if (apiRef.current && !isTileViewEnabledRef.current) {
+            apiRef.current.executeCommand('setTileView', true);
+          }
+        }, 1000);
 
         if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
           apiRef.current.getIFrame().contentWindow.postMessage({

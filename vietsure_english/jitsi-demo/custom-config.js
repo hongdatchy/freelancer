@@ -13,6 +13,7 @@
 // Custom configuration appended to config.js inside the Jitsi container
 config.hideLoginButton = true;
 config.defaultLanguage = 'vi';
+config.startTileView = true;
 config.settingsSections = ['devices', 'moderator', 'profile', 'calendar', 'sounds'];
 config.disableSelfViewSettings = true;
 
