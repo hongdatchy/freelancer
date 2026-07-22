@@ -1874,6 +1874,67 @@ if (typeof window !== 'undefined') {
                     ).filter(el => {
                         if (!el) return false;
                         if (el.id === 'largeVideoContainer' || el.closest('#largeVideoContainer') || el.closest('#largeVideoWrapper')) return false;
+
+                        const elId = String(el.id || '').toLowerCase();
+                        const participantId = String(el.getAttribute('data-participant-id') || '').toLowerCase();
+                        const displayNameEl = el.querySelector('.displayname, #localDisplayName, [id$="DisplayName"]');
+                        const displayName = String(displayNameEl ? displayNameEl.textContent : '').toLowerCase();
+
+                        // Exclude Whiteboard
+                        if (
+                            elId.includes('whiteboard') ||
+                            participantId.includes('whiteboard') ||
+                            displayName.includes('whiteboard') ||
+                            displayName.includes('bảng trắng') ||
+                            !!el.querySelector('.excalidraw') ||
+                            !!el.querySelector('#whiteboard-wrapper') ||
+                            !!el.querySelector('.whiteboard-container')
+                        ) {
+                            return false;
+                        }
+
+                        // Exclude Screen Share / Desktop Share
+                        if (
+                            elId.includes('desktop') ||
+                            elId.includes('screenshare') ||
+                            elId.includes('share') ||
+                            participantId.includes('desktop') ||
+                            participantId.includes('screenshare') ||
+                            displayName.includes('desktop') ||
+                            displayName.includes('screen') ||
+                            displayName.includes('share') ||
+                            displayName.includes('màn hình')
+                        ) {
+                            return false;
+                        }
+
+                        // Check video track label & data attributes
+                        const video = el.querySelector('video');
+                        if (video) {
+                            const videoId = String(video.id || '').toLowerCase();
+                            if (videoId.includes('desktop') || videoId.includes('screenshare')) return false;
+
+                            try {
+                                const stream = video.srcObject;
+                                if (stream && stream.getVideoTracks) {
+                                    const tracks = stream.getVideoTracks();
+                                    for (let t of tracks) {
+                                        const label = String(t.label || '').toLowerCase();
+                                        if (
+                                            label.includes('screen') || label.includes('window') ||
+                                            label.includes('display') || label.includes('desktop') ||
+                                            label.includes('contents') || label.includes('capture')
+                                        ) {
+                                            return false;
+                                        }
+                                    }
+                                }
+                            } catch (e) {}
+                        }
+
+                        const dataVideoType = String(el.getAttribute('data-video-type') || el.getAttribute('data-track-type') || '').toLowerCase();
+                        if (dataVideoType === 'desktop' || dataVideoType === 'screenshare') return false;
+
                         return true;
                     });
 
