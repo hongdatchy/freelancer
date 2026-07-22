@@ -152,8 +152,8 @@ export default function WheelWidget({
     const handleToggleWheel = () => {
       setIsOpen((prev) => {
         const next = !prev;
-        if (isHost && next) {
-          broadcast({ type: 'WHEEL_ACTION', action: 'OPEN', items });
+        if (isHost) {
+          broadcast({ type: 'WHEEL_ACTION', action: next ? 'OPEN' : 'CLOSE', items });
         }
         return next;
       });

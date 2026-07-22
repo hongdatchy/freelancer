@@ -490,6 +490,7 @@ export default function FloatingJitsiWidget() {
           if (apiRef.current) {
             apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${randIndex}`);
           }
+          triggerPraiseAnimation(randIndex);
         } else if (event.data.type === 'TRIGGER_DICE') {
           console.log('[Parent] TRIGGER_DICE received, dispatching toggle-dice-widget');
           window.dispatchEvent(new CustomEvent('toggle-dice-widget'));

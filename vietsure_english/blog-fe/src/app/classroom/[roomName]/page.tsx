@@ -326,15 +326,12 @@ export default function ClassroomPage() {
       if (event.data.type === 'TOGGLE_TIMER' || event.data.type === 'TOGGLE_TIMER_CARD') {
         console.log('[Page] TOGGLE_TIMER received, dispatching toggle-timer-card');
         window.dispatchEvent(new CustomEvent('toggle-timer-card'));
-      } else if (event.data.type === 'TRIGGER_WHEEL') {
-        console.log('[Page] TRIGGER_WHEEL received, dispatching toggle-wheel-widget');
-        window.dispatchEvent(new CustomEvent('toggle-wheel-widget'));
-      } else if (event.data.type === 'TRIGGER_DICE') {
-        console.log('[Page] TRIGGER_DICE received, dispatching toggle-dice-widget');
-        window.dispatchEvent(new CustomEvent('toggle-dice-widget'));
-      } else if (event.data.type === 'SYNC_DICE_RESULT') {
-        console.log('[Page] SYNC_DICE_RESULT received, dispatching sync-dice-result');
-        window.dispatchEvent(new CustomEvent('sync-dice-result', { detail: { results: event.data.results } }));
+      } else if (event.data.type === 'WHEEL_ACTION') {
+        console.log('[Student] WHEEL_ACTION received:', event.data.payload);
+        window.dispatchEvent(new CustomEvent('sync-wheel-action', { detail: event.data.payload }));
+      } else if (event.data.type === 'DICE_ACTION') {
+        console.log('[Student] DICE_ACTION received:', event.data.payload);
+        window.dispatchEvent(new CustomEvent('sync-dice-action', { detail: event.data.payload }));
       } else if (event.data.type === 'TRIGGER_PRAISE') {
         if (apiRef.current) {
           const randIndex = Math.floor(Math.random() * 5);

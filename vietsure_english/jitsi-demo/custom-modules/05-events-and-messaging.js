@@ -290,27 +290,63 @@ if (typeof window !== 'undefined') {
         if (!room) return false;
         try {
             room.on('conference.messageReceived', (id, text, ts) => {
-                const isPraise = text && text.includes('__PRAISE__');
-                const isWheel = text && text.includes('__WHEEL__');
-                const isDice = text && (text.includes('__DICE__') || text.includes('__DICE_COUNT__'));
-                const isTimer = text && (
-                    text.includes('__TIMER__') || 
-                    text.includes('__CLK__') || 
-                    text.includes('TIMER_ACTION')
-                );
-                if (isPraise) {
-                    const parts = text.split(':');
-                    const index = parts[1] ? parseInt(parts[1], 10) : 0;
-                    console.log('[Jitsi custom-config] __PRAISE__ received with index:', index, ', posting to parent');
-                    window.parent.postMessage({ type: 'PLAY_PRAISE', index }, '*');
-                } else if (isDice) {
-                    timerMessagesCount++;
-                    if (text.startsWith('__DICE__:')) {
-                        const str = text.slice('__DICE__:'.length);
-                        const results = str.split(',').map(n => parseInt(n, 10)).filter(n => !isNaN(n));
-                        window.parent.postMessage({ type: 'SYNC_DICE_RESULT', results }, '*');
+                const myId = (typeof APP !== 'undefined' && APP.conference) ? APP.conference.getMyUserId() : null;
+                const isFromMe = !!(myId && id === myId);
+
+                let msgText = '';
+                if (typeof text === 'string') {
+                    msgText = text;
+                } else if (text && typeof text.message === 'string') {
+                    msgText = text.message;
+                } else if (text && typeof text.text === 'string') {
+                    msgText = text.text;
+                }
+
+                const isPraise = msgText.includes('__PRAISE__');
+                const isWheel = msgText.includes('__WHEEL__');
+                const isDice = msgText.includes('__DICE__') || msgText.includes('__DICE_COUNT__');
+                const isTimer = msgText.includes('__TIMER__') || 
+                                msgText.includes('__CLK__') || 
+                                msgText.includes('TIMER_ACTION');
+
+                if (!isFromMe) {
+                    if (isPraise) {
+                        const parts = msgText.split(':');
+                        const index = parts[1] ? parseInt(parts[1], 10) : 0;
+                        console.log('[Jitsi custom-config] __PRAISE__ received with index:', index);
+                        window.parent.postMessage({ type: 'PLAY_PRAISE', index }, '*');
+                    } else if (isDice) {
+                        timerMessagesCount++;
+                        if (msgText.startsWith('__DICE__:')) {
+                            const payloadStr = msgText.slice('__DICE__:'.length);
+                            try {
+                                const payload = JSON.parse(payloadStr);
+                                console.log('[Jitsi custom-config] __DICE__ payload received:', payload);
+                                window.parent.postMessage({ type: 'DICE_ACTION', payload }, '*');
+                            } catch (e) {
+                                if (payloadStr === 'OPEN' || payloadStr === 'CLOSE') {
+                                    window.parent.postMessage({ type: 'DICE_ACTION', payload: { action: payloadStr } }, '*');
+                                } else {
+                                    const results = payloadStr.split(',').map(n => parseInt(n, 10)).filter(n => !isNaN(n));
+                                    if (results.length > 0) {
+                                        window.parent.postMessage({ type: 'DICE_ACTION', payload: { action: 'ROLL', results } }, '*');
+                                    }
+                                }
+                            }
+                        }
+                    } else if (isWheel) {
+                        timerMessagesCount++;
+                        if (msgText.startsWith('__WHEEL__:')) {
+                            const payloadStr = msgText.slice('__WHEEL__:'.length);
+                            try {
+                                const payload = JSON.parse(payloadStr);
+                                window.parent.postMessage({ type: 'WHEEL_ACTION', payload }, '*');
+                            } catch (e) {}
+                        }
+                    } else if (isTimer) {
+                        timerMessagesCount++;
                     }
-                } else if (isWheel || isTimer) {
+                } else if (isPraise || isDice || isWheel || isTimer) {
                     timerMessagesCount++;
                 } else {
                     realMessagesCount++;

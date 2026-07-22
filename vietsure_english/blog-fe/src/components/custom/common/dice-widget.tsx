@@ -226,13 +226,14 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
     };
   }, [isDragging, dragOffset]);
 
-  // Broadcast roll results to all participants via Jitsi chat
-  const broadcastResults = useCallback((rollResults: number[]) => {
+  // Broadcast payload helper
+  const broadcast = useCallback((payload: { action: string; results?: number[]; diceCount?: number }) => {
     const api = apiRef.current;
     if (!api) return;
     try {
-      api.executeCommand('sendChatMessage', `__DICE__:${rollResults.join(',')}`);
-      console.log('[Dice] Broadcasted results:', rollResults);
+      const str = JSON.stringify(payload);
+      api.executeCommand('sendChatMessage', `__DICE__:${str}`);
+      console.log('[Dice] Broadcasted:', payload.action);
     } catch (e) {
       console.error('[Dice] Broadcast failed:', e);
     }
@@ -252,9 +253,10 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
     if (isRolling) return;
     const rollResults = Array.from({ length: diceCount }, () => Math.floor(Math.random() * 6) + 1);
     animateToResult(rollResults);
-    // Broadcast after short delay so animation starts first
-    setTimeout(() => broadcastResults(rollResults), 100);
-  }, [isRolling, diceCount, animateToResult, broadcastResults]);
+    if (isHost) {
+      setTimeout(() => broadcast({ action: 'ROLL', results: rollResults, diceCount }), 100);
+    }
+  }, [isHost, isRolling, diceCount, animateToResult, broadcast]);
 
   // Change dice count - update results array length
   const handleCountChange = useCallback((count: number) => {
@@ -266,25 +268,53 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
     });
   }, []);
 
-  // Listen for toggle event from Jitsi toolbar
+  // Listen for toggle event (Host Teacher only from Jitsi toolbar)
   useEffect(() => {
-    const handleToggle = () => setIsOpen(prev => !prev);
+    const handleToggle = () => {
+      setIsOpen((prev) => {
+        const next = !prev;
+        if (isHost) {
+          broadcast({ action: next ? 'OPEN' : 'CLOSE', diceCount });
+        }
+        return next;
+      });
+    };
     window.addEventListener('toggle-dice-widget', handleToggle);
     return () => window.removeEventListener('toggle-dice-widget', handleToggle);
-  }, []);
+  }, [isHost, diceCount, broadcast]);
 
-  // Listen for sync events from other participants (broadcast received)
+  const handleClose = () => {
+    setIsOpen(false);
+    if (isHost) {
+      broadcast({ action: 'CLOSE' });
+    }
+  };
+
+  // Listen for sync events from host (Student / Remote participants)
   useEffect(() => {
     const handleSyncDice = (e: Event) => {
       const customEvent = e as CustomEvent;
-      const { results: syncedResults } = customEvent.detail || {};
-      if (!Array.isArray(syncedResults) || syncedResults.length === 0) return;
-      setDiceCount(syncedResults.length);
-      setIsOpen(true);
-      animateToResult(syncedResults);
+      const payload = customEvent.detail || {};
+
+      if (payload.action === 'OPEN') {
+        setIsOpen(true);
+        if (payload.diceCount) setDiceCount(payload.diceCount);
+      } else if (payload.action === 'CLOSE') {
+        setIsOpen(false);
+      } else if (payload.action === 'ROLL' || payload.action === 'SPIN') {
+        setIsOpen(true);
+        if (Array.isArray(payload.results) && payload.results.length > 0) {
+          setDiceCount(payload.results.length);
+          animateToResult(payload.results);
+        }
+      } else if (Array.isArray(payload.results) && payload.results.length > 0) {
+        setDiceCount(payload.results.length);
+        setIsOpen(true);
+        animateToResult(payload.results);
+      }
     };
-    window.addEventListener('sync-dice-result', handleSyncDice);
-    return () => window.removeEventListener('sync-dice-result', handleSyncDice);
+    window.addEventListener('sync-dice-action', handleSyncDice);
+    return () => window.removeEventListener('sync-dice-action', handleSyncDice);
   }, [animateToResult]);
 
   // Die size based on count
@@ -338,7 +368,7 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
           {isHost && (
             <button
               onMouseDown={e => e.stopPropagation()}
-              onClick={() => setIsOpen(false)}
+              onClick={handleClose}
               style={{
                 background: 'rgba(255,255,255,0.08)',
                 border: 'none',
