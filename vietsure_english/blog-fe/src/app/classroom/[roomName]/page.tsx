@@ -30,12 +30,10 @@ export default function ClassroomPage() {
   const bgImageRef = useRef<string | null>(null);
   
   const [isCheckingHost, setIsCheckingHost] = useState(true);
-  const [isHostUser, setIsHostUser] = useState(false);
   const [teacherId, setTeacherId] = useState('0');
   const [studentInputName, setStudentInputName] = useState('');
   const [hasEnteredName, setHasEnteredName] = useState(false);
-  
-  const isHost = isHostUser;
+  const isHost = false;
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [isInBreakoutRoom, setIsInBreakoutRoom] = useState(false);
@@ -133,22 +131,19 @@ export default function ClassroomPage() {
         console.error("Fetch teacher id error:", err);
       }
 
-      const isHostVal = !!(currentUser && tId !== '0' && String(currentUser.id) === String(tId));
-      
       let finalTeacherId = tId;
       if (tId === '0' && currentUser) {
         finalTeacherId = String(currentUser?.id || '0');
       }
 
       setTeacherId(finalTeacherId);
-      setIsHostUser(isHostVal);
       setIsCheckingHost(false);
     };
 
     checkHost();
   }, [isMounted, roomName]);
 
-  const shouldLoadJitsi = !isCheckingHost && (isHostUser || hasEnteredName);
+  const shouldLoadJitsi = !isCheckingHost && hasEnteredName;
 
   useEffect(() => {
     if (!isMounted || !shouldLoadJitsi) return;
@@ -184,80 +179,18 @@ export default function ClassroomPage() {
   const initJitsi = async () => {
     if (!containerRef.current || !window.JitsiMeetExternalAPI) return;
 
-    // Get fresh user state directly from store to avoid React stale closures/race conditions
-    const storeState = useUserLoginStore.getState();
-    const currentUser = storeState.user;
-
     const jitsiRoomJID = `${roomName}_GV_${teacherId}`;
-    const displayName = isHostUser ? (currentUser?.fullName || currentUser?.username || 'Giáo viên') : (studentInputName.trim() || 'Học viên');
-    const email = isHostUser ? (currentUser?.email || '') : '';
+    const displayName = studentInputName.trim() || 'Học viên';
 
-    // Generate JWT Token using Web Crypto API (Only for Hosts/Teachers)
-    const generateJitsiJWT = async () => {
-      const header = { alg: "HS256", typ: "JWT" };
-      const now = Math.floor(Date.now() / 1000);
-      const payload = {
-        context: {
-          user: { name: displayName, email: email },
-          features: { 
-            recording: isHostUser, 
-            livestreaming: isHostUser 
-          }
-        },
-        aud: "vietsure_app",
-        iss: "vietsure_app",
-        sub: "meet.jitsi",
-        room: jitsiRoomJID,
-        iat: now,
-        nbf: now - 60, // allow 1 min clock skew
-        exp: now + 86400 // 24 hours valid
-      };
-      
-      const base64UrlEncode = (obj: any) => {
-        const str = JSON.stringify(obj);
-        // Encode UTF-8 characters safely for btoa
-        const encoded = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, 
-          (match, p1) => String.fromCharCode(parseInt(p1, 16))
-        );
-        return btoa(encoded).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-      };
-      const encodedHeader = base64UrlEncode(header);
-      const encodedPayload = base64UrlEncode(payload);
-      
-      const secret = "vietsure_secret_key_2026";
-      const encoder = new TextEncoder();
-      const key = await crypto.subtle.importKey(
-        "raw",
-        encoder.encode(secret),
-        { name: "HMAC", hash: "SHA-256" },
-        false,
-        ["sign"]
-      );
-      
-      const signature = await crypto.subtle.sign(
-        "HMAC",
-        key,
-        encoder.encode(`${encodedHeader}.${encodedPayload}`)
-      );
-      
-      const encodedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)))
-        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        
-      return `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
-    };
-
-    // Only generate Jitsi JWT for host (teacher). Students join as standard guest without JWT.
-    const token = isHostUser ? await generateJitsiJWT() : undefined;
-
+    // Students join as standard guest without JWT token
     apiRef.current = new window.JitsiMeetExternalAPI(JITSI_SERVER, {
       roomName: jitsiRoomJID,
-      ...(token ? { jwt: token } : {}),
       width: '100%',
       height: '100%',
       parentNode: containerRef.current,
       userInfo: {
         displayName,
-        email,
+        email: '',
       },
       configOverwrite: {
         startWithAudioMuted: false,
@@ -267,26 +200,13 @@ export default function ClassroomPage() {
         defaultLanguage: 'vi',
         settingsSections: ['devices', 'moderator', 'profile', 'calendar', 'sounds'],
         disableSelfViewSettings: true,
-        isStudent: !isHostUser,
-        subject: roomName, // Hide technical room name inside Jitsi
-        whiteboard: {
-          enabled: true,
-        },
-        localRecording: {
-          enabled: true,
-          disableSelfRecording: false,
-        },
-        recordingService: {
-          enabled: false,
-        },
+        isStudent: true,
         toolbarButtons: [
           'microphone', 'camera', 'closedcaptions',
           'fodeviceselection', 'chat',
           'settings', 'raisehand', 'filmstrip',
-          'download', 'help', 'whiteboard', 'participants-pane',
-          ...(isHostUser ? ['tileview', 'desktop'] : [])
+          'download', 'help', 'whiteboard', 'participants-pane', 'desktop'
         ],
-        buttonsWithNotifyClick: [],
       },
       interfaceConfigOverwrite: {
         SHOW_JITSI_WATERMARK: false,
@@ -301,24 +221,11 @@ export default function ClassroomPage() {
 
       // Set the default filmstrip width to 360px on join if screen width > 1100px
       if (window.innerWidth > 1100) {
-        if (apiRef.current) {
-          apiRef.current.executeCommand('resizeFilmStrip', { width: 360 });
-        }
-      }
-
-      if (isHostUser) {
         setTimeout(() => {
           if (apiRef.current) {
-            apiRef.current.executeCommand('startRecording', {
-              mode: 'file'
-            });
+            apiRef.current.executeCommand('resizeFilmStrip', { width: 360 });
           }
         }, 1000);
-      } else {
-        // Học viên: tự động bật Grid View khi vào phòng
-        if (apiRef.current) {
-            try { apiRef.current.executeCommand('toggleTileView'); } catch (e) {}
-        }
       }
 
       if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
@@ -528,13 +435,6 @@ export default function ClassroomPage() {
       {!isFullscreen && (
         <div className="flex items-center justify-between px-5 py-3 bg-[#1d285c] border-b border-white/10 shrink-0">
           <div className="flex items-center gap-3 shrink-0">
-            {isHost && (
-              <div className="w-8 h-8 rounded-full bg-[#FF6B00] flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M15 10l5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" />
-                </svg>
-              </div>
-            )}
             <div className="flex items-center gap-2">
               <img
                 src="/images/Vietsure English_Logo-15.png"
@@ -551,9 +451,6 @@ export default function ClassroomPage() {
           </p>
 
           <div className="flex items-center gap-3 shrink-0">
-            {isHost && (
-              <TimerWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} inTopBar />
-            )}
 
             {/* Fullscreen Toggle Button */}
             <button
@@ -598,8 +495,8 @@ export default function ClassroomPage() {
       <div className="flex-1 w-full relative">
         <div ref={containerRef} className="w-full h-full" />
         {!isHost && <TimerWidget apiRef={apiRef} isHost={false} apiReady={apiReady} />}
-        <WheelWidget apiRef={apiRef} isHost={isHostUser} apiReady={apiReady} />
-        <DiceWidget apiRef={apiRef} isHost={isHostUser} apiReady={apiReady} />
+        <WheelWidget apiRef={apiRef} isHost={false} apiReady={apiReady} />
+        <DiceWidget apiRef={apiRef} isHost={false} apiReady={apiReady} />
 
         {/* Custom Exit Popover (Matches Jitsi's native look) */}
         {showExitConfirm && (
@@ -607,72 +504,36 @@ export default function ClassroomPage() {
             className="absolute top-[60px] right-[20px] bg-[#141414] p-3 rounded-xl flex flex-col items-center shadow-[0_4px_16px_rgba(0,0,0,0.5)] border border-white/10 w-[260px] z-[99999]"
             style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
           >
-            {isHost ? (
-              <>
-                <button
-                  onClick={() => {
-                    setShowExitConfirm(false);
-                    if (isInBreakoutRoom) {
-                      shouldEndConferenceOnMainJoinRef.current = true;
-                      try {
-                        const iframe = apiRef.current?.getIFrame();
-                        if (iframe && iframe.contentWindow) {
-                          iframe.contentWindow.postMessage({ type: 'LEAVE_BREAKOUT_ROOM', mainRoomName: roomName }, '*');
-                        }
-                        apiRef.current?.executeCommand('joinBreakoutRoom', '');
-                      } catch (e) {}
-                    } else {
-                      apiRef.current?.executeCommand('endConference');
+            {isInBreakoutRoom && (
+              <button
+                onClick={() => {
+                  setShowExitConfirm(false);
+                  try {
+                    const iframe = apiRef.current?.getIFrame();
+                    if (iframe && iframe.contentWindow) {
+                      iframe.contentWindow.postMessage({ type: 'LEAVE_BREAKOUT_ROOM', mainRoomName: roomName }, '*');
                     }
-                  }}
-                  className="w-full bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
-                >
-                  Kết thúc cuộc họp cho tất cả
-                </button>
-                <button
-                  onClick={() => {
-                    setShowExitConfirm(false);
-                    apiRef.current?.executeCommand('hangup');
-                  }}
-                  className="w-full bg-[#E0E0E0] hover:bg-[#c9c9c9] text-[#040404] font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors"
-                >
-                  Rời khỏi cuộc họp
-                </button>
-              </>
-            ) : (
-              <>
-                {isInBreakoutRoom && (
-                  <button
-                    onClick={() => {
-                      setShowExitConfirm(false);
-                      try {
-                        const iframe = apiRef.current?.getIFrame();
-                        if (iframe && iframe.contentWindow) {
-                          iframe.contentWindow.postMessage({ type: 'LEAVE_BREAKOUT_ROOM', mainRoomName: roomName }, '*');
-                        }
-                        try {
-                          apiRef.current?.executeCommand('joinBreakoutRoom', '');
-                        } catch (e) {}
-                      } catch (e) {
-                        console.error('Failed to leave breakout room:', e);
-                      }
-                    }}
-                    className="w-full bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
-                  >
-                    Rời phòng nhỏ về phòng chính
-                  </button>
-                )}
-                <button
-                  onClick={() => {
-                    setShowExitConfirm(false);
-                    apiRef.current?.executeCommand('hangup');
-                  }}
-                  className="w-full bg-[#E0E0E0] hover:bg-[#c9c9c9] text-[#040404] font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors"
-                >
-                  Rời khỏi cuộc họp
-                </button>
-              </>
+                    try {
+                      apiRef.current?.executeCommand('joinBreakoutRoom', '');
+                    } catch (e) {}
+                  } catch (e) {
+                    console.error('Failed to leave breakout room:', e);
+                  }
+                }}
+                className="w-full bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
+              >
+                Rời phòng nhỏ về phòng chính
+              </button>
             )}
+            <button
+              onClick={() => {
+                setShowExitConfirm(false);
+                apiRef.current?.executeCommand('hangup');
+              }}
+              className="w-full bg-[#E0E0E0] hover:bg-[#c9c9c9] text-[#040404] font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors"
+            >
+              Rời khỏi cuộc họp
+            </button>
             
             <button
               onClick={() => setShowExitConfirm(false)}

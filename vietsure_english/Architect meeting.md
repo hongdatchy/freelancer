@@ -4,7 +4,11 @@
 
 > [!IMPORTANT]
 > - **Màn Giáo viên (Teacher Screen)**: [`blog-fe/src/components/custom/common/floating-jitsi-widget.tsx`](file:///d:/freelancer/vietsure_english/blog-fe/src/components/custom/common/floating-jitsi-widget.tsx)
+>   - Giáo viên sử dụng widget nổi `floating-jitsi-widget.tsx`.
+>   - Khi Giáo viên phóng to full màn hình, hệ thống gọi HTML5 Fullscreen API trực tiếp trên widget container (`widgetInnerRef.requestFullscreen()`), KHÔNG dùng và KHÔNG chuyển sang trang `page.tsx`.
 > - **Màn Học viên (Student Screen)**: [`blog-fe/src/app/classroom/[roomName]/page.tsx`](file:///d:/freelancer/vietsure_english/blog-fe/src/app/classroom/[roomName]/page.tsx)
+>   - Trang này DÀNH RIÊNG cho Học viên mở đường dẫn lớp học `/classroom/[roomName]`.
+>   - Hiển thị màn hình chào mừng và form nhập tên Học viên trước khi vào phòng.
 
 ---
 
