@@ -968,8 +968,8 @@ if (typeof window !== 'undefined') {
         try {
             if (!window.APP || !window.APP.store) return;
             
-            const isStudent = checkIfStudent();
-            if (!isStudent) return;
+            // const isStudent = checkIfStudent();
+            // if (!isStudent) return;
 
             const state = window.APP.store.getState();
             const tracks = state['features/base/tracks'] || [];

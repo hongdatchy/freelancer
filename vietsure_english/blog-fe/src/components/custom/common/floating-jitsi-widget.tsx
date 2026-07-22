@@ -12,7 +12,7 @@ const JITSI_SERVER = process.env.NEXT_PUBLIC_JITSI_SERVER;
 export default function FloatingJitsiWidget() {
   const { roomName, isOpen, isMinimized, closeMeeting, setMinimized } = useJitsiStore();
   const { user } = useUserLoginStore();
-  const isHost = !!user;
+  const isHost = true;
   const containerRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<any>(null);
   const [position, setPosition] = useState({ x: 20, y: 20 });
@@ -226,7 +226,7 @@ export default function FloatingJitsiWidget() {
           defaultLanguage: 'vi',
           settingsSections: ['devices', 'moderator', 'profile', 'calendar', 'sounds'],
           disableSelfViewSettings: true,
-          isStudent: !isHost,
+          isStudent: false,
           subject: sanitizedRoom,
           whiteboard: { enabled: true },
           localRecording: {
@@ -244,8 +244,7 @@ export default function FloatingJitsiWidget() {
             'mute-everyone', 'mute-video-everyone', 'participants-pane',
             'profile', 'raisehand', 'select-background',
             'settings', 'shareaudio', 'sharedvideo', 'stats',
-            'toggle-camera', 'polls', 'whiteboard',
-            ...(isHost ? ['tileview', 'desktop'] : [])
+            'toggle-camera', 'polls', 'whiteboard', 'tileview', 'desktop'
           ],
         },
         interfaceConfigOverwrite: {
@@ -322,19 +321,17 @@ export default function FloatingJitsiWidget() {
           }
         }
 
-        if (isHost) {
-          setTimeout(() => {
-            if (apiRef.current) {
-              apiRef.current.executeCommand('startRecording', {
-                mode: 'file'
-              });
-            }
-          }, 1000);
-
-          // Auto-enable tile view on join (host only)
+        setTimeout(() => {
           if (apiRef.current) {
-            apiRef.current.executeCommand('toggleTileView');
+            apiRef.current.executeCommand('startRecording', {
+              mode: 'file'
+            });
           }
+        }, 1000);
+
+        // Auto-enable tile view on join
+        if (apiRef.current) {
+          apiRef.current.executeCommand('toggleTileView');
         }
 
         if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
@@ -352,13 +349,11 @@ export default function FloatingJitsiWidget() {
       });
 
       // Auto-disable tile view when host starts screen sharing
-      if (isHost) {
-        apiRef.current.addEventListener('screenSharingStatusChanged', (event: any) => {
-          if (event.on && apiRef.current && isTileViewEnabledRef.current) {
-            apiRef.current.executeCommand('toggleTileView');
-          }
-        });
-      }
+      apiRef.current.addEventListener('screenSharingStatusChanged', (event: any) => {
+        if (event.on && apiRef.current && isTileViewEnabledRef.current) {
+          apiRef.current.executeCommand('toggleTileView');
+        }
+      });
 
       // Debug: Log screen sharing event
       apiRef.current.addEventListener('screenSharingStatusChanged', (event: any) => {
@@ -821,72 +816,37 @@ export default function FloatingJitsiWidget() {
                   className="absolute top-[10px] right-[10px] bg-[#141414] p-3 rounded-xl flex flex-col items-center shadow-[0_4px_16px_rgba(0,0,0,0.5)] border border-white/10 w-[260px] z-[99999] no-drag"
                   style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
                 >
-                  {isHost ? (
-                    <>
-                      <button
-                        onClick={() => {
-                          setShowExitConfirm(false);
-                          if (isInBreakoutRoom) {
-                            shouldEndConferenceOnMainJoinRef.current = true;
-                            try {
-                              const iframe = apiRef.current?.getIFrame();
-                              if (iframe && iframe.contentWindow) {
-                                iframe.contentWindow.postMessage({ type: 'LEAVE_BREAKOUT_ROOM', mainRoomName: roomName }, '*');
-                              }
-                              apiRef.current?.executeCommand('joinBreakoutRoom', '');
-                            } catch (e) { }
-                          } else {
-                            apiRef.current?.executeCommand('endConference');
-                          }
-                        }}
-                        className="w-full bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
-                      >
-                        Kết thúc cuộc gọi theo nhóm
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowExitConfirm(false);
-                          apiRef.current?.executeCommand('hangup');
-                        }}
-                        className="w-full bg-[#E0E0E0] hover:bg-[#c9c9c9] text-[#040404] font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors"
-                      >
-                        Rời khỏi cuộc họp
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      {isInBreakoutRoom && (
-                        <button
-                          onClick={() => {
-                            setShowExitConfirm(false);
-                            try {
-                              const iframe = apiRef.current?.getIFrame();
-                              if (iframe && iframe.contentWindow) {
-                                iframe.contentWindow.postMessage({ type: 'LEAVE_BREAKOUT_ROOM', mainRoomName: roomName }, '*');
-                              }
-                              try {
-                                apiRef.current?.executeCommand('joinBreakoutRoom', '');
-                              } catch (e) { }
-                            } catch (e) {
-                              console.error('Failed to leave breakout room:', e);
+                  <>
+                    <button
+                      onClick={() => {
+                        setShowExitConfirm(false);
+                        if (isInBreakoutRoom) {
+                          shouldEndConferenceOnMainJoinRef.current = true;
+                          try {
+                            const iframe = apiRef.current?.getIFrame();
+                            if (iframe && iframe.contentWindow) {
+                              iframe.contentWindow.postMessage({ type: 'LEAVE_BREAKOUT_ROOM', mainRoomName: roomName }, '*');
                             }
-                          }}
-                          className="w-full bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
-                        >
-                          Rời phòng nhỏ về phòng chính
-                        </button>
-                      )}
-                      <button
-                        onClick={() => {
-                          setShowExitConfirm(false);
-                          apiRef.current?.executeCommand('hangup');
-                        }}
-                        className="w-full bg-[#E0E0E0] hover:bg-[#c9c9c9] text-[#040404] font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors"
-                      >
-                        Rời khỏi cuộc họp
-                      </button>
-                    </>
-                  )}
+                            apiRef.current?.executeCommand('joinBreakoutRoom', '');
+                          } catch (e) { }
+                        } else {
+                          apiRef.current?.executeCommand('endConference');
+                        }
+                      }}
+                      className="w-full bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
+                    >
+                      Kết thúc cuộc gọi theo nhóm
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowExitConfirm(false);
+                        apiRef.current?.executeCommand('hangup');
+                      }}
+                      className="w-full bg-[#E0E0E0] hover:bg-[#c9c9c9] text-[#040404] font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors"
+                    >
+                      Rời khỏi cuộc họp
+                    </button>
+                  </>
                   <button
                     onClick={() => setShowExitConfirm(false)}
                     className="w-full bg-transparent hover:bg-white/10 text-white font-semibold py-2 px-4 rounded-lg text-[13px] text-center mt-1 transition-colors"
