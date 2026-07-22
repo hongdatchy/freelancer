@@ -477,7 +477,7 @@ const setupToolbarButtonLabels = (doc) => {
             if (!labelEl) {
                 labelEl = doc.createElement('span');
                 labelEl.className = 'custom-toolbar-label';
-                labelEl.style.cssText = 'display: block; font-size: 10px; line-height: 11px; color: rgba(255, 255, 255, 0.85); text-align: center; margin-top: 1px; white-space: nowrap; font-family: -apple-system,BlinkMacSystemFont,open_sanslight,Helvetica Neue,Helvetica,Arial,sans-serif !important; font-weight: 500; pointer-events: none; user-select: none;';
+                labelEl.style.cssText = 'display: block !important; order: 999 !important; font-size: 10px; line-height: 11px; color: rgba(255, 255, 255, 0.85); text-align: center; margin-top: 1px; white-space: nowrap; font-family: -apple-system,BlinkMacSystemFont,open_sanslight,Helvetica Neue,Helvetica,Arial,sans-serif !important; font-weight: 500; pointer-events: none; user-select: none;';
                 item.appendChild(labelEl);
             }
             if (labelEl.textContent !== labelText) {
