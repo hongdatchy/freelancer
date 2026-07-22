@@ -51,10 +51,10 @@ const DieFace = ({ value, color }: { value: number; color: string }) => {
         return (
           <div key={idx} style={{
             borderRadius: '50%',
-            background: hasPip ? '#1a1a2e' : 'transparent',
+            background: hasPip ? '#ffffff' : 'transparent',
             width: '100%',
             height: '100%',
-            boxShadow: hasPip ? 'inset 0 2px 4px rgba(0,0,0,0.4)' : 'none',
+            boxShadow: hasPip ? '0 1px 4px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.9)' : 'none',
           }} />
         );
       })}
@@ -72,7 +72,7 @@ const Die3D = ({
   isRolling: boolean;
   size?: number;
 }) => {
-  const dieColor = '#f5f0e8';
+  const dieColor = 'linear-gradient(145deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%)';
   const half = size / 2;
 
   const faceStyle = (transform: string): React.CSSProperties => ({
@@ -81,11 +81,11 @@ const Die3D = ({
     height: size,
     backfaceVisibility: 'hidden',
     WebkitBackfaceVisibility: 'hidden',
-    border: '2px solid rgba(0,0,0,0.15)',
+    border: '2px solid rgba(255,255,255,0.25)',
     borderRadius: '14%',
     overflow: 'hidden',
     transform,
-    boxShadow: 'inset 0 0 20px rgba(0,0,0,0.1)',
+    boxShadow: 'inset 0 0 15px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.4)',
   });
 
   const resultTransform = FACE_TRANSFORMS[result] || FACE_TRANSFORMS[1];
@@ -226,6 +226,8 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
     };
   }, [isDragging, dragOffset]);
 
+  const [customInputs, setCustomInputs] = useState<string[]>(['', '', '']);
+
   // Broadcast payload helper
   const broadcast = useCallback((payload: { action: string; results?: number[]; diceCount?: number }) => {
     const api = apiRef.current;
@@ -239,24 +241,43 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
     }
   }, [apiRef]);
 
+  const rollAudioRef = useRef<HTMLAudioElement | null>(null);
+
   // Animate dice then show result
   const animateToResult = useCallback((rollResults: number[]) => {
     setIsRolling(true);
+    if (rollAudioRef.current) {
+      rollAudioRef.current.pause();
+      rollAudioRef.current.currentTime = 0;
+    }
     setTimeout(() => {
       setIsRolling(false);
       setResults(rollResults);
+      try {
+        const audio = new Audio('/scottishperson-sound-effect-happy-birthday-music-box.mp3');
+        rollAudioRef.current = audio;
+        audio.currentTime = 0;
+        audio.play().catch((err) => console.warn('[Dice Audio] Play failed:', err));
+      } catch (e) {}
     }, 1500);
   }, []);
 
-  // Teacher rolls
+  // Teacher rolls (uses custom selected numbers if set, otherwise random 1-6)
   const handleRoll = useCallback(() => {
     if (isRolling) return;
-    const rollResults = Array.from({ length: diceCount }, () => Math.floor(Math.random() * 6) + 1);
+    const rollResults = Array.from({ length: diceCount }).map((_, i) => {
+      const val = parseInt(customInputs[i], 10);
+      if (!isNaN(val) && val >= 1 && val <= 6) {
+        return val;
+      }
+      return Math.floor(Math.random() * 6) + 1;
+    });
+
     animateToResult(rollResults);
     if (isHost) {
       setTimeout(() => broadcast({ action: 'ROLL', results: rollResults, diceCount }), 100);
     }
-  }, [isHost, isRolling, diceCount, animateToResult, broadcast]);
+  }, [isHost, isRolling, diceCount, customInputs, animateToResult, broadcast]);
 
   // Change dice count - update results array length
   const handleCountChange = useCallback((count: number) => {
@@ -284,6 +305,10 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
   }, [isHost, diceCount, broadcast]);
 
   const handleClose = () => {
+    if (rollAudioRef.current) {
+      rollAudioRef.current.pause();
+      rollAudioRef.current.currentTime = 0;
+    }
     setIsOpen(false);
     if (isHost) {
       broadcast({ action: 'CLOSE' });
@@ -342,10 +367,11 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
     >
       {/* Widget card */}
       <div style={{
-        background: 'linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+        background: isHost ? 'linear-gradient(145deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)' : 'transparent',
         borderRadius: 20,
-        border: '1.5px solid rgba(139,92,246,0.5)',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 30px rgba(139,92,246,0.2), inset 0 1px 0 rgba(255,255,255,0.1)',
+        border: isHost ? '1.5px solid rgba(148, 163, 184, 0.4)' : 'none',
+        boxShadow: isHost ? '0 20px 50px rgba(0,0,0,0.2), 0 4px 15px rgba(0,0,0,0.05)' : 'none',
+        filter: isHost ? 'none' : 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))',
         overflow: 'hidden',
         minHeight: 240,
       }}>
@@ -353,26 +379,34 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
         <div
           style={{
             padding: '12px 16px',
-            background: 'linear-gradient(90deg, rgba(139,92,246,0.3) 0%, rgba(59,130,246,0.2) 100%)',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            background: isHost ? 'linear-gradient(90deg, rgba(139,92,246,0.12) 0%, rgba(99,102,241,0.08) 100%)' : 'transparent',
+            borderBottom: isHost ? '1px solid rgba(0,0,0,0.06)' : 'none',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyContent: isHost ? 'space-between' : 'center',
             cursor: 'grab',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 18 }}>🎲</span>
-            <span style={{ color: '#e2e8f0', fontWeight: 700, fontSize: 14, letterSpacing: 0.5 }}>Xí ngầu</span>
+            <span style={{ fontSize: 18, filter: isHost ? 'none' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))' }}>🎲</span>
+            <span style={{ 
+              color: isHost ? '#1e1b4b' : '#a855f7', 
+              fontWeight: 800, 
+              fontSize: 15, 
+              letterSpacing: 0.5,
+              textShadow: isHost ? 'none' : '0 2px 6px rgba(0,0,0,0.6), 0 0 10px rgba(168,85,247,0.4)',
+            }}>
+              Xí ngầu
+            </span>
           </div>
           {isHost && (
             <button
               onMouseDown={e => e.stopPropagation()}
               onClick={handleClose}
               style={{
-                background: 'rgba(255,255,255,0.08)',
+                background: 'rgba(0,0,0,0.06)',
                 border: 'none',
-                color: '#94a3b8',
+                color: '#64748b',
                 cursor: 'pointer',
                 borderRadius: 6,
                 width: 24,
@@ -402,7 +436,7 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
               padding: '10px 16px 0',
             }}
           >
-            <span style={{ color: '#94a3b8', fontSize: 12, marginRight: 4 }}>Số xúc xắc:</span>
+            <span style={{ color: '#475569', fontSize: 12, fontWeight: 600, marginRight: 4 }}>Số xúc xắc:</span>
             {[1, 2, 3].map(n => (
               <button
                 key={n}
@@ -413,21 +447,70 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
                   height: 32,
                   borderRadius: 8,
                   border: diceCount === n
-                    ? '2px solid #8b5cf6'
-                    : '1.5px solid rgba(255,255,255,0.15)',
+                    ? '2px solid #7c3aed'
+                    : '1.5px solid #cbd5e1',
                   background: diceCount === n
-                    ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)'
-                    : 'rgba(255,255,255,0.06)',
-                  color: diceCount === n ? '#fff' : '#94a3b8',
+                    ? 'linear-gradient(135deg, #7c3aed, #6d28d9)'
+                    : '#ffffff',
+                  color: diceCount === n ? '#fff' : '#475569',
                   fontWeight: 700,
                   fontSize: 14,
                   cursor: 'pointer',
                   transition: 'all 0.2s',
-                  boxShadow: diceCount === n ? '0 4px 12px rgba(139,92,246,0.4)' : 'none',
+                  boxShadow: diceCount === n ? '0 4px 12px rgba(124,58,237,0.3)' : '0 2px 4px rgba(0,0,0,0.05)',
                 }}
               >
                 {n}
               </button>
+            ))}
+          </div>
+        )}
+
+        {/* Custom target number selector - host only */}
+        {isHost && (
+          <div
+            onMouseDown={e => e.stopPropagation()}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              padding: '8px 16px 0',
+            }}
+          >
+            <span style={{ color: '#475569', fontSize: 11, fontWeight: 600 }}>Cố định điểm:</span>
+            {Array.from({ length: diceCount }).map((_, i) => (
+              <select
+                key={i}
+                value={customInputs[i] || ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setCustomInputs((prev) => {
+                    const next = [...prev];
+                    next[i] = val;
+                    return next;
+                  });
+                }}
+                style={{
+                  background: customInputs[i] ? '#f0fdf4' : '#ffffff',
+                  color: customInputs[i] ? '#047857' : '#475569',
+                  border: customInputs[i] ? '1.5px solid #10b981' : '1px solid #cbd5e1',
+                  borderRadius: 6,
+                  padding: '2px 4px',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  outline: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                }}
+              >
+                <option value="" style={{ background: '#ffffff', color: '#64748b' }}>🎲 Ngẫu nhiên</option>
+                {[1, 2, 3, 4, 5, 6].map((num) => (
+                  <option key={num} value={num} style={{ background: '#ffffff', color: '#0f172a' }}>
+                    Điểm: {num}
+                  </option>
+                ))}
+              </select>
             ))}
           </div>
         )}
@@ -454,25 +537,31 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
         {/* Result total */}
         {!isRolling && (
           <div style={{
-            textAlign: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
             paddingBottom: 8,
           }}>
             {diceCount > 1 && (
-              <div style={{ color: '#94a3b8', fontSize: 12, marginBottom: 2 }}>
+              <span style={{ 
+                color: isHost ? '#475569' : '#1e1b4b', 
+                fontSize: 18, 
+                fontWeight: 800,
+                textShadow: isHost ? 'none' : '0 1px 3px rgba(255,255,255,0.8), 0 0 8px rgba(255,255,255,0.9)',
+              }}>
                 {results.slice(0, diceCount).join(' + ')} =
-              </div>
+              </span>
             )}
-            <div style={{
-              fontSize: diceCount > 1 ? 28 : 36,
+            <span style={{
+              fontSize: 26,
               fontWeight: 900,
-              background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              letterSpacing: -1,
+              color: '#d97706',
+              textShadow: isHost ? 'none' : '0 1px 2px rgba(255,255,255,0.8)',
+              letterSpacing: -0.5,
             }}>
               {total}
-            </div>
+            </span>
           </div>
         )}
 
