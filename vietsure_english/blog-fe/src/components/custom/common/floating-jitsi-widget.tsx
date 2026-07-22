@@ -810,6 +810,8 @@ export default function FloatingJitsiWidget() {
             <div className="flex-1 w-full bg-[#F0F7FF] relative">
               <div ref={containerRef} className="w-full h-full" />
               <TimerWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} />
+              <WheelWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} />
+              <DiceWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} />
 
               {/* Custom Exit Popover for Teacher */}
               {showExitConfirm && (
@@ -863,8 +865,7 @@ export default function FloatingJitsiWidget() {
           </div>
         </div>
       </div>
-      <WheelWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} />
-      <DiceWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} />
+
     </>
   );
 }
