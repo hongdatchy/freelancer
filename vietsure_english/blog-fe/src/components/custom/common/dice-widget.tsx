@@ -331,9 +331,9 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
       onMouseDown={handleDragStart}
       style={{
         position: 'absolute',
-        bottom: 90,
-        right: 20,
-        transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)`,
+        top: '50%',
+        left: '50%',
+        transform: `translate(calc(-50% + ${dragOffset.x}px), calc(-50% + ${dragOffset.y}px))`,
         zIndex: 9999,
         cursor: isDragging ? 'grabbing' : 'grab',
         userSelect: 'none',

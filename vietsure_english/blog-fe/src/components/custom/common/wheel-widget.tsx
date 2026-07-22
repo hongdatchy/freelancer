@@ -381,8 +381,8 @@ export default function WheelWidget({
       
       <div
         ref={widgetRef}
-        style={{ transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)` }}
-        className="absolute top-16 left-6 z-[9999] select-none"
+        style={{ transform: `translate(calc(-50% + ${dragOffset.x}px), calc(-50% + ${dragOffset.y}px))` }}
+        className="absolute top-1/2 left-1/2 z-[9999] select-none"
         onMouseDown={handleDragStart}
       >
         {/* Main Wheel Card */}
