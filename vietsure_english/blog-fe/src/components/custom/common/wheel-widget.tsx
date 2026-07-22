@@ -422,9 +422,13 @@ export default function WheelWidget({
         onMouseDown={handleDragStart}
       >
         {/* Main Wheel Card */}
-        <div className="flex flex-col items-center bg-slate-900/95 text-white rounded-2xl p-3.5 w-64 shadow-[0_12px_40px_rgba(0,0,0,0.6)] border border-purple-500/30 backdrop-blur-xl transition-all">
+        <div className={`flex flex-col items-center text-white rounded-2xl p-3.5 w-64 transition-all ${
+          isHost 
+            ? 'bg-slate-900/95 shadow-[0_12px_40px_rgba(0,0,0,0.6)] border border-purple-500/30 backdrop-blur-xl' 
+            : 'bg-transparent drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]'
+        }`}>
           {/* Header */}
-          <div className="flex w-full items-center justify-between pb-2 mb-2 border-b border-purple-500/20">
+          <div className={`flex w-full items-center pb-1 mb-1 ${isHost ? 'justify-between' : 'justify-center'}`}>
             <div className="flex items-center gap-1.5">
               <span className="text-sm">🎡</span>
               <span className="text-xs font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent uppercase tracking-wider">
