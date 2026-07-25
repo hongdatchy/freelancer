@@ -314,45 +314,46 @@ if (typeof window !== 'undefined') {
                                 msgText.includes('__CLK__') || 
                                 msgText.includes('TIMER_ACTION');
 
-                if (!isFromMe) {
+                if (isPraise) {
+                    timerMessagesCount++;
+                    let payload = { index: 0 };
+                    if (msgText.startsWith('__PRAISE__:')) {
+                        const payloadStr = msgText.slice('__PRAISE__:'.length);
+                        try {
+                            payload = JSON.parse(payloadStr);
+                        } catch (e) {
+                            const idx = parseInt(payloadStr, 10);
+                            payload = { index: isNaN(idx) ? 0 : idx };
+                        }
+                    }
+                    console.log('[Jitsi custom-config] __PRAISE__ payload received:', payload);
+
+                    window.praiseStarMap = window.praiseStarMap || {};
+                    if (payload.studentName) {
+                        window.praiseStarMap[payload.studentName] = (window.praiseStarMap[payload.studentName] || 0) + 1;
+                    } else if (payload.isAll) {
+                        const nameEls = document.querySelectorAll('.displayname, #localDisplayName, [id$="DisplayName"]');
+                        nameEls.forEach(el => {
+                            const name = (el.textContent || '').replace(/\s*⭐\s*\d+/g, '').trim();
+                            if (name) {
+                                window.praiseStarMap[name] = (window.praiseStarMap[name] || 0) + 1;
+                            }
+                        });
+                    }
+
+                    if (typeof updateStarBadgesInJitsiUI === 'function') {
+                        updateStarBadgesInJitsiUI();
+                    }
+
+                    if (!isFromMe) {
+                        window.parent.postMessage({ type: 'PLAY_PRAISE', payload }, '*');
+                    }
+                } else if (!isFromMe) {
                     if (isToggleStudentShare) {
                         const allowed = msgText.includes(':true');
                         console.log('[Jitsi custom-config] __TOGGLE_STUDENT_SCREENSHARE__ received:', allowed);
                         window.allowStudentScreenshare = allowed;
                         window.parent.postMessage({ type: 'STUDENT_SCREENSHARE_PERMITTED', allowed }, '*');
-                    } else if (isPraise) {
-                        timerMessagesCount++;
-                        let payload = { index: 0 };
-                        if (msgText.startsWith('__PRAISE__:')) {
-                            const payloadStr = msgText.slice('__PRAISE__:'.length);
-                            try {
-                                payload = JSON.parse(payloadStr);
-                            } catch (e) {
-                                const idx = parseInt(payloadStr, 10);
-                                payload = { index: isNaN(idx) ? 0 : idx };
-                            }
-                        }
-                        console.log('[Jitsi custom-config] __PRAISE__ payload received:', payload);
-
-                        window.praiseStarMap = window.praiseStarMap || {};
-                        if (payload.studentName) {
-                            window.praiseStarMap[payload.studentName] = (window.praiseStarMap[payload.studentName] || 0) + 1;
-                        } else if (payload.isAll) {
-                            const nameEls = document.querySelectorAll('.displayname, #localDisplayName, [id$="DisplayName"]');
-                            nameEls.forEach(el => {
-                                const name = (el.textContent || '').replace(/\s*⭐\s*\d+/g, '').trim();
-                                const lower = name.toLowerCase();
-                                if (name && !lower.includes('giáo viên') && !lower.includes('teacher') && !lower.includes('gv')) {
-                                    window.praiseStarMap[name] = (window.praiseStarMap[name] || 0) + 1;
-                                }
-                            });
-                        }
-
-                        if (typeof updateStarBadgesInJitsiUI === 'function') {
-                            updateStarBadgesInJitsiUI();
-                        }
-
-                        window.parent.postMessage({ type: 'PLAY_PRAISE', payload }, '*');
                     } else if (isDice) {
                         timerMessagesCount++;
                         if (msgText.startsWith('__DICE__:')) {
