@@ -433,4 +433,28 @@ if (typeof window !== 'undefined') {
     
     applyBrightTheme();
     setInterval(applyBrightTheme, 2000);
+
+    // Ẩn tile bảng trắng & màn share khỏi view học viên (layout dồn tính sau)
+    const hideStudentDistractions = () => {
+        if (!document.body || !document.body.classList.contains('is-student')) return;
+        try {
+            // Ẩn screenshare tiles theo ID cố định của Jitsi
+            ['filmstripLocalScreenShare', 'filmstripLocalScreenShareThumbnail'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.setProperty('display', 'none', 'important');
+            });
+
+            // Ẩn whiteboard virtual participant tile theo display name
+            document.querySelectorAll('span.videocontainer, div.videocontainer').forEach(el => {
+                const nameEl = el.querySelector('.displayname, [class*="displayName"]');
+                if (nameEl) {
+                    const name = (nameEl.textContent || '').toLowerCase();
+                    if (name.includes('whiteboard') || name.includes('bảng trắng')) {
+                        el.style.setProperty('display', 'none', 'important');
+                    }
+                }
+            });
+        } catch (e) {}
+    };
+    setInterval(hideStudentDistractions, 1000);
 }
