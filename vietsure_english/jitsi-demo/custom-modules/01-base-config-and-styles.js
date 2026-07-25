@@ -388,8 +388,8 @@ if (typeof window !== 'undefined') {
                     .large-video-background,
                     .filmstrip,
                     #largeVideoBackgroundContainer {
-                        background: linear-gradient(to bottom, #ffffff 0%, #F0F7FF 100%) !important;
-                        background-color: #F0F7FF !important;
+                        background: #FEF3C7 !important;
+                        background-color: #FEF3C7 !important;
                     }
                     /* Disable clicking/pinning ONLY on video thumbnails inside filmstrip for students */
                     body.is-student .filmstrip #filmstripLocalVideo,
