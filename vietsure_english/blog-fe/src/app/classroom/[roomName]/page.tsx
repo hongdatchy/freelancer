@@ -211,6 +211,7 @@ export default function ClassroomPage() {
         defaultLanguage: 'vi',
         settingsSections: ['devices', 'moderator', 'profile', 'calendar', 'sounds'],
         disableSelfViewSettings: true,
+        disabledSounds: ['INCOMING_MSG_SOUND_ID', 'OUTGOING_MSG_SOUND_ID'],
         isStudent: true,
         toolbarButtons: [
           'microphone', 'camera', 'closedcaptions',
@@ -621,9 +622,13 @@ const triggerPraiseAnimation = (selectedIdx?: number) => {
   } catch (e) {
     console.warn('[Praise] Audio player creation failed:', e);
   }
+  const targetParent = document.fullscreenElement || document.body;
   const containerId = 'custom-celebration-container';
   let container = document.getElementById(containerId);
-  if (!container) {
+  if (!container || !targetParent.contains(container)) {
+    if (container && container.parentNode) {
+      container.parentNode.removeChild(container);
+    }
     container = document.createElement('div');
     container.id = containerId;
     container.style.cssText = `
@@ -633,7 +638,7 @@ const triggerPraiseAnimation = (selectedIdx?: number) => {
       z-index: 999999;
       overflow: hidden;
     `;
-    document.body.appendChild(container);
+    targetParent.appendChild(container);
   }
 
   // Inject animation keyframes stylesheet if not present

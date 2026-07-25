@@ -16,6 +16,49 @@ config.defaultLanguage = 'vi';
 config.startTileView = true;
 config.settingsSections = ['devices', 'moderator', 'profile', 'calendar', 'sounds'];
 config.disableSelfViewSettings = true;
+config.disabledSounds = ['INCOMING_MSG_SOUND_ID', 'OUTGOING_MSG_SOUND_ID'];
+
+// Block Jitsi chat incoming/outgoing message sound files
+(function blockJitsiChatSounds() {
+    if (typeof window === 'undefined') return;
+
+    const origPlay = HTMLAudioElement.prototype.play;
+    HTMLAudioElement.prototype.play = function() {
+        const src = String(this.src || '').toLowerCase();
+        if (
+            src.includes('incomingmessage') ||
+            src.includes('outgoingmessage') ||
+            src.includes('incoming_msg') ||
+            src.includes('outgoing_msg') ||
+            src.includes('message')
+        ) {
+            this.muted = true;
+            this.volume = 0;
+            return Promise.resolve();
+        }
+        return origPlay.apply(this, arguments);
+    };
+
+    const OrigAudio = window.Audio;
+    window.Audio = function(src) {
+        const audio = new OrigAudio(src);
+        const s = String(src || '').toLowerCase();
+        if (
+            s.includes('incomingmessage') ||
+            s.includes('outgoingmessage') ||
+            s.includes('incoming_msg') ||
+            s.includes('outgoing_msg') ||
+            s.includes('message')
+        ) {
+            audio.muted = true;
+            audio.volume = 0;
+        }
+        return audio;
+    };
+    if (OrigAudio && OrigAudio.prototype) {
+        window.Audio.prototype = OrigAudio.prototype;
+    }
+})();
 
 // Suppress the "Error uploading files to backend" console.error spam.
 (function() {
