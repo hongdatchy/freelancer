@@ -329,17 +329,14 @@ if (typeof window !== 'undefined') {
                     console.log('[Jitsi custom-config] __PRAISE__ payload received:', payload);
 
                     window.praiseStarMap = window.praiseStarMap || {};
-                    if (payload.studentName) {
+                    // If allScores included, restore full map (handles rejoin case)
+                    if (payload.allScores && typeof payload.allScores === 'object') {
+                        Object.assign(window.praiseStarMap, payload.allScores);
+                    } else if (payload.studentName) {
                         window.praiseStarMap[payload.studentName] = (window.praiseStarMap[payload.studentName] || 0) + 1;
-                    } else if (payload.isAll) {
-                        const nameEls = document.querySelectorAll('.displayname, #localDisplayName, [id$="DisplayName"]');
-                        nameEls.forEach(el => {
-                            const name = (el.textContent || '').replace(/\s*⭐\s*\d+/g, '').trim();
-                            if (name) {
-                                window.praiseStarMap[name] = (window.praiseStarMap[name] || 0) + 1;
-                            }
-                        });
                     }
+                    // Save to localStorage so student can restore on rejoin
+                    try { localStorage.setItem(_praiseStarKey, JSON.stringify(window.praiseStarMap)); } catch (e) {}
 
                     if (typeof updateStarBadgesInJitsiUI === 'function') {
                         updateStarBadgesInJitsiUI();
@@ -496,7 +493,12 @@ if (typeof window !== 'undefined') {
     setInterval(checkAndExit, 80);
 })();
 
+const _praiseStarKey = 'praiseStarMap_' + (window.location.pathname || 'default');
 window.praiseStarMap = window.praiseStarMap || {};
+try {
+    const _saved = localStorage.getItem(_praiseStarKey);
+    if (_saved) Object.assign(window.praiseStarMap, JSON.parse(_saved));
+} catch (e) {}
 
 const updateStarBadgesInJitsiUI = () => {
     try {

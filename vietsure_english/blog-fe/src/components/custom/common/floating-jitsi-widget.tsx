@@ -152,48 +152,65 @@ export default function FloatingJitsiWidget() {
   const [bgImage, setBgImage] = useState<string | null>(null);
   const [apiReady, setApiReady] = useState(false);
   const [isPraiseModalOpen, setIsPraiseModalOpen] = useState(false);
-  const [starScores, setStarScores] = useState<Record<string, number>>({});
+  const starScoresKey = `praiseStars_${roomName || 'default'}`;
+  const [starScores, setStarScores] = useState<Record<string, number>>(() => {
+    try {
+      const saved = localStorage.getItem(`praiseStars_${roomName || 'default'}`);
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
   const participantsRef = useRef<string[]>([]);
 
   const getStudentList = () => {
     if (!apiRef.current) return [];
     try {
       const participants = apiRef.current.getParticipantsInfo() || [];
-      return participants.map((p: any) => ({
-        id: p.participantId || p.id,
-        name: (p.formattedDisplayName || p.displayName || 'Học viên').replace(/\s*⭐\s*\d+/g, '').trim(),
-      })).filter((p: any) => p.name && !p.name.toLowerCase().includes('giáo viên'));
+      return participants
+        .filter((p: any) => {
+          const displayName = p.formattedDisplayName || p.displayName || '';
+          if (displayName.includes('(me)')) return false;
+          return true;
+        })
+        .map((p: any) => ({
+          id: p.participantId || p.id,
+          name: (p.formattedDisplayName || p.displayName || 'Học viên').replace(/\s*⭐\s*\d+/g, '').trim(),
+        }));
     } catch (e) {
       return [];
     }
   };
 
-  const handleSendPraise = (opts: { studentName?: string; isAll?: boolean }) => {
+  const handleSendPraise = (opts: { studentName?: string; studentId?: string; isAll?: boolean }) => {
     const randIndex = Math.floor(Math.random() * 5);
-    const payload = {
-      studentName: opts.studentName || '',
-      isAll: !!opts.isAll,
-      mascotIdx: randIndex,
-    };
-    console.log('[Widget] Sending Praise payload:', payload);
-    if (apiRef.current) {
-      apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${JSON.stringify(payload)}`);
+    const students = getStudentList();
+
+    if (opts.isAll) {
+      const newScores = { ...starScores };
+      students.forEach((s: any) => { newScores[s.name] = (newScores[s.name] || 0) + 1; });
+
+      // Broadcast 1 message cho cả lớp (không có recipient → messageReceived hoạt động)
+      const payload = { isAll: true, mascotIdx: randIndex, allScores: newScores };
+      if (apiRef.current) {
+        apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${JSON.stringify(payload)}`);
+      }
+
+      // Giáo viên tự chơi animation phía parent
+      triggerPraiseAnimation({ isAll: true, mascotIdx: randIndex });
+      setStarScores(newScores);
+      try { localStorage.setItem(starScoresKey, JSON.stringify(newScores)); } catch {}
+
+    } else if (opts.studentName) {
+      const newScores = { ...starScores, [opts.studentName]: (starScores[opts.studentName] || 0) + 1 };
+      // Broadcast kèm tên học viên được khen, học viên khác tự bỏ qua nếu cần
+      const payload = { studentName: opts.studentName, mascotIdx: randIndex, allScores: newScores };
+      if (apiRef.current) {
+        apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${JSON.stringify(payload)}`);
+      }
+      triggerPraiseAnimation(payload);
+      setStarScores(newScores);
+      try { localStorage.setItem(starScoresKey, JSON.stringify(newScores)); } catch {}
     }
-    triggerPraiseAnimation(payload);
-    if (opts.studentName) {
-      setStarScores(prev => ({
-        ...prev,
-        [opts.studentName!]: (prev[opts.studentName!] || 0) + 1
-      }));
-    } else if (opts.isAll) {
-      setStarScores(prev => {
-        const next = { ...prev };
-        getStudentList().forEach(s => {
-          next[s.name] = (next[s.name] || 0) + 1;
-        });
-        return next;
-      });
-    }
+
     setIsPraiseModalOpen(false);
   };
 
