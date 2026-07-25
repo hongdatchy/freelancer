@@ -498,12 +498,11 @@ const injectToolbarIcon = () => {
     label.className = 'ToolIcon Shape';
     label.id = 'custom-highlighter-tool';
     label.title = 'Bút dạ quang (Highlighter - 40% độ mờ)';
-    label.style.cursor = 'pointer';
     
     label.innerHTML = `
-        <input type="checkbox" style="display: none;">
-        <div class="ToolIcon__icon" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
-            <svg aria-hidden="true" focusable="false" role="img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 17px; height: 17px;">
+        <input class="ToolIcon_type_checkbox ToolIcon_size_medium" type="checkbox" style="display: none;">
+        <div class="ToolIcon__icon">
+            <svg aria-hidden="true" focusable="false" role="img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9.53 16.122l9.88-9.88a3 3 0 114.243 4.243l-9.88 9.88M9.53 16.122a3 3 0 11-4.243-4.242l9.88-9.88M9.53 16.122L5.29 20.36a1.5 1.5 0 11-2.122-2.121L7.41 14M18 10l-4-4" />
             </svg>
         </div>
@@ -513,9 +512,19 @@ const injectToolbarIcon = () => {
         const style = targetDoc.createElement('style');
         style.id = 'custom-highlighter-tool-style';
         style.textContent = `
-            #custom-highlighter-tool.active {
+            #custom-highlighter-tool.active .ToolIcon__icon {
                 background-color: var(--color-primary-light, #e3e2fe) !important;
                 color: var(--color-primary, #6965db) !important;
+            }
+            #custom-close-drawing-toolbar-btn .ToolIcon__icon {
+                background-color: var(--button-destructive-bg-color, #ffe3e3) !important;
+                color: var(--button-destructive-color, #c92a2a) !important;
+                border-radius: var(--border-radius-lg, 0.5rem) !important;
+                transition: background-color 0.15s ease, color 0.15s ease !important;
+            }
+            #custom-close-drawing-toolbar-btn:hover .ToolIcon__icon {
+                background-color: #fca5a5 !important;
+                color: #7f1d1d !important;
             }
         `;
         targetDoc.head.appendChild(style);
@@ -585,7 +594,53 @@ const injectToolbarIcon = () => {
     } else {
         toolbarStack.appendChild(label);
     }
-    console.log('[Jitsi custom-config] Custom Excalidraw Highlighter tool button injected successfully');
+
+    // Inject Red X Close button right after Highlighter tool
+    if (!targetDoc.getElementById('custom-close-drawing-toolbar-btn')) {
+        const closeBtn = targetDoc.createElement('label');
+        closeBtn.className = 'ToolIcon Shape';
+        closeBtn.id = 'custom-close-drawing-toolbar-btn';
+        closeBtn.title = 'Đóng thanh công cụ vẽ';
+
+        closeBtn.innerHTML = `
+            <input class="ToolIcon_type_button ToolIcon_size_medium" type="button" style="display: none;">
+            <div class="ToolIcon__icon">
+                <svg aria-hidden="true" focusable="false" role="img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </div>
+        `;
+
+        closeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('[Excalidraw] Red X button clicked -> Hiding drawing toolbar and showing Pen button');
+            window.isExcalidrawToolbarVisible = false;
+
+            const docs = [document];
+            document.querySelectorAll('iframe').forEach(iframe => {
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                    if (iframeDoc) docs.push(iframeDoc);
+                } catch (err) {}
+            });
+
+            docs.forEach(d => {
+                const toolbars = d.querySelectorAll('.shapes-section, .App-toolbar, .App-toolbar-content, [data-testid="toolbar-section"]');
+                toolbars.forEach(tb => tb.style.setProperty('display', 'none', 'important'));
+                const penBtn = d.getElementById('custom-pen-toggle-btn');
+                if (penBtn) penBtn.style.setProperty('display', 'flex', 'important');
+            });
+        });
+
+        if (label && label.nextSibling) {
+            label.parentNode.insertBefore(closeBtn, label.nextSibling);
+        } else if (label && label.parentNode) {
+            label.parentNode.appendChild(closeBtn);
+        }
+    }
+    console.log('[Jitsi custom-config] Custom Excalidraw Highlighter & Close buttons injected successfully');
 };
 
 // Monitor screen sharing and maintain the video background element behind the canvas
@@ -1136,7 +1191,9 @@ if (typeof window !== 'undefined') {
 (function setupExcalidrawToolbarToggle() {
     if (typeof window === 'undefined') return;
 
-    let isToolbarVisible = false; // Default HIDDEN
+    if (typeof window.isExcalidrawToolbarVisible === 'undefined') {
+        window.isExcalidrawToolbarVisible = false; // Default HIDDEN
+    }
 
     setInterval(() => {
         try {
@@ -1153,29 +1210,16 @@ if (typeof window !== 'undefined') {
                 const excalidrawContainer = doc.querySelector('.excalidraw') || doc.querySelector('.excalidraw-container') || doc.querySelector('.whiteboard-container');
                 const existingBtn = doc.getElementById('custom-pen-toggle-btn');
 
-                // Check accurately if screenshare is active (via class on body or live desktop video track)
-                const isScreenshareActive = !!(
-                    (document.body && document.body.classList.contains('whiteboard-screenshare-active')) ||
-                    (doc.body && doc.body.classList.contains('whiteboard-screenshare-active')) ||
-                    (window.videoBgElement && window.videoBgElement.srcObject && window.videoBgElement.srcObject.getVideoTracks && window.videoBgElement.srcObject.getVideoTracks().some(t => t.readyState === 'live' && t.enabled))
-                );
-
-                // IF NOT SCREENSHARING or NO WHITEBOARD: Hide pen button & restore original toolbar
-                if (!excalidrawContainer || !isScreenshareActive) {
+                // IF NO WHITEBOARD: Hide pen button & restore original toolbar
+                if (!excalidrawContainer) {
                     if (existingBtn) existingBtn.style.setProperty('display', 'none', 'important');
-                    if (excalidrawContainer) {
-                        const toolbars = doc.querySelectorAll('.shapes-section, .App-toolbar, .App-toolbar-content, [data-testid="toolbar-section"]');
-                        toolbars.forEach(tb => {
-                            tb.style.removeProperty('display');
-                        });
-                    }
                     return;
                 }
 
                 // Apply toolbar visibility state directly to toolbar elements
                 const toolbars = doc.querySelectorAll('.shapes-section, .App-toolbar, .App-toolbar-content, [data-testid="toolbar-section"]');
                 toolbars.forEach(tb => {
-                    if (!isToolbarVisible) {
+                    if (!window.isExcalidrawToolbarVisible) {
                         tb.style.setProperty('display', 'none', 'important');
                     } else {
                         tb.style.removeProperty('display');
@@ -1215,10 +1259,6 @@ if (typeof window !== 'undefined') {
                         .custom-pen-toggle-btn:active {
                             transform: scale(0.94) !important;
                         }
-                        .custom-pen-toggle-btn.active {
-                            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
-                            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5) !important;
-                        }
                     `;
                     doc.head.appendChild(style);
                 }
@@ -1229,7 +1269,7 @@ if (typeof window !== 'undefined') {
                     toggleBtn = doc.createElement('div');
                     toggleBtn.id = 'custom-pen-toggle-btn';
                     toggleBtn.className = 'custom-pen-toggle-btn';
-                    toggleBtn.title = 'Hiện/Ẩn Thanh công cụ vẽ';
+                    toggleBtn.title = 'Mở Thanh công cụ vẽ';
                     toggleBtn.innerHTML = `
                         <svg aria-hidden="true" focusable="false" role="img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;">
                             <path d="M12 20h9"></path>
@@ -1241,39 +1281,32 @@ if (typeof window !== 'undefined') {
                         e.preventDefault();
                         e.stopPropagation();
 
-                        isToolbarVisible = !isToolbarVisible;
+                        // Open toolbar and hide floating pen button
+                        window.isExcalidrawToolbarVisible = true;
 
-                        // Instantly toggle all toolbar elements across all documents
                         docs.forEach(d => {
                             const tbs = d.querySelectorAll('.shapes-section, .App-toolbar, .App-toolbar-content, [data-testid="toolbar-section"]');
                             tbs.forEach(tb => {
-                                if (isToolbarVisible) {
-                                    tb.style.removeProperty('display');
-                                    tb.style.setProperty('display', 'flex', 'important');
-                                } else {
-                                    tb.style.setProperty('display', 'none', 'important');
-                                }
+                                tb.style.removeProperty('display');
+                                tb.style.setProperty('display', 'flex', 'important');
                             });
                             const btn = d.getElementById('custom-pen-toggle-btn');
                             if (btn) {
-                                if (isToolbarVisible) {
-                                    btn.classList.add('active');
-                                } else {
-                                    btn.classList.remove('active');
-                                }
+                                btn.style.setProperty('display', 'none', 'important');
                             }
                         });
                     });
 
                     (doc.body || excalidrawContainer).appendChild(toggleBtn);
                     console.log('[Jitsi custom-config] Custom Excalidraw floating Pen button injected at Bottom Left');
+                }
+
+                // Toggle visibility: Hide pen button when toolbar is open, show when toolbar is closed
+                if (window.isExcalidrawToolbarVisible) {
+                    toggleBtn.style.setProperty('display', 'none', 'important');
                 } else {
+                    toggleBtn.style.removeProperty('display');
                     toggleBtn.style.setProperty('display', 'flex', 'important');
-                    if (isToolbarVisible) {
-                        toggleBtn.classList.add('active');
-                    } else {
-                        toggleBtn.classList.remove('active');
-                    }
                 }
             });
         } catch (e) {}
