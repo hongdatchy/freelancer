@@ -344,6 +344,13 @@ export default function FloatingJitsiWidget() {
       apiRef.current.addEventListener('videoConferenceJoined', () => {
         setApiReady(true);
 
+        // Automatically trigger Fullscreen mode for Teacher floating widget
+        if (widgetInnerRef.current && !document.fullscreenElement) {
+          widgetInnerRef.current.requestFullscreen()
+            .then(() => setIsFullscreen(true))
+            .catch(() => {});
+        }
+
         // Set initial filmstrip width to 310px on join if widget width > 1100px
         if (size.width > 1100) {
           if (apiRef.current) {
@@ -671,6 +678,27 @@ export default function FloatingJitsiWidget() {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
   }, []);
+
+  // Automatically trigger Fullscreen mode for Teacher floating widget when entering class
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const autoFullscreenTeacher = () => {
+      if (widgetInnerRef.current && !document.fullscreenElement) {
+        widgetInnerRef.current.requestFullscreen()
+          .then(() => setIsFullscreen(true))
+          .catch(() => {});
+      }
+    };
+
+    const timer = setTimeout(autoFullscreenTeacher, 300);
+    window.addEventListener('click', autoFullscreenTeacher, { once: true });
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('click', autoFullscreenTeacher);
+    };
+  }, [isOpen]);
 
   if (!isOpen || !roomName) return null;
 
