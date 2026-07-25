@@ -42,6 +42,7 @@ export default function ClassroomPage() {
   const breakoutRoomsDataRef = useRef<any>(null);
   const currentSubRoomJidRef = useRef<string>('');
   const shouldEndConferenceOnMainJoinRef = useRef<boolean>(false);
+  const isTileViewEnabledRef = useRef<boolean>(false);
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -238,7 +239,7 @@ export default function ClassroomPage() {
         }, 1000);
       }
 
-      // If whiteboard is active on join, turn OFF tile view so whiteboard is focused
+      // Auto-enable Grid View on join ONLY if whiteboard is NOT active
       setTimeout(() => {
         if (apiRef.current) {
           try {
@@ -252,10 +253,17 @@ export default function ClassroomPage() {
             if (isWhiteboardOpen) {
               console.log('[Student Jitsi] Whiteboard IS active, turning OFF Grid View to show Whiteboard');
               apiRef.current.executeCommand('setTileView', false);
+            } else if (!isTileViewEnabledRef.current) {
+              console.log('[Student Jitsi] Auto-enabling Grid View on join (Whiteboard is NOT active)');
+              apiRef.current.executeCommand('setTileView', true);
             }
-          } catch (e) {}
+          } catch (e) {
+            if (!isTileViewEnabledRef.current) {
+              apiRef.current.executeCommand('setTileView', true);
+            }
+          }
         }
-      }, 800);
+      }, 1000);
 
       if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
         apiRef.current.getIFrame().contentWindow.postMessage({
@@ -263,6 +271,11 @@ export default function ClassroomPage() {
           imageUrl: bgImageRef.current
         }, '*');
       }
+    });
+
+    // Track tile view state for student
+    apiRef.current.addEventListener('tileViewChanged', (event: any) => {
+      isTileViewEnabledRef.current = !!event.enabled;
     });
 
     // Helper to resolve human-readable sub-room name from rooms data
