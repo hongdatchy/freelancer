@@ -344,10 +344,10 @@ export default function FloatingJitsiWidget() {
       apiRef.current.addEventListener('videoConferenceJoined', () => {
         setApiReady(true);
 
-        // Set initial filmstrip width to 360px on join if widget width > 1100px
+        // Set initial filmstrip width to 310px on join if widget width > 1100px
         if (size.width > 1100) {
           if (apiRef.current) {
-            apiRef.current.executeCommand('resizeFilmStrip', { width: 360 });
+            apiRef.current.executeCommand('resizeFilmStrip', { width: 310 });
           }
         }
 
@@ -485,12 +485,12 @@ export default function FloatingJitsiWidget() {
     };
   }, [isOpen, roomName]);
 
-  // Lock Jitsi filmstrip width to 360px if widget width > 1100px when resizing finishes or restores
+  // Lock Jitsi filmstrip width to 310px if widget width > 1100px when resizing finishes or restores
   useEffect(() => {
     if (!isResizing && !isMinimized && apiRef.current && apiReady) {
       if (size.width > 1100) {
         if (apiRef.current) {
-          apiRef.current.executeCommand('resizeFilmStrip', { width: 360 });
+          apiRef.current.executeCommand('resizeFilmStrip', { width: 310 });
         }
       }
     }
