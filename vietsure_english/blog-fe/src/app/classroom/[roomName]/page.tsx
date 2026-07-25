@@ -390,9 +390,9 @@ export default function ClassroomPage() {
           apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${randIndex}`);
         }
       } else if (event.data.type === 'PLAY_PRAISE') {
-        const index = typeof event.data.index === 'number' ? event.data.index : 0;
-        console.log('[Student] PLAY_PRAISE message received with index:', index, ', triggering local animation');
-        triggerPraiseAnimation(index);
+        const payload = event.data.payload || { mascotIdx: 0 };
+        console.log('[Student] PLAY_PRAISE message received with payload:', payload);
+        triggerPraiseAnimation(payload);
       } else if (event.data.type === 'BREAKOUT_ROOM_STATUS') {
         console.log('[Room] BREAKOUT_ROOM_STATUS received:', event.data.inBreakout);
         setIsInBreakoutRoom(!!event.data.inBreakout);
@@ -611,9 +611,21 @@ export default function ClassroomPage() {
   );
 }
 
-// Celebration / Praise animations (mascot characters bubbling up from the bottom with hooray sounds)
-const triggerPraiseAnimation = (selectedIdx?: number) => {
+// Celebration / Praise animations (mascot characters bubbling up from the bottom with hooray sounds & banner)
+const triggerPraiseAnimation = (param?: any) => {
   if (typeof window === 'undefined') return;
+
+  let mascotIdx = 0;
+  let studentName = '';
+  let isAll = false;
+
+  if (typeof param === 'number') {
+    mascotIdx = param;
+  } else if (param && typeof param === 'object') {
+    mascotIdx = typeof param.mascotIdx === 'number' ? param.mascotIdx : (typeof param.index === 'number' ? param.index : 0);
+    studentName = param.studentName || '';
+    isAll = !!param.isAll;
+  }
 
   // 1. Play Hooray celebratory sound via MP3
   try {
@@ -653,30 +665,47 @@ const triggerPraiseAnimation = (selectedIdx?: number) => {
           opacity: 0;
         }
         20% {
-          transform: translate(-50%, -60vh) scale(1) rotate(-5deg);
+          transform: translate(-50%, -60vh) scale(1) rotate(-3deg);
           opacity: 1;
         }
         80% {
-          transform: translate(-50%, -65vh) scale(1) rotate(5deg);
+          transform: translate(-50%, -65vh) scale(1) rotate(3deg);
           opacity: 1;
         }
         100% {
-          transform: translate(-50%, -135vh) scale(0.8) rotate(15deg);
+          transform: translate(-50%, -135vh) scale(0.8) rotate(10deg);
           opacity: 0;
         }
       }
-      .praise-character-single {
+      .praise-wrapper-single {
         position: absolute;
         left: 50%;
-        bottom: -300px;
+        bottom: -360px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
         will-change: transform, opacity;
-        animation: floatUpSingle 2.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        animation: floatUpSingle 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      }
+      .praise-banner-single {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+        color: #ffffff;
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.6), inset 0 2px 4px rgba(255,255,255,0.4);
+        border: 2px solid #fef3c7;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        white-space: nowrap;
       }
     `;
     document.head.appendChild(style);
   }
 
-  // Mascot penguin characters to spawn (Only specific penguin expressions!)
+  // Mascot penguin characters to spawn
   const penguinImages = [
     '/images/phan-khich-nang-dong.png',
     '/images/hao-hung-san-sang.png',
@@ -685,28 +714,35 @@ const triggerPraiseAnimation = (selectedIdx?: number) => {
     '/images/tap-trung-quyet-liet.png'
   ];
 
-  // Resolve the chosen penguin image
-  const resolvedIndex = typeof selectedIdx === 'number' ? selectedIdx : Math.floor(Math.random() * penguinImages.length);
-  const imgPath = penguinImages[resolvedIndex % penguinImages.length];
+  const imgPath = penguinImages[mascotIdx % penguinImages.length];
 
-  // Spawn exactly 1 single penguin character centered on screen
+  // Spawn wrapper element with banner + mascot image
+  const wrapper = document.createElement('div');
+  wrapper.className = 'praise-wrapper-single';
+
+  if (studentName || isAll) {
+    const banner = document.createElement('div');
+    banner.className = 'praise-banner-single';
+    const text = isAll ? '🌟 KHEN THƯỞNG CẢ LỚP (+1 ⭐)' : `⭐ KHEN THƯỞNG ${studentName.toUpperCase()} (+1 ⭐)`;
+    banner.innerHTML = text;
+    wrapper.appendChild(banner);
+  }
+
   const img = document.createElement('img');
   img.src = imgPath;
-  img.className = 'praise-character-single';
   img.style.width = '240px';
   img.style.height = 'auto';
+  wrapper.appendChild(img);
 
-  container.appendChild(img);
+  container.appendChild(wrapper);
 
-  // Self-destruct only the individual image after its animation finishes
   setTimeout(() => {
-    if (img && img.parentNode) {
-      img.parentNode.removeChild(img);
+    if (wrapper && wrapper.parentNode) {
+      wrapper.parentNode.removeChild(wrapper);
     }
-    // Clean up empty container if no more images are floating
     const currentContainer = document.getElementById(containerId);
     if (currentContainer && currentContainer.childNodes.length === 0 && currentContainer.parentNode) {
       currentContainer.parentNode.removeChild(currentContainer);
     }
-  }, 2600);
+  }, 2800);
 };

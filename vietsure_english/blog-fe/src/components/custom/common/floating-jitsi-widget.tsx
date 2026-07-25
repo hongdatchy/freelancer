@@ -151,7 +151,51 @@ export default function FloatingJitsiWidget() {
 
   const [bgImage, setBgImage] = useState<string | null>(null);
   const [apiReady, setApiReady] = useState(false);
+  const [isPraiseModalOpen, setIsPraiseModalOpen] = useState(false);
+  const [starScores, setStarScores] = useState<Record<string, number>>({});
   const participantsRef = useRef<string[]>([]);
+
+  const getStudentList = () => {
+    if (!apiRef.current) return [];
+    try {
+      const participants = apiRef.current.getParticipantsInfo() || [];
+      return participants.map((p: any) => ({
+        id: p.participantId || p.id,
+        name: (p.formattedDisplayName || p.displayName || 'Học viên').replace(/\s*⭐\s*\d+/g, '').trim(),
+      })).filter((p: any) => p.name && !p.name.toLowerCase().includes('giáo viên'));
+    } catch (e) {
+      return [];
+    }
+  };
+
+  const handleSendPraise = (opts: { studentName?: string; isAll?: boolean }) => {
+    const randIndex = Math.floor(Math.random() * 5);
+    const payload = {
+      studentName: opts.studentName || '',
+      isAll: !!opts.isAll,
+      mascotIdx: randIndex,
+    };
+    console.log('[Widget] Sending Praise payload:', payload);
+    if (apiRef.current) {
+      apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${JSON.stringify(payload)}`);
+    }
+    triggerPraiseAnimation(payload);
+    if (opts.studentName) {
+      setStarScores(prev => ({
+        ...prev,
+        [opts.studentName!]: (prev[opts.studentName!] || 0) + 1
+      }));
+    } else if (opts.isAll) {
+      setStarScores(prev => {
+        const next = { ...prev };
+        getStudentList().forEach(s => {
+          next[s.name] = (next[s.name] || 0) + 1;
+        });
+        return next;
+      });
+    }
+    setIsPraiseModalOpen(false);
+  };
 
   // Jitsi meeting should be initialized exactly ONCE when the meeting starts
   // and disposed exactly ONCE when closed. We do NOT recreate Jitsi when minimized/maximized.
@@ -523,25 +567,23 @@ export default function FloatingJitsiWidget() {
           console.log('[Parent] TOGGLE_TIMER message received, dispatching event');
           window.dispatchEvent(new CustomEvent('toggle-timer-card'));
         } else if (event.data.type === 'TRIGGER_PRAISE') {
-          const randIndex = Math.floor(Math.random() * 5);
-          console.log('[Parent] TRIGGER_PRAISE received, broadcasting index:', randIndex);
-          if (apiRef.current) {
-            apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${randIndex}`);
-          }
-          triggerPraiseAnimation(randIndex);
-        } else if (event.data.type === 'TRIGGER_DICE') {
-          console.log('[Parent] TRIGGER_DICE received, dispatching toggle-dice-widget');
-          window.dispatchEvent(new CustomEvent('toggle-dice-widget'));
-        } else if (event.data.type === 'SYNC_DICE_RESULT') {
-          console.log('[Parent] SYNC_DICE_RESULT received, dispatching sync-dice-result');
-          window.dispatchEvent(new CustomEvent('sync-dice-result', { detail: { results: event.data.results } }));
-        } else if (event.data.type === 'TRIGGER_WHEEL') {
-          console.log('[Parent] TRIGGER_WHEEL received, dispatching toggle-wheel-widget');
-          window.dispatchEvent(new CustomEvent('toggle-wheel-widget'));
+          setIsPraiseModalOpen(true);
         } else if (event.data.type === 'PLAY_PRAISE') {
-          const index = typeof event.data.index === 'number' ? event.data.index : 0;
-          console.log('[Parent] PLAY_PRAISE received, playing animation with index:', index);
-          triggerPraiseAnimation(index);
+          const payload = event.data.payload || { mascotIdx: 0 };
+          console.log('[Parent] PLAY_PRAISE received with payload:', payload);
+          triggerPraiseAnimation(payload);
+          if (payload.studentName) {
+            setStarScores(prev => ({
+              ...prev,
+              [payload.studentName]: (prev[payload.studentName] || 0) + 1
+            }));
+          } else if (payload.isAll) {
+            setStarScores(prev => {
+              const next = { ...prev };
+              Object.keys(next).forEach(k => { next[k] = (next[k] || 0) + 1; });
+              return next;
+            });
+          }
         } else if (event.data.type === 'BREAKOUT_ROOM_STATUS') {
           console.log('[Widget] BREAKOUT_ROOM_STATUS received:', event.data.inBreakout);
           setIsInBreakoutRoom(!!event.data.inBreakout);
@@ -925,13 +967,138 @@ export default function FloatingJitsiWidget() {
         </div>
       </div>
 
+      {/* Praise Selector Modal */}
+      {isPraiseModalOpen && (
+        <div
+          className="no-drag"
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 99999,
+            background: 'linear-gradient(145deg, #1e1b4b 0%, #312e81 100%)',
+            color: '#fff',
+            borderRadius: 20,
+            padding: 24,
+            width: 380,
+            maxWidth: '90vw',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 20px rgba(124, 58, 237, 0.4)',
+            border: '1.5px solid rgba(167, 139, 250, 0.4)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 24 }}>⭐</span>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#fef08a' }}>Khen Thưởng Học Viên</h3>
+            </div>
+            <button
+              onClick={() => setIsPraiseModalOpen(false)}
+              style={{ background: 'none', border: 'none', color: '#a78bfa', fontSize: 20, cursor: 'pointer' }}
+            >
+              ✕
+            </button>
+          </div>
+
+          <p style={{ fontSize: 13, color: '#c7d2fe', marginBottom: 16, marginTop: 0 }}>
+            Chọn học viên để tặng Ngôi sao khen thưởng ⭐
+          </p>
+
+          {/* Praise All button */}
+          <button
+            onClick={() => handleSendPraise({ isAll: true })}
+            style={{
+              width: '100%',
+              padding: '12px 16px',
+              borderRadius: 12,
+              border: 'none',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              color: '#fff',
+              fontWeight: 800,
+              fontSize: 15,
+              cursor: 'pointer',
+              marginBottom: 16,
+              boxShadow: '0 4px 15px rgba(245, 158, 11, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            }}
+          >
+            <span>🌟 Khen Thưởng Cả Lớp (+1 ⭐)</span>
+          </button>
+
+          {/* Student list */}
+          <div style={{ maxHeight: 220, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, paddingRight: 4 }}>
+            {getStudentList().map((student: any, idx: number) => {
+              const stars = starScores[student.name] || 0;
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    borderRadius: 12,
+                    padding: '10px 14px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 18 }}>🎓</span>
+                    <span style={{ fontWeight: 700, fontSize: 14, color: '#ffffff' }}>{student.name}</span>
+                    <span style={{ background: 'rgba(245, 158, 11, 0.25)', color: '#fbbf24', padding: '2px 8px', borderRadius: 12, fontSize: 12, fontWeight: 800 }}>
+                      ⭐ {stars}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleSendPraise({ studentName: student.name })}
+                    style={{
+                      background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+                      border: 'none',
+                      color: '#fff',
+                      padding: '6px 14px',
+                      borderRadius: 8,
+                      fontWeight: 700,
+                      fontSize: 13,
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(139, 92, 246, 0.4)',
+                    }}
+                  >
+                    +1 ⭐ Khen
+                  </button>
+                </div>
+              );
+            })}
+            {getStudentList().length === 0 && (
+              <div style={{ textAlign: 'center', color: '#a78bfa', padding: '16px 0', fontSize: 13 }}>
+                Đang chờ học viên tham gia...
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </>
   );
 }
 
-// Celebration / Praise animations (mascot characters bubbling up from the bottom with hooray sounds)
-const triggerPraiseAnimation = (selectedIdx?: number) => {
+// Celebration / Praise animations (mascot characters bubbling up from the bottom with hooray sounds & banner)
+const triggerPraiseAnimation = (param?: any) => {
   if (typeof window === 'undefined') return;
+
+  let mascotIdx = 0;
+  let studentName = '';
+  let isAll = false;
+
+  if (typeof param === 'number') {
+    mascotIdx = param;
+  } else if (param && typeof param === 'object') {
+    mascotIdx = typeof param.mascotIdx === 'number' ? param.mascotIdx : (typeof param.index === 'number' ? param.index : 0);
+    studentName = param.studentName || '';
+    isAll = !!param.isAll;
+  }
 
   // 1. Play Hooray celebratory sound via MP3
   try {
@@ -940,6 +1107,7 @@ const triggerPraiseAnimation = (selectedIdx?: number) => {
   } catch (e) {
     console.warn('[Praise] Audio player creation failed:', e);
   }
+
   const targetParent = document.fullscreenElement || document.body;
   const containerId = 'custom-celebration-container';
   let container = document.getElementById(containerId);
@@ -971,30 +1139,47 @@ const triggerPraiseAnimation = (selectedIdx?: number) => {
           opacity: 0;
         }
         20% {
-          transform: translate(-50%, -60vh) scale(1) rotate(-5deg);
+          transform: translate(-50%, -60vh) scale(1) rotate(-3deg);
           opacity: 1;
         }
         80% {
-          transform: translate(-50%, -65vh) scale(1) rotate(5deg);
+          transform: translate(-50%, -65vh) scale(1) rotate(3deg);
           opacity: 1;
         }
         100% {
-          transform: translate(-50%, -135vh) scale(0.8) rotate(15deg);
+          transform: translate(-50%, -135vh) scale(0.8) rotate(10deg);
           opacity: 0;
         }
       }
-      .praise-character-single {
+      .praise-wrapper-single {
         position: absolute;
         left: 50%;
-        bottom: -300px;
+        bottom: -360px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
         will-change: transform, opacity;
-        animation: floatUpSingle 2.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        animation: floatUpSingle 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      }
+      .praise-banner-single {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+        color: #ffffff;
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.6), inset 0 2px 4px rgba(255,255,255,0.4);
+        border: 2px solid #fef3c7;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        white-space: nowrap;
       }
     `;
     document.head.appendChild(style);
   }
 
-  // Mascot penguin characters to spawn (Only specific penguin expressions!)
+  // Mascot penguin characters to spawn
   const penguinImages = [
     '/images/phan-khich-nang-dong.png',
     '/images/hao-hung-san-sang.png',
@@ -1003,28 +1188,35 @@ const triggerPraiseAnimation = (selectedIdx?: number) => {
     '/images/tap-trung-quyet-liet.png'
   ];
 
-  // Resolve the chosen penguin image
-  const resolvedIndex = typeof selectedIdx === 'number' ? selectedIdx : Math.floor(Math.random() * penguinImages.length);
-  const imgPath = penguinImages[resolvedIndex % penguinImages.length];
+  const imgPath = penguinImages[mascotIdx % penguinImages.length];
 
-  // Spawn exactly 1 single penguin character centered on screen
+  // Spawn wrapper element with banner + mascot image
+  const wrapper = document.createElement('div');
+  wrapper.className = 'praise-wrapper-single';
+
+  if (studentName || isAll) {
+    const banner = document.createElement('div');
+    banner.className = 'praise-banner-single';
+    const text = isAll ? '🌟 KHEN THƯỞNG CẢ LỚP (+1 ⭐)' : `⭐ KHEN THƯỞNG ${studentName.toUpperCase()} (+1 ⭐)`;
+    banner.innerHTML = text;
+    wrapper.appendChild(banner);
+  }
+
   const img = document.createElement('img');
   img.src = imgPath;
-  img.className = 'praise-character-single';
   img.style.width = '240px';
   img.style.height = 'auto';
+  wrapper.appendChild(img);
 
-  container.appendChild(img);
+  container.appendChild(wrapper);
 
-  // Self-destruct only the individual image after its animation finishes
   setTimeout(() => {
-    if (img && img.parentNode) {
-      img.parentNode.removeChild(img);
+    if (wrapper && wrapper.parentNode) {
+      wrapper.parentNode.removeChild(wrapper);
     }
-    // Clean up empty container if no more images are floating
     const currentContainer = document.getElementById(containerId);
     if (currentContainer && currentContainer.childNodes.length === 0 && currentContainer.parentNode) {
       currentContainer.parentNode.removeChild(currentContainer);
     }
-  }, 2600);
+  }, 2800);
 };

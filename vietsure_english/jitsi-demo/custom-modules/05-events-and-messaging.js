@@ -321,10 +321,38 @@ if (typeof window !== 'undefined') {
                         window.allowStudentScreenshare = allowed;
                         window.parent.postMessage({ type: 'STUDENT_SCREENSHARE_PERMITTED', allowed }, '*');
                     } else if (isPraise) {
-                        const parts = msgText.split(':');
-                        const index = parts[1] ? parseInt(parts[1], 10) : 0;
-                        console.log('[Jitsi custom-config] __PRAISE__ received with index:', index);
-                        window.parent.postMessage({ type: 'PLAY_PRAISE', index }, '*');
+                        timerMessagesCount++;
+                        let payload = { index: 0 };
+                        if (msgText.startsWith('__PRAISE__:')) {
+                            const payloadStr = msgText.slice('__PRAISE__:'.length);
+                            try {
+                                payload = JSON.parse(payloadStr);
+                            } catch (e) {
+                                const idx = parseInt(payloadStr, 10);
+                                payload = { index: isNaN(idx) ? 0 : idx };
+                            }
+                        }
+                        console.log('[Jitsi custom-config] __PRAISE__ payload received:', payload);
+
+                        window.praiseStarMap = window.praiseStarMap || {};
+                        if (payload.studentName) {
+                            window.praiseStarMap[payload.studentName] = (window.praiseStarMap[payload.studentName] || 0) + 1;
+                        } else if (payload.isAll) {
+                            const nameEls = document.querySelectorAll('.displayname, #localDisplayName, [id$="DisplayName"]');
+                            nameEls.forEach(el => {
+                                const name = (el.textContent || '').replace(/\s*⭐\s*\d+/g, '').trim();
+                                const lower = name.toLowerCase();
+                                if (name && !lower.includes('giáo viên') && !lower.includes('teacher') && !lower.includes('gv')) {
+                                    window.praiseStarMap[name] = (window.praiseStarMap[name] || 0) + 1;
+                                }
+                            });
+                        }
+
+                        if (typeof updateStarBadgesInJitsiUI === 'function') {
+                            updateStarBadgesInJitsiUI();
+                        }
+
+                        window.parent.postMessage({ type: 'PLAY_PRAISE', payload }, '*');
                     } else if (isDice) {
                         timerMessagesCount++;
                         if (msgText.startsWith('__DICE__:')) {
@@ -466,3 +494,39 @@ if (typeof window !== 'undefined') {
 
     setInterval(checkAndExit, 80);
 })();
+
+window.praiseStarMap = window.praiseStarMap || {};
+
+const updateStarBadgesInJitsiUI = () => {
+    try {
+        const starMap = window.praiseStarMap || {};
+        if (Object.keys(starMap).length === 0) return;
+
+        const nameEls = document.querySelectorAll('.displayname, #localDisplayName, [id$="DisplayName"], [class*="participant-name"]');
+        nameEls.forEach(el => {
+            const rawText = el.getAttribute('data-raw-name') || el.textContent || '';
+            const cleanName = rawText.replace(/\s*⭐\s*\d+/g, '').trim();
+            if (!cleanName) return;
+
+            if (!el.getAttribute('data-raw-name')) {
+                el.setAttribute('data-raw-name', cleanName);
+            }
+
+            let starCount = 0;
+            for (let key in starMap) {
+                if (cleanName.toLowerCase() === key.toLowerCase() || cleanName.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(cleanName.toLowerCase())) {
+                    starCount += starMap[key];
+                }
+            }
+
+            if (starCount > 0) {
+                const targetText = `${cleanName} ⭐ ${starCount}`;
+                if (el.textContent !== targetText) {
+                    el.textContent = targetText;
+                }
+            }
+        });
+    } catch (e) {}
+};
+
+setInterval(updateStarBadgesInJitsiUI, 1000);
