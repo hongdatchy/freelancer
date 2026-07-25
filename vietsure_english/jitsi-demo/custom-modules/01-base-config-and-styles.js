@@ -8,6 +8,8 @@ config.defaultLanguage = 'vi';
 config.startTileView = true;
 config.settingsSections = ['devices', 'moderator', 'profile', 'calendar', 'sounds'];
 config.disableSelfViewSettings = true;
+config.enableClosePage = false;
+config.enableAutomaticUrlRedirect = false;
 
 // Suppress the "Error uploading files to backend" console.error spam.
 (function() {

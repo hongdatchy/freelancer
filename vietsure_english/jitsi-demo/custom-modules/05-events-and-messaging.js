@@ -19,13 +19,13 @@ if (typeof window !== 'undefined') {
                     if (window.currentTickAudio) {
                         window.currentTickAudio.pause();
                     }
-                    const alarmPath = origin ? `${origin}/images/phone-ring-medium.mp3` : '/images/phone-ring-medium.mp3';
+                    const alarmPath = origin ? `${origin}/phone-ring-medium.mp3` : '/phone-ring-medium.mp3';
                     window.currentTickAudio = new Audio(alarmPath);
                     window.currentTickAudio.play().catch(() => {});
                     return;
                 }
 
-                const tickPath = origin ? `${origin}/images/quartz-clock.mp3` : '/images/quartz-clock.mp3';
+                const tickPath = origin ? `${origin}/quartz-clock.mp3` : '/quartz-clock.mp3';
                 
                 if (!window.currentTickAudio || window.currentTickAudio.src !== new URL(tickPath, window.location.href).href) {
                     window.currentTickAudio = new Audio(tickPath);

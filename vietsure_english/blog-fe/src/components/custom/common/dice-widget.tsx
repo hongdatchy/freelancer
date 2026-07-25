@@ -142,6 +142,7 @@ const Die3D = ({
 export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [diceCount, setDiceCount] = useState(1);
+  const [maxDots, setMaxDots] = useState(6);
   const [results, setResults] = useState<number[]>([1]);
   const [isRolling, setIsRolling] = useState(false);
 
@@ -243,26 +244,40 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
 
   const rollAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Animate dice then show result
+  // Animate dice then show result & play freesound_community-diceshake.mp3 during roll, then dragon-studio-fireworks.mp3 when finished
   const animateToResult = useCallback((rollResults: number[]) => {
     setIsRolling(true);
-    if (rollAudioRef.current) {
-      rollAudioRef.current.pause();
-      rollAudioRef.current.currentTime = 0;
-    }
+
+    try {
+      if (rollAudioRef.current) {
+        rollAudioRef.current.pause();
+        rollAudioRef.current.currentTime = 0;
+      }
+      const audio = new Audio('/freesound_community-diceshake.mp3');
+      rollAudioRef.current = audio;
+      audio.currentTime = 0;
+      audio.play().catch((err) => console.warn('[Dice Audio] Play failed:', err));
+    } catch (e) {}
+
     setTimeout(() => {
       setIsRolling(false);
       setResults(rollResults);
+
+      // Play fireworks audio when dice finish rolling
       try {
-        const audio = new Audio('/scottishperson-sound-effect-happy-birthday-music-box.mp3');
-        rollAudioRef.current = audio;
-        audio.currentTime = 0;
-        audio.play().catch((err) => console.warn('[Dice Audio] Play failed:', err));
+        if (rollAudioRef.current) {
+          rollAudioRef.current.pause();
+          rollAudioRef.current.currentTime = 0;
+        }
+        const finishAudio = new Audio('/dragon-studio-fireworks.mp3');
+        rollAudioRef.current = finishAudio;
+        finishAudio.currentTime = 0;
+        finishAudio.play().catch((err) => console.warn('[Dice Finish Audio] Play failed:', err));
       } catch (e) {}
-    }, 1500);
+    }, 1400);
   }, []);
 
-  // Teacher rolls (uses custom selected numbers if set, otherwise random 1-6)
+  // Teacher rolls (uses custom selected numbers if set, otherwise random between 1 and maxDots)
   const handleRoll = useCallback(() => {
     if (isRolling) return;
     const rollResults = Array.from({ length: diceCount }).map((_, i) => {
@@ -270,14 +285,15 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
       if (!isNaN(val) && val >= 1 && val <= 6) {
         return val;
       }
-      return Math.floor(Math.random() * 6) + 1;
+      const upperLimit = Math.min(6, Math.max(1, maxDots));
+      return Math.floor(Math.random() * upperLimit) + 1;
     });
 
     animateToResult(rollResults);
     if (isHost) {
       setTimeout(() => broadcast({ action: 'ROLL', results: rollResults, diceCount }), 100);
     }
-  }, [isHost, isRolling, diceCount, customInputs, animateToResult, broadcast]);
+  }, [isHost, isRolling, diceCount, maxDots, customInputs, animateToResult, broadcast]);
 
   // Change dice count - update results array length
   const handleCountChange = useCallback((count: number) => {
@@ -342,8 +358,10 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
     return () => window.removeEventListener('sync-dice-action', handleSyncDice);
   }, [animateToResult]);
 
-  // Die size based on count
-  const dieSize = diceCount === 1 ? 100 : diceCount === 2 ? 88 : 76;
+  // Die size based on count: larger for Student view (!isHost)
+  const dieSize = !isHost 
+    ? (diceCount === 1 ? 140 : diceCount === 2 ? 120 : 100) 
+    : (diceCount === 1 ? 100 : diceCount === 2 ? 88 : 76);
 
   // Sum
   const total = results.slice(0, diceCount).reduce((a, b) => a + b, 0);
@@ -362,7 +380,9 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
         zIndex: 9999,
         cursor: isDragging ? 'grabbing' : 'grab',
         userSelect: 'none',
-        width: diceCount === 1 ? 240 : diceCount === 2 ? 310 : 380,
+        width: !isHost 
+          ? (diceCount === 1 ? 300 : diceCount === 2 ? 380 : 460)
+          : (diceCount === 1 ? 240 : diceCount === 2 ? 310 : 380),
       }}
     >
       {/* Widget card */}
@@ -388,11 +408,11 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 18, filter: isHost ? 'none' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))' }}>🎲</span>
+            <span style={{ fontSize: !isHost ? 24 : 18, filter: isHost ? 'none' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))' }}>🎲</span>
             <span style={{ 
               color: isHost ? '#1e1b4b' : '#a855f7', 
               fontWeight: 800, 
-              fontSize: 15, 
+              fontSize: !isHost ? 18 : 15, 
               letterSpacing: 0.5,
               textShadow: isHost ? 'none' : '0 2px 6px rgba(0,0,0,0.6), 0 0 10px rgba(168,85,247,0.4)',
             }}>
@@ -466,6 +486,44 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
           </div>
         )}
 
+        {/* Max dots selector - host only */}
+        {isHost && (
+          <div
+            onMouseDown={e => e.stopPropagation()}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              padding: '8px 16px 0',
+            }}
+          >
+            <span style={{ color: '#475569', fontSize: 12, fontWeight: 600, marginRight: 4 }}>Số chấm tối đa:</span>
+            {[1, 2, 3, 4, 5, 6].map(n => (
+              <button
+                key={n}
+                onMouseDown={e => e.stopPropagation()}
+                onClick={() => setMaxDots(n)}
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 6,
+                  border: maxDots === n ? '2px solid #10b981' : '1.5px solid #cbd5e1',
+                  background: maxDots === n ? 'linear-gradient(135deg, #10b981, #059669)' : '#ffffff',
+                  color: maxDots === n ? '#fff' : '#475569',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: maxDots === n ? '0 3px 8px rgba(16,185,129,0.3)' : '0 1px 3px rgba(0,0,0,0.05)',
+                }}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Custom target number selector - host only */}
         {isHost && (
           <div
@@ -521,8 +579,8 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
           alignItems: 'center',
           justifyContent: 'center',
           gap: diceCount === 3 ? 10 : 14,
-          padding: '24px 20px 16px',
-          minHeight: 140,
+          padding: !isHost ? '28px 24px 20px' : '24px 20px 16px',
+          minHeight: !isHost ? 170 : 140,
         }}>
           {Array.from({ length: diceCount }).map((_, i) => (
             <Die3D
@@ -546,7 +604,7 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
             {diceCount > 1 && (
               <span style={{ 
                 color: isHost ? '#475569' : '#1e1b4b', 
-                fontSize: 18, 
+                fontSize: !isHost ? 22 : 18, 
                 fontWeight: 800,
                 textShadow: isHost ? 'none' : '0 1px 3px rgba(255,255,255,0.8), 0 0 8px rgba(255,255,255,0.9)',
               }}>
@@ -554,7 +612,7 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
               </span>
             )}
             <span style={{
-              fontSize: 26,
+              fontSize: !isHost ? 32 : 26,
               fontWeight: 900,
               color: '#d97706',
               textShadow: isHost ? 'none' : '0 1px 2px rgba(255,255,255,0.8)',
@@ -571,7 +629,7 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
             textAlign: 'center',
             paddingBottom: 12,
             color: '#8b5cf6',
-            fontSize: 13,
+            fontSize: !isHost ? 15 : 13,
             fontWeight: 600,
             letterSpacing: 1,
             animation: 'none',

@@ -66,10 +66,10 @@ if (typeof window !== 'undefined') {
             }
 
             try {
-                // Create off-screen canvas (320x180 - Landscape PiP style)
+                // Create off-screen canvas (180x320 - Vertical Portrait PiP style)
                 const canvas = document.createElement('canvas');
-                canvas.width = 320;
-                canvas.height = 180;
+                canvas.width = 180;
+                canvas.height = 320;
                 const ctx = canvas.getContext('2d');
 
                 // Create hidden video element to feed canvas stream
@@ -118,80 +118,117 @@ if (typeof window !== 'undefined') {
                             return false;
                         }
 
-                        // Exclude Screen Share / Desktop Share
+                        return true;
+                    });
+
+                    const isScreenShareTile = (el) => {
+                        const elId = String(el.id || '').toLowerCase();
+                        const participantId = String(el.getAttribute('data-participant-id') || '').toLowerCase();
+                        const displayNameEl = el.querySelector('.displayname, #localDisplayName, [id$="DisplayName"]');
+                        const displayName = String(displayNameEl ? displayNameEl.textContent : '').toLowerCase();
+                        const dataVideoType = String(el.getAttribute('data-video-type') || el.getAttribute('data-track-type') || '').toLowerCase();
+
                         if (
-                            elId.includes('desktop') ||
-                            elId.includes('screenshare') ||
-                            elId.includes('share') ||
-                            participantId.includes('desktop') ||
-                            participantId.includes('screenshare') ||
-                            displayName.includes('desktop') ||
-                            displayName.includes('screen') ||
-                            displayName.includes('share') ||
-                            displayName.includes('màn hình')
+                            elId.includes('desktop') || elId.includes('screenshare') ||
+                            participantId.includes('desktop') || participantId.includes('screenshare') ||
+                            displayName.includes('desktop') || displayName.includes('screen') || displayName.includes('màn hình') ||
+                            dataVideoType === 'desktop' || dataVideoType === 'screenshare'
                         ) {
-                            return false;
+                            return true;
                         }
 
-                        // Check video track label & data attributes
                         const video = el.querySelector('video');
                         if (video) {
                             const videoId = String(video.id || '').toLowerCase();
-                            if (videoId.includes('desktop') || videoId.includes('screenshare')) return false;
-
+                            if (videoId.includes('desktop') || videoId.includes('screenshare')) return true;
                             try {
                                 const stream = video.srcObject;
                                 if (stream && stream.getVideoTracks) {
                                     const tracks = stream.getVideoTracks();
                                     for (let t of tracks) {
                                         const label = String(t.label || '').toLowerCase();
-                                        if (
-                                            label.includes('screen') || label.includes('window') ||
-                                            label.includes('display') || label.includes('desktop') ||
-                                            label.includes('contents') || label.includes('capture')
-                                        ) {
-                                            return false;
+                                        if (label.includes('screen') || label.includes('window') || label.includes('display') || label.includes('desktop') || label.includes('contents') || label.includes('capture')) {
+                                            return true;
                                         }
                                     }
                                 }
                             } catch (e) {}
                         }
 
-                        const dataVideoType = String(el.getAttribute('data-video-type') || el.getAttribute('data-track-type') || '').toLowerCase();
-                        if (dataVideoType === 'desktop' || dataVideoType === 'screenshare') return false;
-
-                        return true;
-                    });
+                        return false;
+                    };
 
                     if (participantTiles.length === 0) {
+                        canvas.width = 480;
+                        canvas.height = 270;
                         ctx.fillStyle = '#ffffff';
-                        ctx.font = 'bold 14px sans-serif';
+                        ctx.font = 'bold 36px sans-serif';
                         ctx.textAlign = 'center';
-                        ctx.fillText('Đang chờ dải camera...', canvas.width / 2, canvas.height / 2);
+                        ctx.fillText('Đang chờ camera...', canvas.width / 2, canvas.height / 2);
                         return;
                     }
 
-                    const count = participantTiles.length;
-                    const cols = count;
-                    const rows = 1;
+                    // 3x Supersampling for crystal-clear HD text and sharp screen share details
+                    const scale = 3;
+                    const displayWidth = 160;
+                    const itemWidth = displayWidth * scale;
 
-                    const itemWidth = canvas.width / cols;
-                    const itemHeight = canvas.height / rows;
+                    let totalHeight = 0;
+                    const tileHeights = participantTiles.map(tile => {
+                        const isShare = isScreenShareTile(tile);
+                        if (isShare) {
+                            let videoElTile = tile.querySelector('video');
+                            const largeVideo = document.querySelector('#largeVideo, #largeVideoElementsContainer video');
+                            if (largeVideo && largeVideo.readyState >= 2 && largeVideo.videoWidth > 400) {
+                                videoElTile = largeVideo;
+                            }
+                            let ratio = 16 / 9;
+                            if (videoElTile && videoElTile.videoWidth && videoElTile.videoHeight) {
+                                ratio = videoElTile.videoWidth / videoElTile.videoHeight;
+                            }
+                            const h = Math.round(itemWidth / ratio);
+                            totalHeight += h;
+                            return { isShare, height: h };
+                        } else {
+                            // Camera / Avatar tile: SQUARE 1:1 aspect ratio
+                            const h = itemWidth;
+                            totalHeight += h;
+                            return { isShare, height: h };
+                        }
+                    });
 
+                    canvas.width = itemWidth;
+                    canvas.height = totalHeight > 0 ? totalHeight : 960;
+
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+
+                    ctx.fillStyle = '#111827';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    let currentY = 0;
                     participantTiles.forEach((tile, index) => {
-                        const col = index % cols;
-                        const row = Math.floor(index / cols);
-                        const x = col * itemWidth;
-                        const y = row * itemHeight;
+                        const tileInfo = tileHeights[index];
+                        const itemHeight = tileInfo.height;
+                        const x = 0;
+                        const y = currentY;
+                        currentY += itemHeight;
 
                         ctx.fillStyle = '#1f2937';
-                        ctx.fillRect(x + 2, y + 2, itemWidth - 4, itemHeight - 4);
+                        ctx.fillRect(x + 4, y + 4, itemWidth - 8, itemHeight - 8);
 
                         const isAvatarOnly = tile.classList.contains('display-avatar-only');
-                        const videoElTile = tile.querySelector('video');
+                        let videoElTile = tile.querySelector('video');
+
+                        if (tileInfo.isShare) {
+                            const largeVideo = document.querySelector('#largeVideo, #largeVideoElementsContainer video');
+                            if (largeVideo && largeVideo.readyState >= 2 && largeVideo.videoWidth > 400) {
+                                videoElTile = largeVideo;
+                            }
+                        }
 
                         let isVideoPlaying = false;
-                        if (!isAvatarOnly && videoElTile && videoElTile.id !== 'largeVideo' && videoElTile.readyState >= 2 && !videoElTile.paused && !videoElTile.ended) {
+                        if (!isAvatarOnly && videoElTile && videoElTile.readyState >= 2 && !videoElTile.paused && !videoElTile.ended) {
                             try {
                                 const streamTile = videoElTile.srcObject;
                                 if (streamTile && streamTile.getVideoTracks) {
@@ -209,17 +246,32 @@ if (typeof window !== 'undefined') {
 
                         if (isVideoPlaying && videoElTile) {
                             try {
-                                ctx.drawImage(videoElTile, x + 2, y + 2, itemWidth - 4, itemHeight - 4);
+                                if (tileInfo.isShare) {
+                                    // Screen share: draw from HD source video without distortion
+                                    ctx.drawImage(videoElTile, x + 4, y + 4, itemWidth - 8, itemHeight - 8);
+                                } else {
+                                    // Camera video: center crop to fit square 1:1 box without distortion
+                                    const vw = videoElTile.videoWidth || 1;
+                                    const vh = videoElTile.videoHeight || 1;
+                                    let sx = 0, sy = 0, sw = vw, sh = vh;
+                                    if (vw > vh) {
+                                        sw = vh;
+                                        sx = (vw - vh) / 2;
+                                    } else if (vh > vw) {
+                                        sh = vw;
+                                        sy = (vh - vw) / 2;
+                                    }
+                                    ctx.drawImage(videoElTile, sx, sy, sw, sh, x + 4, y + 4, itemWidth - 8, itemHeight - 8);
+                                }
                             } catch (e) {}
                         } else {
                             const nameEl = tile.querySelector('.displayname, #localDisplayName, [id$="DisplayName"]');
                             const name = nameEl ? (nameEl.textContent || '').trim() : `Thành viên ${index + 1}`;
 
-                            const radius = Math.min(itemWidth * 0.22, itemHeight * 0.3, 52);
+                            const radius = Math.min(itemWidth * 0.22, itemHeight * 0.3, 144);
                             const centerX = x + itemWidth / 2;
-                            const centerY = y + itemHeight / 2 - 12;
+                            const centerY = y + itemHeight / 2 - 30;
 
-                            // Draw initial letter (origin-clean)
                             let hash = 0;
                             for (let i = 0; i < name.length; i++) {
                                 hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -229,6 +281,7 @@ if (typeof window !== 'undefined') {
                             ctx.beginPath();
                             ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
                             ctx.fill();
+
                             const initial = name ? name.charAt(0).toUpperCase() : '?';
                             ctx.fillStyle = '#ffffff';
                             ctx.font = `bold ${Math.round(radius * 0.9)}px sans-serif`;
@@ -237,10 +290,10 @@ if (typeof window !== 'undefined') {
                             ctx.fillText(initial, centerX, centerY);
 
                             ctx.fillStyle = '#ffffff';
-                            ctx.font = 'bold 12px sans-serif';
+                            ctx.font = 'bold 36px sans-serif';
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'alphabetic';
-                            ctx.fillText(name.length > 18 ? name.substring(0, 17) + '…' : name, x + itemWidth / 2, y + itemHeight - 20);
+                            ctx.fillText(name.length > 18 ? name.substring(0, 17) + '…' : name, x + itemWidth / 2, y + itemHeight - 48);
                         }
 
                         if (isVideoPlaying) {
@@ -249,12 +302,12 @@ if (typeof window !== 'undefined') {
 
                             if (name) {
                                 ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-                                ctx.fillRect(x + 6, y + itemHeight - 28, Math.min(itemWidth - 12, 140), 22);
+                                ctx.fillRect(x + 16, y + itemHeight - 72, Math.min(itemWidth - 32, 380), 54);
                                 ctx.fillStyle = '#ffffff';
-                                ctx.font = '12px sans-serif';
+                                ctx.font = '32px sans-serif';
                                 ctx.textAlign = 'left';
                                 ctx.textBaseline = 'alphabetic';
-                                ctx.fillText(name.length > 15 ? name.substring(0, 14) + '…' : name, x + 12, y + itemHeight - 13);
+                                ctx.fillText(name.length > 15 ? name.substring(0, 14) + '…' : name, x + 32, y + itemHeight - 34);
                             }
                         }
                     });
