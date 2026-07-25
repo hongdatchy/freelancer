@@ -387,16 +387,7 @@ export default function FloatingJitsiWidget() {
         }
       });
 
-      // Debug: Log screen sharing event
-      apiRef.current.addEventListener('screenSharingStatusChanged', (event: any) => {
-        isScreenSharingRef.current = event.on;
-        console.log('[DEBUG-SHARE] screenSharingStatusChanged event raw data:', event);
-      });
 
-      // Debug: Log shared video event
-      apiRef.current.addEventListener('sharedVideoStatusChanged', (event: any) => {
-        console.log('[DEBUG-SHARE] sharedVideoStatusChanged event raw data:', event);
-      });
 
       // Helper to resolve human-readable sub-room name from rooms data
       const resolveSubRoomName = (cleanCurrent: string, rawCurrentName: string, roomsData: any) => {

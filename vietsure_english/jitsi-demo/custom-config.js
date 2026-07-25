@@ -1573,37 +1573,31 @@ if (typeof window !== 'undefined') {
     window.allowStudentScreenshare = false;
     window.isStudentShareAllowedByTeacher = false;
 
-    const findShareScreenWrapper = (doc) => {
-        const toolbarContainer = doc.querySelector('.toolbox-content-items');
-        if (toolbarContainer) {
-            const items = toolbarContainer.children;
-            for (let i = 0; i < items.length; i++) {
-                const item = items[i];
-                const testId = String(item.getAttribute('data-testid') || '').toLowerCase();
-                const label = String(item.getAttribute('aria-label') || '').toLowerCase();
-                const innerBtn = item.querySelector('[aria-label], [data-testid]');
-                const innerLabel = innerBtn ? String(innerBtn.getAttribute('aria-label') || '').toLowerCase() : '';
-                const innerTestId = innerBtn ? String(innerBtn.getAttribute('data-testid') || '').toLowerCase() : '';
-
-                if (
-                    testId.includes('desktop') || testId.includes('share') ||
-                    label.includes('desktop') || label.includes('share') || label.includes('màn hình') ||
-                    innerTestId.includes('desktop') || innerTestId.includes('share') || innerLabel.includes('màn hình') || innerLabel.includes('share')
-                ) {
-                    return item;
-                }
-            }
-        }
-
-        // Fallback: check querySelectorAll
-        const shareBtn = doc.querySelector(
-            '[data-testid="share-your-screen"], [data-testid="desktop"], [data-testid*="share" i], ' +
-            '[aria-label*="share" i], [aria-label*="Desktop" i], [aria-label*="màn hình" i], [aria-label*="chia sẻ" i]'
-        );
-        if (shareBtn) {
-            return shareBtn.closest('.toolbox-button-wrapper') || shareBtn.closest('.toolbox-button') || shareBtn;
+    const findToolbarBtn = (doc, keywords) => {
+        const container = doc.querySelector('.toolbox-content-items');
+        if (!container) return null;
+        for (let item of container.children) {
+            if (item.id === 'custom-teacher-share-control-btn') continue;
+            const text = `${item.outerHTML} ${item.getAttribute('aria-label') || ''}`.toLowerCase();
+            if (keywords.some(k => text.includes(k))) return item;
         }
         return null;
+    };
+
+    const findShareScreenWrapper = (doc) => findToolbarBtn(doc, ['desktop', 'share', 'màn hình']);
+    const findSharedVideoWrapper = (doc) => findToolbarBtn(doc, ['sharedvideo', 'shared-video', 'phát video', 'dừng video']);
+
+    const isActionActive = (doc, wrapper, reduxCheck, domCheck) => {
+        try {
+            if (window.APP?.store && reduxCheck(window.APP.store.getState())) return true;
+        } catch (e) {}
+        if (domCheck && domCheck()) return true;
+        if (wrapper) {
+            const btn = wrapper.querySelector('.toolbox-button') || wrapper;
+            const text = `${btn.className} ${btn.getAttribute('aria-pressed') || ''} ${btn.getAttribute('aria-label') || ''}`.toLowerCase();
+            return text.includes('true') || text.includes('toggled') || text.includes('active') || text.includes('dừng') || text.includes('stop');
+        }
+        return false;
     };
 
     const injectTeacherShareControlBtn = (doc) => {
@@ -1697,8 +1691,24 @@ if (typeof window !== 'undefined') {
             docs.forEach(doc => {
                 const isStudent = checkIfStudent();
                 if (!isStudent) {
-                    // Teacher view: Inject control button next to Share Screen button
                     injectTeacherShareControlBtn(doc);
+
+                    // Mutual exclusion between Screen Sharing and Shared Video
+                    const shareBtn = findShareScreenWrapper(doc);
+                    const videoBtn = findSharedVideoWrapper(doc);
+                    const ctrlBtn = doc.getElementById('custom-teacher-share-control-btn');
+
+                    const isSharingScreen = isActionActive(doc, shareBtn,
+                        s => s['features/base/tracks']?.some(t => t.local && t.mediaType === 'desktop') || s['features/base/conference']?.isScreenSharing
+                    );
+                    const isSharingVideo = isActionActive(doc, videoBtn,
+                        s => !!(s['features/shared-video']?.status || s['features/shared-video']?.videoUrl),
+                        () => !!(doc.querySelector('#sharedVideo') || doc.querySelector('iframe[src*="youtube"]'))
+                    );
+
+                    if (videoBtn) videoBtn.style.display = isSharingScreen ? 'none' : '';
+                    if (shareBtn) shareBtn.style.display = isSharingVideo ? 'none' : '';
+                    if (ctrlBtn) ctrlBtn.style.display = isSharingVideo ? 'none' : '';
                 } else {
                     // Student view: Hide share screen button by default
                     const shareWrapper = findShareScreenWrapper(doc);

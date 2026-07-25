@@ -278,6 +278,8 @@ export default function ClassroomPage() {
       isTileViewEnabledRef.current = !!event.enabled;
     });
 
+
+
     // Helper to resolve human-readable sub-room name from rooms data
     const resolveSubRoomName = (cleanCurrent: string, rawCurrentName: string, roomsData: any) => {
       const roomList = Array.isArray(roomsData) ? roomsData : (roomsData ? Object.values(roomsData) : []);
@@ -420,11 +422,11 @@ export default function ClassroomPage() {
     return (
       <div className="fixed inset-0 bg-[#1d285c] flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-8 max-w-md w-full flex flex-col items-center gap-6 border border-slate-100">
-          <div className="relative w-28 h-28 -mt-20 flex items-center justify-center">
+          <div className="relative w-36 h-36 -mt-24 flex items-center justify-center">
             <img
               src="/images/hao-hung-san-sang.png"
               alt="Vietsure Mascot"
-              className="w-24 h-24 object-contain drop-shadow-md"
+              className="w-32 h-32 object-contain drop-shadow-md"
             />
           </div>
           

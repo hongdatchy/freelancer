@@ -478,7 +478,10 @@ export default function TimerWidget({
 
   const handleSecondsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value.replace(/[^0-9]/g, '');
-    if (val.startsWith('0') && val.length > 1) {
+    const num = parseInt(val, 10);
+    if (!isNaN(num) && num >= 60) {
+      val = '59';
+    } else if (val.startsWith('0') && val.length > 1) {
       val = val.replace(/^0+/, '0');
     }
     setInputSeconds(val);
@@ -494,8 +497,8 @@ export default function TimerWidget({
   const fmt = (s: number) =>
     `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
-  // ── Shared timer card UI ───────────────────────────────────────────────────
-  const TimerCard = ({ dropDown = false }: { dropDown?: boolean }) => (
+  // ── Shared timer card UI helper function ─────────────────────────────────────
+  const renderTimerCard = (dropDown = false) => (
     <div className={`flex flex-col items-center bg-slate-900/95 text-white rounded-xl p-2.5 w-44 shadow-2xl border border-slate-700 backdrop-blur-md ${dropDown ? 'absolute right-0 top-full mt-2 z-[9999]' : ''}`}>
       <div className="flex w-full items-center justify-between pb-1.5 mb-1.5 border-b border-slate-700">
         <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">⏱️ Đồng hồ</span>
@@ -620,7 +623,7 @@ export default function TimerWidget({
             {isActive ? fmt(time) : 'Timer'}
           </span>
         </button>
-        {isOpen && <TimerCard dropDown />}
+        {isOpen && renderTimerCard(true)}
       </div>
     );
   }
@@ -638,7 +641,7 @@ export default function TimerWidget({
         >
           {!isOpen
             ? null
-            : <TimerCard />
+            : renderTimerCard()
           }
         </div>
       </>
@@ -656,7 +659,7 @@ export default function TimerWidget({
         className="absolute top-4 left-4 z-[9999] cursor-move select-none"
         onMouseDown={handleDragStart}
       >
-        <TimerCard />
+        {renderTimerCard()}
       </div>
     </>
   );
