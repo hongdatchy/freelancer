@@ -1195,6 +1195,36 @@ if (typeof window !== 'undefined') {
         window.isExcalidrawToolbarVisible = false; // Default HIDDEN
     }
 
+    const isWhiteboardOrScreenshareActive = (doc) => {
+        try {
+            if (window.APP && window.APP.store) {
+                const state = window.APP.store.getState();
+                const largeVideoId = state['features/large-video']?.participantId;
+                const isWbPinned = largeVideoId === 'whiteboard';
+                const isScreenSharing = (state['features/base/tracks'] || []).some(
+                    t => t && (t.mediaType === 'desktop' || t.videoType === 'desktop') && !t.muted
+                ) || !!state['features/base/conference']?.isScreenSharing;
+
+                if (isWbPinned || isScreenSharing) {
+                    return true;
+                }
+            }
+        } catch (e) {}
+
+        const isScreenshareActive = !!(
+            (document.body && document.body.classList.contains('whiteboard-screenshare-active')) ||
+            (doc.body && doc.body.classList.contains('whiteboard-screenshare-active')) ||
+            (window.videoBgElement && window.videoBgElement.srcObject && window.videoBgElement.srcObject.getVideoTracks && window.videoBgElement.srcObject.getVideoTracks().some(t => t.readyState === 'live' && t.enabled))
+        );
+
+        const isWhiteboardPinnedOnStage = !!(
+            doc.querySelector('#largeVideoElementsContainer #whiteboard') ||
+            document.querySelector('#largeVideoElementsContainer #whiteboard')
+        );
+
+        return isScreenshareActive || isWhiteboardPinnedOnStage;
+    };
+
     setInterval(() => {
         try {
             const docs = [document];
@@ -1207,17 +1237,18 @@ if (typeof window !== 'undefined') {
             });
 
             docs.forEach(doc => {
-                const excalidrawContainer = doc.querySelector('.excalidraw') || doc.querySelector('.excalidraw-container') || doc.querySelector('.whiteboard-container');
+                const isActive = isWhiteboardOrScreenshareActive(doc);
                 const existingBtn = doc.getElementById('custom-pen-toggle-btn');
+                const toolbars = doc.querySelectorAll('.shapes-section, .App-toolbar, .App-toolbar-content, [data-testid="toolbar-section"]');
 
-                // IF NO WHITEBOARD: Hide pen button & restore original toolbar
-                if (!excalidrawContainer) {
+                // IF NOT PINNED WHITEBOARD & NOT SCREENSHARING: Hide pen button & toolbars
+                if (!isActive) {
                     if (existingBtn) existingBtn.style.setProperty('display', 'none', 'important');
+                    toolbars.forEach(tb => tb.style.setProperty('display', 'none', 'important'));
                     return;
                 }
 
                 // Apply toolbar visibility state directly to toolbar elements
-                const toolbars = doc.querySelectorAll('.shapes-section, .App-toolbar, .App-toolbar-content, [data-testid="toolbar-section"]');
                 toolbars.forEach(tb => {
                     if (!window.isExcalidrawToolbarVisible) {
                         tb.style.setProperty('display', 'none', 'important');
@@ -1259,6 +1290,91 @@ if (typeof window !== 'undefined') {
                         .custom-pen-toggle-btn:active {
                             transform: scale(0.94) !important;
                         }
+
+                        /* Vertical Left Drawing Toolbar (Desktop & Mobile Compact Modes) */
+                        .shapes-section,
+                        .App-toolbar:has(#custom-highlighter-tool),
+                        .App-toolbar:has(#custom-close-drawing-toolbar-btn),
+                        .island.App-toolbar:has(#custom-highlighter-tool),
+                        [data-testid="toolbar-section"]:has(#custom-highlighter-tool) {
+                            position: fixed !important;
+                            top: 50% !important;
+                            left: 16px !important;
+                            right: auto !important;
+                            bottom: auto !important;
+                            transform: translateY(-50%) !important;
+                            z-index: 999999 !important;
+                            width: auto !important;
+                            height: auto !important;
+                            max-height: 90vh !important;
+                            padding: 6px 4px !important;
+                            display: flex !important;
+                            flex-direction: column !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                            border-radius: 12px !important;
+                            box-shadow: var(--shadow-island, 0px 7px 14px rgba(0, 0, 0, 0.12)) !important;
+                            margin: 0 !important;
+                        }
+
+                        .shapes-section .Stack_horizontal,
+                        .App-toolbar:has(#custom-highlighter-tool) .Stack_horizontal,
+                        .App-toolbar:has(#custom-close-drawing-toolbar-btn) .Stack_horizontal,
+                        .island.App-toolbar:has(#custom-highlighter-tool) .Stack_horizontal {
+                            display: flex !important;
+                            flex-direction: column !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                            grid-auto-flow: row !important;
+                            width: 100% !important;
+                            height: auto !important;
+                            gap: 4px !important;
+                            padding: 0 !important;
+                        }
+
+                        .shapes-section .ToolIcon,
+                        .App-toolbar:has(#custom-highlighter-tool) .ToolIcon,
+                        .App-toolbar:has(#custom-close-drawing-toolbar-btn) .ToolIcon {
+                            width: 36px !important;
+                            height: 36px !important;
+                            display: flex !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                            margin: 0 !important;
+                        }
+
+                        .shapes-section .App-toolbar__divider,
+                        .App-toolbar:has(#custom-highlighter-tool) .App-toolbar__divider,
+                        .App-toolbar:has(#custom-close-drawing-toolbar-btn) .App-toolbar__divider {
+                            width: 24px !important;
+                            height: 1px !important;
+                            margin: 4px 0 !important;
+                            background-color: var(--color-gray-20, #ebebeb) !important;
+                        }
+
+                        /* Properties Panel (Stroke / Background / Stroke width) positioned at left: 72px */
+                        .App-menu__left:not(:has(#custom-highlighter-tool)),
+                        .Island.App-menu__left:not(:has(#custom-highlighter-tool)) {
+                            position: fixed !important;
+                            top: 50% !important;
+                            left: 72px !important;
+                            right: auto !important;
+                            bottom: auto !important;
+                            transform: translateY(-50%) !important;
+                            z-index: 999998 !important;
+                            margin: 0 !important;
+                        }
+
+                        .excalidraw .App-toolbar__divider {
+                            width: 24px !important;
+                            height: 1px !important;
+                            margin: 4px 0 !important;
+                            background-color: var(--color-gray-20, #ebebeb) !important;
+                        }
+
+                        #custom-close-drawing-toolbar-btn {
+                            margin: 0 !important;
+                        }
                     `;
                     doc.head.appendChild(style);
                 }
@@ -1297,7 +1413,8 @@ if (typeof window !== 'undefined') {
                         });
                     });
 
-                    (doc.body || excalidrawContainer).appendChild(toggleBtn);
+                    const excalidrawContainer = doc.querySelector('.excalidraw') || doc.querySelector('.excalidraw-container') || doc.querySelector('.whiteboard-container');
+                    (doc.body || excalidrawContainer || doc.documentElement).appendChild(toggleBtn);
                     console.log('[Jitsi custom-config] Custom Excalidraw floating Pen button injected at Bottom Left');
                 }
 
