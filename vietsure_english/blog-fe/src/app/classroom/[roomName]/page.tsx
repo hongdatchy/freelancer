@@ -355,6 +355,13 @@ export default function ClassroomPage() {
       router.back();
     });
 
+    const handleConferenceEndedMessage = (e: MessageEvent) => {
+      if (e.data && e.data.type === 'JITSI_CONFERENCE_ENDED') {
+        router.back();
+      }
+    };
+    window.addEventListener('message', handleConferenceEndedMessage);
+
   };
 
   // Set the transparent PNG Base64 placeholder as background to keep it blank by default

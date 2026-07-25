@@ -437,3 +437,32 @@ if (typeof window !== 'undefined') {
         }, 100);
     }
 }
+
+// Auto-detect "Cuộc họp đã kết thúc" (Conference Ended) modal, hide it, click "Đồng ý" & notify parent window
+(function setupAutoExitOnConferenceEnded() {
+    if (typeof window === 'undefined') return;
+
+    const checkAndExit = () => {
+        try {
+            const dialogs = document.querySelectorAll('[role="dialog"], .modal-dialog-form, .actionable-message, div[class*="modal"]');
+            dialogs.forEach(dialog => {
+                const text = (dialog.textContent || '').trim();
+                if (text.includes('Cuộc họp đã kết thúc') || text.includes('Conference ended') || text.includes('meeting has ended')) {
+                    dialog.style.setProperty('display', 'none', 'important');
+                    if (dialog.parentElement) {
+                        dialog.parentElement.style.setProperty('display', 'none', 'important');
+                    }
+
+                    const btn = dialog.querySelector('button, .button, [role="button"]');
+                    if (btn) btn.click();
+
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage({ type: 'JITSI_CONFERENCE_ENDED' }, '*');
+                    }
+                }
+            });
+        } catch (e) {}
+    };
+
+    setInterval(checkAndExit, 80);
+})();

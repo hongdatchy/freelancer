@@ -462,6 +462,13 @@ export default function FloatingJitsiWidget() {
       apiRef.current.addEventListener('readyToClose', () => {
         closeMeetingRef.current();
       });
+
+      const handleConferenceEndedMessage = (e: MessageEvent) => {
+        if (e.data && e.data.type === 'JITSI_CONFERENCE_ENDED') {
+          closeMeetingRef.current();
+        }
+      };
+      window.addEventListener('message', handleConferenceEndedMessage);
     };
 
 
