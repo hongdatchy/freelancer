@@ -163,16 +163,32 @@ if (typeof document !== 'undefined') {
         .is-student button[title*="Hiện bảng"] {
             display: none !important;
         }
-        /* TODO: Hide local and remote screenshare cards ONLY for Student
-        .is-student #filmstripLocalScreenShare,
-        .is-student #filmstripLocalScreenShareThumbnail,
-        .is-student #filmstripRemoteScreenShare,
-        .is-student #filmstripRemoteScreenShareThumbnail,
-        .is-student span.videocontainer[id*="-v0"],
-        span.videocontainer[id*="-v0"] {
+
+        /* Student Filmstrip Container and Tile Spans Alignment */
+        body.is-student .filmstrip__videos.remote-videos > div {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            justify-content: center !important;
+            align-items: center !important;
+            align-content: center !important;
+            gap: 4px !important;
+        }
+        body.is-student .filmstrip__videos.remote-videos span.videocontainer {
+            position: relative !important;
+            left: auto !important;
+            top: auto !important;
+            margin: 0 !important;
+        }
+
+
+        /* Hide whiteboard and screenshare participant tiles safely for student view via CSS (prevents React removeChild crash on unmount) */
+        body.is-student #participant_whiteboard,
+        body.is-student #filmstripLocalScreenShare,
+        body.is-student #filmstripLocalScreenShareThumbnail,
+        body.is-student span.videocontainer[id*="-v0"] {
             display: none !important;
         }
-        */
 
         /* Hide Jitsi native invite buttons/items */
         .invite-button,
@@ -438,28 +454,24 @@ if (typeof window !== 'undefined') {
             }
         } catch (err) {}
     };
-    
+
     applyBrightTheme();
     setInterval(applyBrightTheme, 2000);
 
-    // Ẩn tile bảng trắng & màn share khỏi view học viên (layout dồn tính sau)
+    // Ẩn tile bảng trắng & màn share bằng CSS style (không dùng remove() để tránh lỗi React removeChild khi thoát phòng)
     const hideStudentDistractions = () => {
         if (!document.body || !document.body.classList.contains('is-student')) return;
         try {
-            // Ẩn screenshare tiles theo ID cố định của Jitsi
-            ['filmstripLocalScreenShare', 'filmstripLocalScreenShareThumbnail'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.setProperty('display', 'none', 'important');
-            });
+            // Ẩn span whiteboard
+            const whiteboard = document.getElementById('participant_whiteboard');
+            if (whiteboard && whiteboard.style.display !== 'none') {
+                whiteboard.style.setProperty('display', 'none', 'important');
+            }
 
-            // Ẩn whiteboard virtual participant tile theo display name
-            document.querySelectorAll('span.videocontainer, div.videocontainer').forEach(el => {
-                const nameEl = el.querySelector('.displayname, [class*="displayName"]');
-                if (nameEl) {
-                    const name = (nameEl.textContent || '').toLowerCase();
-                    if (name.includes('whiteboard') || name.includes('bảng trắng')) {
-                        el.style.setProperty('display', 'none', 'important');
-                    }
+            // Ẩn span screenshare (id*="-v0")
+            document.querySelectorAll('span.videocontainer[id*="-v0"]').forEach(el => {
+                if (el.style.display !== 'none') {
+                    el.style.setProperty('display', 'none', 'important');
                 }
             });
         } catch (e) {}
