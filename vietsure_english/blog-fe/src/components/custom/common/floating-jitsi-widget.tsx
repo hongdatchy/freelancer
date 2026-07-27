@@ -987,11 +987,6 @@ export default function FloatingJitsiWidget() {
               )}
             </div>
           </div>
-
-          {/* Interactive Classroom Games & Tools Widgets for Host Teacher */}
-          <TimerWidget apiRef={apiRef} isHost={true} apiReady={apiReady} />
-          <WheelWidget apiRef={apiRef} isHost={true} apiReady={apiReady} />
-          <DiceWidget apiRef={apiRef} isHost={true} apiReady={apiReady} />
         </div>
       </div>
 
