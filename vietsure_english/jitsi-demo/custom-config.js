@@ -165,6 +165,9 @@ if (typeof document !== 'undefined') {
         }
 
         /* Student Filmstrip Container and Tile Spans Alignment */
+        body.is-student .filmstrip__videos.remote-videos {
+            align-items: center !important;
+        }
         body.is-student .filmstrip__videos.remote-videos > div {
             display: flex !important;
             flex-direction: row !important;
@@ -173,6 +176,9 @@ if (typeof document !== 'undefined') {
             align-items: center !important;
             align-content: center !important;
             gap: 4px !important;
+            position: relative !important;
+            left: auto !important;
+            top: auto !important;
         }
         body.is-student .filmstrip__videos.remote-videos span.videocontainer {
             position: relative !important;
@@ -180,7 +186,6 @@ if (typeof document !== 'undefined') {
             top: auto !important;
             margin: 0 !important;
         }
-
 
         /* Hide whiteboard and screenshare participant tiles safely for student view via CSS (prevents React removeChild crash on unmount) */
         body.is-student #participant_whiteboard,
