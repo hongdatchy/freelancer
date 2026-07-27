@@ -585,6 +585,12 @@ export default function FloatingJitsiWidget() {
           window.dispatchEvent(new CustomEvent('toggle-timer-card'));
         } else if (event.data.type === 'TRIGGER_PRAISE') {
           setIsPraiseModalOpen(true);
+        } else if (event.data.type === 'TRIGGER_DICE') {
+          console.log('[Parent] TRIGGER_DICE message received, dispatching toggle-dice-widget');
+          window.dispatchEvent(new CustomEvent('toggle-dice-widget'));
+        } else if (event.data.type === 'TRIGGER_WHEEL') {
+          console.log('[Parent] TRIGGER_WHEEL message received, dispatching toggle-wheel-widget');
+          window.dispatchEvent(new CustomEvent('toggle-wheel-widget'));
         } else if (event.data.type === 'PLAY_PRAISE') {
           const payload = event.data.payload || { mascotIdx: 0 };
           console.log('[Parent] PLAY_PRAISE received with payload:', payload);
@@ -981,6 +987,11 @@ export default function FloatingJitsiWidget() {
               )}
             </div>
           </div>
+
+          {/* Interactive Classroom Games & Tools Widgets for Host Teacher */}
+          <TimerWidget apiRef={apiRef} isHost={true} apiReady={apiReady} />
+          <WheelWidget apiRef={apiRef} isHost={true} apiReady={apiReady} />
+          <DiceWidget apiRef={apiRef} isHost={true} apiReady={apiReady} />
         </div>
       </div>
 
