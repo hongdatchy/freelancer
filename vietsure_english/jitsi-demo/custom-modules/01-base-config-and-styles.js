@@ -173,7 +173,6 @@ if (typeof document !== 'undefined') {
             margin: 0 !important;
         }
 
-
         /* Hide whiteboard and screenshare participant tiles safely for student view via CSS (prevents React removeChild crash on unmount) */
         body.is-student #participant_whiteboard,
         body.is-student #filmstripLocalScreenShare,
@@ -345,7 +344,7 @@ if (typeof document !== 'undefined') {
             display: none !important;
         }
 
-        /* Force ONLY the filmstrip toggle container to be always visible */
+        /* Commented out forced visibility for filmstrip toggle container to allow native auto-hide:
         .filmstrip-toggle-container,
         [class*="filmstrip-toggle"],
         [class*="toggle-filmstrip"],
@@ -358,7 +357,6 @@ if (typeof document !== 'undefined') {
             transition: none !important;
         }
 
-        /* Force toggle button visible and rotate chevron */
         .toggle-filmstrip-button,
         .filmstrip__toggle,
         [class*="Filmstrip__toggle"],
@@ -387,6 +385,7 @@ if (typeof document !== 'undefined') {
             bottom: 52px !important;
             top: auto !important;
         }
+        */
     `;
     document.head.appendChild(style);
 }
