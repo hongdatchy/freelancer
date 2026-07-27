@@ -453,7 +453,20 @@ if (typeof window !== 'undefined') {
     };
 
     applyBrightTheme();
-    setInterval(applyBrightTheme, 2000);
+    // Safety patch for React removeChild to prevent crashes when moving DOM elements between containers
+    if (typeof Node !== 'undefined' && Node.prototype && !Node.prototype._safeRemoveChildPatched) {
+        Node.prototype._safeRemoveChildPatched = true;
+        const originalRemoveChild = Node.prototype.removeChild;
+        Node.prototype.removeChild = function(child) {
+            if (child && child.parentNode !== this) {
+                if (child.parentNode) {
+                    return child.parentNode.removeChild(child);
+                }
+                return child;
+            }
+            return originalRemoveChild.call(this, child);
+        };
+    }
 
     // Ẩn tile bảng trắng & màn share bằng CSS style (không dùng remove() để tránh lỗi React removeChild khi thoát phòng)
     const hideStudentDistractions = () => {
@@ -471,6 +484,13 @@ if (typeof window !== 'undefined') {
                     el.style.setProperty('display', 'none', 'important');
                 }
             });
+
+            // Nếu có #filmstripLocalVideo, di chuyển an toàn vào đầu container remote-videos
+            const localVideo = document.getElementById('filmstripLocalVideo');
+            const remoteContainer = document.querySelector('.filmstrip__videos.remote-videos > div');
+            if (localVideo && remoteContainer && !remoteContainer.contains(localVideo)) {
+                remoteContainer.prepend(localVideo);
+            }
         } catch (e) {}
     };
     setInterval(hideStudentDistractions, 1000);
