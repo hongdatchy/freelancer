@@ -6,6 +6,7 @@ import useUserLoginStore from '@/state-manager/user-login-store';
 import TimerWidget from '@/components/custom/common/timer-widget';
 import WheelWidget from '@/components/custom/common/wheel-widget';
 import DiceWidget from '@/components/custom/common/dice-widget';
+import PraiseWidget from '@/components/custom/common/praise-widget';
 import { getData } from '@/service/api';
 
 const JITSI_SERVER = process.env.NEXT_PUBLIC_JITSI_SERVER;
@@ -549,6 +550,7 @@ export default function ClassroomPage() {
         {!isHost && <TimerWidget apiRef={apiRef} isHost={false} apiReady={apiReady} />}
         <WheelWidget apiRef={apiRef} isHost={false} apiReady={apiReady} />
         <DiceWidget apiRef={apiRef} isHost={false} apiReady={apiReady} />
+        <PraiseWidget apiRef={apiRef} isHost={false} apiReady={apiReady} roomName={roomName || 'default'} />
 
         {/* Custom Exit Popover (Matches Jitsi's native look) */}
         {showExitConfirm && (

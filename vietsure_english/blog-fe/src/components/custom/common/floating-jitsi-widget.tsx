@@ -6,6 +6,7 @@ import useUserLoginStore from '@/state-manager/user-login-store';
 import TimerWidget from '@/components/custom/common/timer-widget';
 import WheelWidget from '@/components/custom/common/wheel-widget';
 import DiceWidget from '@/components/custom/common/dice-widget';
+import PraiseWidget from '@/components/custom/common/praise-widget';
 
 const JITSI_SERVER = process.env.NEXT_PUBLIC_JITSI_SERVER;
 
@@ -584,7 +585,8 @@ export default function FloatingJitsiWidget() {
           console.log('[Parent] TOGGLE_TIMER message received, dispatching event');
           window.dispatchEvent(new CustomEvent('toggle-timer-card'));
         } else if (event.data.type === 'TRIGGER_PRAISE') {
-          setIsPraiseModalOpen(true);
+          console.log('[Parent] TRIGGER_PRAISE message received, dispatching toggle-praise-widget');
+          window.dispatchEvent(new CustomEvent('toggle-praise-widget'));
         } else if (event.data.type === 'TRIGGER_DICE') {
           console.log('[Parent] TRIGGER_DICE message received, dispatching toggle-dice-widget');
           window.dispatchEvent(new CustomEvent('toggle-dice-widget'));
@@ -936,6 +938,7 @@ export default function FloatingJitsiWidget() {
               <TimerWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} />
               <WheelWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} />
               <DiceWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} />
+              <PraiseWidget apiRef={apiRef} isHost={true} apiReady={apiReady} roomName={roomName || 'default'} />
 
               {/* Custom Exit Popover for Teacher */}
               {showExitConfirm && (
@@ -989,120 +992,6 @@ export default function FloatingJitsiWidget() {
           </div>
         </div>
       </div>
-
-      {/* Praise Selector Modal */}
-      {isPraiseModalOpen && (
-        <div
-          className="no-drag"
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 99999,
-            background: 'linear-gradient(145deg, #1e1b4b 0%, #312e81 100%)',
-            color: '#fff',
-            borderRadius: 20,
-            padding: 24,
-            width: 380,
-            maxWidth: '90vw',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 20px rgba(124, 58, 237, 0.4)',
-            border: '1.5px solid rgba(167, 139, 250, 0.4)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 24 }}>⭐</span>
-              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#fef08a' }}>Khen Thưởng Học Viên</h3>
-            </div>
-            <button
-              onClick={() => setIsPraiseModalOpen(false)}
-              style={{ background: 'none', border: 'none', color: '#a78bfa', fontSize: 20, cursor: 'pointer' }}
-            >
-              ✕
-            </button>
-          </div>
-
-          <p style={{ fontSize: 13, color: '#c7d2fe', marginBottom: 16, marginTop: 0 }}>
-            Chọn học viên để tặng Ngôi sao khen thưởng ⭐
-          </p>
-
-          {/* Praise All button */}
-          <button
-            onClick={() => handleSendPraise({ isAll: true })}
-            style={{
-              width: '100%',
-              padding: '12px 16px',
-              borderRadius: 12,
-              border: 'none',
-              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-              color: '#fff',
-              fontWeight: 800,
-              fontSize: 15,
-              cursor: 'pointer',
-              marginBottom: 16,
-              boxShadow: '0 4px 15px rgba(245, 158, 11, 0.4)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-            }}
-          >
-            <span>🌟 Khen Thưởng Cả Lớp (+1 ⭐)</span>
-          </button>
-
-          {/* Student list */}
-          <div style={{ maxHeight: 220, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, paddingRight: 4 }}>
-            {getStudentList().map((student: any, idx: number) => {
-              const stars = starScores[student.name] || 0;
-              return (
-                <div
-                  key={idx}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    background: 'rgba(255, 255, 255, 0.08)',
-                    borderRadius: 12,
-                    padding: '10px 14px',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 18 }}>🎓</span>
-                    <span style={{ fontWeight: 700, fontSize: 14, color: '#ffffff' }}>{student.name}</span>
-                    <span style={{ background: 'rgba(245, 158, 11, 0.25)', color: '#fbbf24', padding: '2px 8px', borderRadius: 12, fontSize: 12, fontWeight: 800 }}>
-                      ⭐ {stars}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => handleSendPraise({ studentName: student.name })}
-                    style={{
-                      background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
-                      border: 'none',
-                      color: '#fff',
-                      padding: '6px 14px',
-                      borderRadius: 8,
-                      fontWeight: 700,
-                      fontSize: 13,
-                      cursor: 'pointer',
-                      boxShadow: '0 2px 8px rgba(139, 92, 246, 0.4)',
-                    }}
-                  >
-                    +1 ⭐ Khen
-                  </button>
-                </div>
-              );
-            })}
-            {getStudentList().length === 0 && (
-              <div style={{ textAlign: 'center', color: '#a78bfa', padding: '16px 0', fontSize: 13 }}>
-                Đang chờ học viên tham gia...
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
     </>
   );
 }
