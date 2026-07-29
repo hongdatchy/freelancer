@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
 
 const isServer = typeof window === 'undefined';
 const BASE_URL = isServer
@@ -12,8 +11,9 @@ const checkResponse = async (response: Response, endpoint: string) => {
   if (response.status === 401) {
     if (typeof window === 'undefined') {
       try {
-        const cookieStore = cookies();
-        (await cookieStore).delete('jwt');
+        const { cookies } = await import('next/headers');
+        const cookieStore = await cookies();
+        cookieStore.delete('jwt');
       } catch (e) {}
       redirect('/');
     } else {
