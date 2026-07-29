@@ -151,16 +151,23 @@ if (typeof document !== 'undefined') {
             display: none !important;
         }
 
-        /* Hide whiteboard button in student's toolbar (on documentElement or body) */
+        /* Hide whiteboard and shared video buttons in student's toolbar (on documentElement or body) */
         .is-student [data-testid="toolbox-whiteboard"],
+        .is-student [data-testid="toolbox-shared-video"],
         .is-student .toolbox-button[aria-label*="Whiteboard"],
         .is-student .toolbox-button[aria-label*="Bảng trắng"],
         .is-student .toolbox-button[aria-label*="Ẩn bảng"],
         .is-student .toolbox-button[aria-label*="Hiện bảng"],
+        .is-student .toolbox-button[aria-label*="Video"],
+        .is-student .toolbox-button[aria-label*="video"],
         .is-student button[title*="Whiteboard"],
         .is-student button[title*="Bảng trắng"],
         .is-student button[title*="Ẩn bảng"],
-        .is-student button[title*="Hiện bảng"] {
+        .is-student button[title*="Hiện bảng"],
+        .is-student button[title*="Video"],
+        .is-student button[title*="video"],
+        .is-student [aria-label="Video"],
+        .is-student [aria-label="video"] {
             display: none !important;
         }
 
