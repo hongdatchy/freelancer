@@ -1062,43 +1062,56 @@ if (typeof window !== 'undefined') {
                     }
                 }
                 
-                if (isStudent) {
-                    const whiteboardState = state['features/whiteboard'];
-                    const isWhiteboardOpen = !!(whiteboardState && whiteboardState.isOpen);
-                    const isTileView = !!(state['features/video-layout'] && state['features/video-layout'].tileViewEnabled);
+                // if (isStudent) {
+                //     const whiteboardState = state['features/whiteboard'];
+                //     const isWhiteboardOpen = !!(whiteboardState && whiteboardState.isOpen);
+                //     const isTileView = !!(state['features/video-layout'] && state['features/video-layout'].tileViewEnabled);
                     
-                    if (isWhiteboardOpen) {
-                        // When Whiteboard is active: Turn OFF Grid View & Pin Whiteboard for Student
-                        if (isTileView) {
-                            window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: false });
-                        }
-                        const currentPinned = state['features/large-video']?.participantId;
-                        if (currentPinned !== 'whiteboard') {
-                            console.log("📌 [HỌC VIÊN] Tự động ghim Bảng trắng làm màn hình chính 100%");
-                            window.APP.store.dispatch({
-                                type: 'PIN_PARTICIPANT',
-                                participant: { id: 'whiteboard' }
-                            });
-                        }
-                    } else {
-                        // When Whiteboard is CLOSED: Enable Grid View for Student
-                        if (!isTileView && !window.hasAutoEnabledTileViewOnWbClose) {
-                            window.hasAutoEnabledTileViewOnWbClose = true;
-                            console.log("🔳 [HỌC VIÊN] Bảng trắng tắt -> Tự động mở chế độ Lưới (Grid View)");
-                            window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: true });
-                        }
-                    }
+                //     // Check Grid View state from localStorage
+                //     let isGridViewEnabled = false;
+                //     try {
+                //         for (let i = 0; i < localStorage.length; i++) {
+                //             const key = localStorage.key(i);
+                //             if (key && (key.startsWith('student_tile_view_') || key.startsWith('tileView_'))) {
+                //                 if (localStorage.getItem(key) === 'true') {
+                //                     isGridViewEnabled = true;
+                //                     break;
+                //                 }
+                //             }
+                //         }
+                //     } catch (e) {}
 
-                    if (isWhiteboardOpen !== lastWhiteboardOpen) {
-                        lastWhiteboardOpen = isWhiteboardOpen;
-                        window.hasAutoEnabledTileViewOnWbClose = false;
-                        console.log("📢📢📢 [HỌC VIÊN] Trạng thái Bảng trắng thay đổi: isOpen =", isWhiteboardOpen);
-                        window.APP.store.dispatch({
-                            type: 'SET_WHITEBOARD_OPEN',
-                            isOpen: isWhiteboardOpen
-                        });
-                    }
-                }
+                //     if (isWhiteboardOpen) {
+                //         // Nếu đang KHÔNG enable grid view (check từ localStorage) thì mới ghim bảng
+                //         if (!isGridViewEnabled) {
+                //             const currentPinned = state['features/large-video']?.participantId;
+                //             if (currentPinned !== 'whiteboard') {
+                //                 console.log("📌 [HỌC VIÊN] Tự động ghim Bảng trắng làm màn hình chính (do không bật Grid View)");
+                //                 window.APP.store.dispatch({
+                //                     type: 'PIN_PARTICIPANT',
+                //                     participant: { id: 'whiteboard' }
+                //                 });
+                //             }
+                //         }
+                //     } else {
+                //         // When Whiteboard is CLOSED: Enable Grid View for Student
+                //         if (!isGridViewEnabled && !window.hasAutoEnabledTileViewOnWbClose) {
+                //             window.hasAutoEnabledTileViewOnWbClose = true;
+                //             console.log("🔳 [HỌC VIÊN] Bảng trắng tắt -> Tự động mở chế độ Lưới (Grid View)");
+                //             window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: true });
+                //         }
+                //     }
+
+                //     if (isWhiteboardOpen !== lastWhiteboardOpen) {
+                //         lastWhiteboardOpen = isWhiteboardOpen;
+                //         window.hasAutoEnabledTileViewOnWbClose = false;
+                //         console.log("📢📢📢 [HỌC VIÊN] Trạng thái Bảng trắng thay đổi: isOpen =", isWhiteboardOpen);
+                //         window.APP.store.dispatch({
+                //             type: 'SET_WHITEBOARD_OPEN',
+                //             isOpen: isWhiteboardOpen
+                //         });
+                //     }
+                // }
             }
         } catch (err) {}
     }, 1000);
@@ -2737,6 +2750,7 @@ if (typeof window !== 'undefined') {
 
                 const isToggleStudentShare = msgText.startsWith('__TOGGLE_STUDENT_SCREENSHARE__:');
                 const isTileViewMsg = msgText.startsWith('__TILE_VIEW__:');
+                const isPinMsg = msgText.startsWith('__PIN_PARTICIPANT__:');
                 const isPraise = msgText.includes('__PRAISE__');
                 const isWheel = msgText.includes('__WHEEL__');
                 const isDice = msgText.includes('__DICE__') || msgText.includes('__DICE_COUNT__');
@@ -2817,7 +2831,7 @@ if (typeof window !== 'undefined') {
                     } else if (isTimer) {
                         timerMessagesCount++;
                     }
-                } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg) {
+                } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg || isPinMsg) {
                     timerMessagesCount++;
                 } else {
                     realMessagesCount++;
@@ -2847,7 +2861,7 @@ if (typeof window !== 'undefined') {
     }
 
     const hideTimerMessages = () => {
-        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__'];
+        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__PIN_PARTICIPANT__'];
 
         const wrappers = document.querySelectorAll('[class*="-chatMessageWrapper"]');
         wrappers.forEach((wrapper) => {
@@ -2968,4 +2982,5 @@ const updateStarBadgesInJitsiUI = () => {
 };
 
 setInterval(updateStarBadgesInJitsiUI, 1000);
+
 

@@ -342,6 +342,7 @@ if (typeof window !== 'undefined') {
 
                 const isToggleStudentShare = msgText.startsWith('__TOGGLE_STUDENT_SCREENSHARE__:');
                 const isTileViewMsg = msgText.startsWith('__TILE_VIEW__:');
+                const isPinMsg = msgText.startsWith('__PIN_PARTICIPANT__:');
                 const isPraise = msgText.includes('__PRAISE__');
                 const isWheel = msgText.includes('__WHEEL__');
                 const isDice = msgText.includes('__DICE__') || msgText.includes('__DICE_COUNT__');
@@ -422,7 +423,7 @@ if (typeof window !== 'undefined') {
                     } else if (isTimer) {
                         timerMessagesCount++;
                     }
-                } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg) {
+                } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg || isPinMsg) {
                     timerMessagesCount++;
                 } else {
                     realMessagesCount++;
@@ -452,7 +453,7 @@ if (typeof window !== 'undefined') {
     }
 
     const hideTimerMessages = () => {
-        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__'];
+        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__PIN_PARTICIPANT__'];
 
         const wrappers = document.querySelectorAll('[class*="-chatMessageWrapper"]');
         wrappers.forEach((wrapper) => {
@@ -573,3 +574,4 @@ const updateStarBadgesInJitsiUI = () => {
 };
 
 setInterval(updateStarBadgesInJitsiUI, 1000);
+
