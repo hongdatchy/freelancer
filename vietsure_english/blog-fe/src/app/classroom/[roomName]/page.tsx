@@ -263,18 +263,20 @@ export default function ClassroomPage() {
         }, 1000);
       }
 
-      // Restore saved TileView state from localStorage on student join / rejoin
-      setTimeout(() => {
-        try {
-          const savedState = localStorage.getItem(`student_tile_view_${roomName}`);
-          if (savedState !== null && apiRef.current) {
-            const isEnabled = savedState === 'true';
-            apiRef.current.executeCommand('setTileView', isEnabled);
-          }
-        } catch (e) {}
-      }, 1000);
+
 
       if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
+        // Restore saved TileView state from localStorage on student join / rejoin
+        setTimeout(() => {
+          try {
+            const savedState = localStorage.getItem(`student_tile_view_${roomName}`);
+            if (savedState !== null && apiRef.current) {
+              const isEnabled = savedState === 'true';
+              apiRef.current.executeCommand('setTileView', isEnabled);
+            }
+          } catch (e) {}
+        }, 1000);
+
         apiRef.current.getIFrame().contentWindow.postMessage({
           type: 'SET_WHITEBOARD_BACKGROUND',
           imageUrl: bgImageRef.current

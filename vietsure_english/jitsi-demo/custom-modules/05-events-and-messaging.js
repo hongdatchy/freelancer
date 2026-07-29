@@ -395,11 +395,6 @@ if (typeof window !== 'undefined') {
                         const pinId = (targetId === 'null' || !targetId) ? null : targetId;
                         console.log('📌 [HỌC VIÊN] ĐỒNG BỘ GHIM TỪ GIÁO VIÊN:', pinId);
 
-                        const roomName = (window.APP?.store?.getState()?.['features/base/conference']?.room || '').toLowerCase();
-                        try {
-                            if (roomName) localStorage.setItem('teacher_pinned_' + roomName, pinId ? pinId : 'null');
-                        } catch (e) {}
-
                         let isStudent = false;
                         if (window.APP && window.APP.store) {
                             const state = window.APP.store.getState();
@@ -435,9 +430,6 @@ if (typeof window !== 'undefined') {
                                 console.log('📌 [HỌC VIÊN] ĐỒNG BỘ GRID VIEW:', enabled);
                                 window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled });
                                 if (!enabled) {
-                                    try {
-                                        if (roomName) localStorage.setItem('teacher_pinned_' + roomName, 'null');
-                                    } catch (e) {}
                                     window.APP.store.dispatch({
                                         type: 'PIN_PARTICIPANT',
                                         participant: { id: null }
@@ -630,7 +622,35 @@ const updateStarBadgesInJitsiUI = () => {
 
 setInterval(updateStarBadgesInJitsiUI, 1000);
 
+// Student Grid View Rejoin Sync (Pure Grid View Sync - No Whiteboard Pinning)
+(function setupStudentTileViewRejoinSync() {
+    if (typeof window === 'undefined') return;
 
+    setInterval(() => {
+        try {
+            if (!window.APP || !window.APP.store) return;
+            const state = window.APP.store.getState();
+            const roomName = (state['features/base/conference']?.room || '').toLowerCase();
+            if (!roomName) return;
+
+            const participantsState = state['features/base/participants'] || {};
+            const localP = Object.values(participantsState).find(p => p && p.local);
+            const isStudent = localP ? localP.role !== 'moderator' : false;
+
+            if (!isStudent) return;
+
+            const savedTileView = localStorage.getItem('teacher_tile_view_' + roomName);
+            const syncKey = `${savedTileView}`;
+
+            if (savedTileView !== null && window.hasSyncedTileViewState !== syncKey) {
+                window.hasSyncedTileViewState = syncKey;
+                const isTile = savedTileView === 'true';
+                console.log('📌 [HỌC VIÊN - REJOIN] Khôi phục Grid View:', isTile);
+                window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: isTile });
+            }
+        } catch (e) {}
+    }, 1000);
+})();
 
 // Log pin events on Teacher screen & broadcast message to Student
 (function setupTeacherPinLogger() {
