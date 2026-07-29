@@ -342,7 +342,6 @@ if (typeof window !== 'undefined') {
 
                 const isToggleStudentShare = msgText.startsWith('__TOGGLE_STUDENT_SCREENSHARE__:');
                 const isTileViewMsg = msgText.startsWith('__TILE_VIEW__:');
-                const isPinMsg = msgText.startsWith('__PIN_PARTICIPANT__:');
                 const isPraise = msgText.includes('__PRAISE__');
                 const isWheel = msgText.includes('__WHEEL__');
                 const isDice = msgText.includes('__DICE__') || msgText.includes('__DICE_COUNT__');
@@ -405,22 +404,8 @@ if (typeof window !== 'undefined') {
                             if (localP) isStudent = localP.role !== 'moderator';
 
                             if (isStudent) {
-                                if (enabled) {
-                                    // Teacher turned ON Grid View (Ẩn bảng) -> Student unpins Whiteboard & enables Grid View
-                                    console.log('📌 [HỌC VIÊN] ĐỒNG BỘ: Bỏ ghim Bảng trắng & Bật Grid View');
-                                    window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: null } });
-                                    window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: true });
-                                } else {
-                                    // Teacher turned OFF Grid View (Bảng trắng) -> Student disables Grid View, and if Whiteboard is open -> Pin Whiteboard
-                                    console.log('📌 [HỌC VIÊN] ĐỒNG BỘ: Tắt Grid View');
-                                    window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: false });
-                                    
-                                    const isWbOpen = !!(state['features/whiteboard']?.isOpen);
-                                    if (isWbOpen) {
-                                        console.log('📌 [HỌC VIÊN] Tắt Grid View & Bảng trắng đang mở -> Ghim Bảng trắng làm màn chính');
-                                        window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: 'whiteboard' } });
-                                    }
-                                }
+                                console.log('📌 [HỌC VIÊN] ĐỒNG BỘ GRID VIEW:', enabled);
+                                window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled });
                             }
                         }
 
@@ -608,8 +593,8 @@ const updateStarBadgesInJitsiUI = () => {
 
 setInterval(updateStarBadgesInJitsiUI, 1000);
 
-// Student Grid View & Whiteboard Auto-Pin Listener & Rejoin Sync
-(function setupStudentTileViewAndWbPinSync() {
+// Student Grid View Rejoin Sync (Pure Grid View Sync - No Whiteboard Pinning)
+(function setupStudentTileViewRejoinSync() {
     if (typeof window === 'undefined') return;
 
     setInterval(() => {
@@ -625,35 +610,12 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
 
             if (!isStudent) return;
 
-            // 1. Rejoin state restoration from localStorage
             const savedTileView = localStorage.getItem('teacher_tile_view_' + roomName);
             if (savedTileView && window.hasSyncedTileViewState !== savedTileView) {
                 window.hasSyncedTileViewState = savedTileView;
-                if (savedTileView === 'true') {
-                    console.log('📌 [HỌC VIÊN - REJOIN] Khôi phục BẬT Grid View & Bỏ ghim Bảng');
-                    window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: null } });
-                    window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: true });
-                } else if (savedTileView === 'false') {
-                    console.log('📌 [HỌC VIÊN - REJOIN] Khôi phục TẮT Grid View');
-                    window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: false });
-                    const isWbOpen = !!(state['features/whiteboard']?.isOpen);
-                    if (isWbOpen) {
-                        window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: 'whiteboard' } });
-                    }
-                }
-            }
-
-            // 2. Continuous check: If Student Grid View is OFF and Whiteboard is OPEN -> Auto pin Whiteboard
-            const isTileView = !!state['features/video-layout']?.tileViewEnabled;
-            const isWbOpen = !!(state['features/whiteboard']?.isOpen);
-            const currentPinned = state['features/large-video']?.participantId;
-
-            if (!isTileView && isWbOpen && currentPinned !== 'whiteboard') {
-                console.log('📌 [HỌC VIÊN] Tắt Grid View & Bảng trắng đang mở -> Tự động ghim Bảng trắng');
-                window.APP.store.dispatch({
-                    type: 'PIN_PARTICIPANT',
-                    participant: { id: 'whiteboard' }
-                });
+                const isTile = savedTileView === 'true';
+                console.log('📌 [HỌC VIÊN - REJOIN] Khôi phục Grid View:', isTile);
+                window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: isTile });
             }
         } catch (e) {}
     }, 1000);

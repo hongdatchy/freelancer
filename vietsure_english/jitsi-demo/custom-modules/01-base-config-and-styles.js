@@ -409,8 +409,8 @@ if (typeof window !== 'undefined') {
                     .large-video-background,
                     .filmstrip,
                     #largeVideoBackgroundContainer {
-                        background: red !important;
-                        background-color: red !important;
+                        background: #F0F6FE !important;
+                        background-color: #F0F6FE !important;
                     }
                     /* Disable clicking/pinning ONLY on video thumbnails inside filmstrip for students */
                     body.is-student .filmstrip #filmstripLocalVideo,
