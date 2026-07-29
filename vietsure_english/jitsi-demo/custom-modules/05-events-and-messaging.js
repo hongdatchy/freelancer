@@ -435,6 +435,9 @@ if (typeof window !== 'undefined') {
                                 console.log('📌 [HỌC VIÊN] ĐỒNG BỘ GRID VIEW:', enabled);
                                 window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled });
                                 if (!enabled) {
+                                    try {
+                                        if (roomName) localStorage.setItem('teacher_pinned_' + roomName, 'null');
+                                    } catch (e) {}
                                     window.APP.store.dispatch({
                                         type: 'PIN_PARTICIPANT',
                                         participant: { id: null }

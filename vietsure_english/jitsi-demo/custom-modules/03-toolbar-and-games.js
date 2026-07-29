@@ -540,9 +540,14 @@ if (typeof window !== 'undefined') {
                         () => !!(doc.querySelector('#sharedVideo') || doc.querySelector('iframe[src*="youtube"]'))
                     );
 
+                    // 3. Nếu đang Share Màn hình -> Ẩn nút Phát Video & Nút Cho phép HS share màn hình
                     if (videoBtn) videoBtn.style.display = isSharingScreen ? 'none' : '';
+
+                    // 4. Nếu đang Phát Video -> Ẩn nút Share Màn hình & Nút Cho phép HS share màn hình
                     if (shareBtn) shareBtn.style.display = isSharingVideo ? 'none' : '';
-                    if (ctrlBtn) ctrlBtn.style.display = isSharingVideo ? 'none' : '';
+
+                    // Nút Cho phép HS share màn hình sẽ ẩn khi đang Share Màn hình HOẶC đang Phát Video
+                    if (ctrlBtn) ctrlBtn.style.display = (isSharingVideo || isSharingScreen) ? 'none' : '';
                 } else {
                     // Student view: Hide share screen button by default
                     const shareWrapper = findShareScreenWrapper(doc);
