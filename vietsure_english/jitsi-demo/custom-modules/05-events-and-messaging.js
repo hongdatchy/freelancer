@@ -630,38 +630,7 @@ const updateStarBadgesInJitsiUI = () => {
 
 setInterval(updateStarBadgesInJitsiUI, 1000);
 
-// Student Grid View Rejoin Sync (Pure Grid View Sync - No Whiteboard Pinning)
-(function setupStudentTileViewRejoinSync() {
-    if (typeof window === 'undefined') return;
 
-    setInterval(() => {
-        try {
-            if (!window.APP || !window.APP.store) return;
-            const state = window.APP.store.getState();
-            const roomName = (state['features/base/conference']?.room || '').toLowerCase();
-            if (!roomName) return;
-
-            const participantsState = state['features/base/participants'] || {};
-            const localP = Object.values(participantsState).find(p => p && p.local);
-            const isStudent = localP ? localP.role !== 'moderator' : false;
-
-            if (!isStudent) return;
-
-            const savedTileView = localStorage.getItem('teacher_tile_view_' + roomName);
-            const savedPinned = localStorage.getItem('teacher_pinned_' + roomName);
-            const syncKey = `${savedTileView}_${savedPinned}`;
-
-            if (savedTileView !== null && window.hasSyncedTileViewState !== syncKey) {
-                window.hasSyncedTileViewState = syncKey;
-                const isTile = savedTileView === 'true';
-                const pinId = (savedPinned === 'null' || !savedPinned) ? null : savedPinned;
-                console.log('📌 [HỌC VIÊN - REJOIN] Khôi phục Grid View & Ghim:', isTile, pinId);
-                window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: isTile });
-                window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: pinId } });
-            }
-        } catch (e) {}
-    }, 1000);
-})();
 
 // Log pin events on Teacher screen & broadcast message to Student
 (function setupTeacherPinLogger() {

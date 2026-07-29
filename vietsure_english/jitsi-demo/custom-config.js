@@ -2082,10 +2082,12 @@ if (typeof window !== 'undefined') {
                 if (!isStudent) {
                     injectTeacherShareControlBtn(doc);
 
-                    // Mutual exclusion between Screen Sharing and Shared Video
+                    // 4-Slot (5-button) Mutual Exclusion: Screen Sharing, Shared Video, Student Share Control, Whiteboard group
                     const shareBtn = findShareScreenWrapper(doc);
                     const videoBtn = findSharedVideoWrapper(doc);
                     const ctrlBtn = doc.getElementById('custom-teacher-share-control-btn');
+                    const customWbBtn = doc.getElementById('custom-unpin-whiteboard-menu-item');
+                    const nativeWbBtns = doc.querySelectorAll('[data-testid="toolbox-whiteboard"], .toolbox-button[aria-label*="Whiteboard"], .toolbox-button[aria-label*="Bảng trắng"], .toolbox-button[aria-label*="Ẩn bảng"], .toolbox-button[aria-label*="Hiện bảng"]');
 
                     const isSharingScreen = isActionActive(doc, shareBtn,
                         s => s['features/base/tracks']?.some(t => t.local && t.mediaType === 'desktop') || s['features/base/conference']?.isScreenSharing
@@ -2095,9 +2097,58 @@ if (typeof window !== 'undefined') {
                         () => !!(doc.querySelector('#sharedVideo') || doc.querySelector('iframe[src*="youtube"]'))
                     );
 
-                    if (videoBtn) videoBtn.style.display = isSharingScreen ? 'none' : '';
-                    if (shareBtn) shareBtn.style.display = isSharingVideo ? 'none' : '';
-                    if (ctrlBtn) ctrlBtn.style.display = isSharingVideo ? 'none' : '';
+                    let isWbActive = false;
+                    if (window.APP && window.APP.store) {
+                        const state = window.APP.store.getState();
+                        const pinnedId = state['features/large-video']?.participantId;
+                        const isTileView = !!state['features/video-layout']?.tileViewEnabled;
+                        const isWbOpen = !!(state['features/whiteboard'] && state['features/whiteboard'].isOpen);
+                        isWbActive = (pinnedId === 'whiteboard' || isWbOpen) && !isTileView;
+                    }
+
+                    const isCtrlActive = !!(window.allowStudentScreenshare);
+
+                    const setSlotDisplay = (elements, show) => {
+                        const list = Array.isArray(elements) ? elements : [elements];
+                        list.forEach(el => {
+                            if (!el) return;
+                            if (show) {
+                                el.style.removeProperty('display');
+                                el.style.display = '';
+                            } else {
+                                el.style.setProperty('display', 'none', 'important');
+                            }
+                        });
+                    };
+
+                    const wbGroup = [customWbBtn, ...Array.from(nativeWbBtns)];
+
+                    if (isSharingScreen) {
+                        setSlotDisplay(shareBtn, true);
+                        setSlotDisplay(videoBtn, false);
+                        setSlotDisplay(ctrlBtn, false);
+                        setSlotDisplay(wbGroup, false);
+                    } else if (isSharingVideo) {
+                        setSlotDisplay(videoBtn, true);
+                        setSlotDisplay(shareBtn, false);
+                        setSlotDisplay(ctrlBtn, false);
+                        setSlotDisplay(wbGroup, false);
+                    } else if (isWbActive) {
+                        setSlotDisplay(wbGroup, true);
+                        setSlotDisplay(shareBtn, false);
+                        setSlotDisplay(videoBtn, false);
+                        setSlotDisplay(ctrlBtn, false);
+                    } else if (isCtrlActive) {
+                        setSlotDisplay(ctrlBtn, true);
+                        setSlotDisplay(shareBtn, false);
+                        setSlotDisplay(videoBtn, false);
+                        setSlotDisplay(wbGroup, false);
+                    } else {
+                        setSlotDisplay(shareBtn, true);
+                        setSlotDisplay(videoBtn, true);
+                        setSlotDisplay(ctrlBtn, true);
+                        setSlotDisplay(wbGroup, true);
+                    }
                 } else {
                     // Student view: Hide share screen button by default
                     const shareWrapper = findShareScreenWrapper(doc);
@@ -3161,37 +3212,37 @@ const updateStarBadgesInJitsiUI = () => {
 setInterval(updateStarBadgesInJitsiUI, 1000);
 
 // Student Grid View Rejoin Sync (Pure Grid View Sync - No Whiteboard Pinning)
-(function setupStudentTileViewRejoinSync() {
-    if (typeof window === 'undefined') return;
+// (function setupStudentTileViewRejoinSync() {
+//     if (typeof window === 'undefined') return;
 
-    setInterval(() => {
-        try {
-            if (!window.APP || !window.APP.store) return;
-            const state = window.APP.store.getState();
-            const roomName = (state['features/base/conference']?.room || '').toLowerCase();
-            if (!roomName) return;
+//     setInterval(() => {
+//         try {
+//             if (!window.APP || !window.APP.store) return;
+//             const state = window.APP.store.getState();
+//             const roomName = (state['features/base/conference']?.room || '').toLowerCase();
+//             if (!roomName) return;
 
-            const participantsState = state['features/base/participants'] || {};
-            const localP = Object.values(participantsState).find(p => p && p.local);
-            const isStudent = localP ? localP.role !== 'moderator' : false;
+//             const participantsState = state['features/base/participants'] || {};
+//             const localP = Object.values(participantsState).find(p => p && p.local);
+//             const isStudent = localP ? localP.role !== 'moderator' : false;
 
-            if (!isStudent) return;
+//             if (!isStudent) return;
 
-            const savedTileView = localStorage.getItem('teacher_tile_view_' + roomName);
-            const savedPinned = localStorage.getItem('teacher_pinned_' + roomName);
-            const syncKey = `${savedTileView}_${savedPinned}`;
+//             const savedTileView = localStorage.getItem('teacher_tile_view_' + roomName);
+//             const savedPinned = localStorage.getItem('teacher_pinned_' + roomName);
+//             const syncKey = `${savedTileView}_${savedPinned}`;
 
-            if (savedTileView !== null && window.hasSyncedTileViewState !== syncKey) {
-                window.hasSyncedTileViewState = syncKey;
-                const isTile = savedTileView === 'true';
-                const pinId = (savedPinned === 'null' || !savedPinned) ? null : savedPinned;
-                console.log('📌 [HỌC VIÊN - REJOIN] Khôi phục Grid View & Ghim:', isTile, pinId);
-                window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: isTile });
-                window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: pinId } });
-            }
-        } catch (e) {}
-    }, 1000);
-})();
+//             if (savedTileView !== null && window.hasSyncedTileViewState !== syncKey) {
+//                 window.hasSyncedTileViewState = syncKey;
+//                 const isTile = savedTileView === 'true';
+//                 const pinId = (savedPinned === 'null' || !savedPinned) ? null : savedPinned;
+//                 console.log('📌 [HỌC VIÊN - REJOIN] Khôi phục Grid View & Ghim:', isTile, pinId);
+//                 window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: isTile });
+//                 window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: pinId } });
+//             }
+//         } catch (e) {}
+//     }, 1000);
+// })();
 
 // Log pin events on Teacher screen & broadcast message to Student
 (function setupTeacherPinLogger() {
