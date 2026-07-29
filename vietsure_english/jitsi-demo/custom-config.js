@@ -187,10 +187,11 @@ if (typeof document !== 'undefined') {
             margin: 0 !important;
         }
 
-        /* Hide whiteboard and screenshare participant tiles safely on filmstrip for both Teacher and Student via CSS */
+        /* Hide whiteboard, screenshare, and shared video participant tiles safely on filmstrip for both Teacher and Student via CSS */
         #participant_whiteboard,
         #filmstripLocalScreenShare,
         #filmstripLocalScreenShareThumbnail,
+        #sharedVideoContainer,
         span.videocontainer[id*="-v0"] {
             display: none !important;
         }
