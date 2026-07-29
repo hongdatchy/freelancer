@@ -2018,6 +2018,55 @@ if (typeof window !== 'undefined') {
                 <div class="custom-tooltip-popup">Mở quyền Share màn hình cho Học viên</div>
             `;
 
+            const clickNativeStopScreenShareBtn = (targetDoc) => {
+                try {
+                    const docs = targetDoc ? [targetDoc] : [document];
+                    const iframes = document.querySelectorAll('iframe');
+                    iframes.forEach(iframe => {
+                        try {
+                            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                            if (iframeDoc) docs.push(iframeDoc);
+                        } catch (e) {}
+                    });
+
+                    for (let d of docs) {
+                        const directItem = d.querySelector('.mutedesktoplink') || d.querySelector('[aria-label="Stop screen sharing"]');
+                        if (directItem) {
+                            console.log('🎯 [GIÁO VIÊN] Found .mutedesktoplink directly, clicking!');
+                            directItem.click();
+                            return true;
+                        }
+
+                        const menuItems = d.querySelectorAll('.mutedesktoplink, [aria-label="Stop screen sharing"], [role="menuitem"], [role="button"]');
+                        for (let item of menuItems) {
+                            const text = `${item.getAttribute('aria-label') || ''} ${item.textContent || ''}`.trim().toLowerCase();
+                            if (item.classList.contains('mutedesktoplink') || text.includes('stop screen sharing') || text.includes('dừng chia sẻ màn hình')) {
+                                console.log('🎯 [GIÁO VIÊN] Click nút native Stop Screen Sharing!');
+                                item.click();
+                                return true;
+                            }
+                        }
+
+                        const popoverTriggers = d.querySelectorAll('.popover-trigger, [aria-label*="xem thêm"], [aria-label*="more"], .indicators-sub-container, .avatar-container');
+                        for (let trigger of popoverTriggers) {
+                            trigger.click();
+                            setTimeout(() => {
+                                const openItem = d.querySelector('.mutedesktoplink') || d.querySelector('[aria-label="Stop screen sharing"]');
+                                if (openItem) {
+                                    console.log('🎯 [GIÁO VIÊN] Click .mutedesktoplink sau khi mở popover!');
+                                    openItem.click();
+                                }
+                            }, 50);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error clicking native stop screen share button:', e);
+                }
+                return false;
+            };
+
+    
+
             const handleToggleClick = (e) => {
                 if (e) {
                     e.preventDefault();
@@ -2028,6 +2077,10 @@ if (typeof window !== 'undefined') {
                 const isAllowed = window.isStudentShareAllowedByTeacher;
 
                 console.log('📢📢📢 [TEACHER TOOLBAR] Bấm nút Bật/Tắt Share Học viên. allowStudentShare =', isAllowed);
+
+                if (!isAllowed) {
+                    clickNativeStopScreenShareBtn(doc);
+                }
 
                 // Send event to parent window to broadcast via apiRef
                 try {
