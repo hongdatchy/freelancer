@@ -164,11 +164,11 @@ if (typeof document !== 'undefined') {
             display: none !important;
         }
 
-        /* Student Filmstrip Container and Tile Spans Alignment */
-        body.is-student .filmstrip__videos.remote-videos {
+        /* Filmstrip Container and Tile Spans Alignment for both Teacher & Student */
+        .filmstrip__videos.remote-videos {
             align-items: center !important;
         }
-        body.is-student .filmstrip__videos.remote-videos > div {
+        .filmstrip__videos.remote-videos > div {
             display: flex !important;
             flex-direction: row !important;
             flex-wrap: wrap !important;
@@ -180,18 +180,18 @@ if (typeof document !== 'undefined') {
             left: auto !important;
             top: auto !important;
         }
-        body.is-student .filmstrip__videos.remote-videos span.videocontainer {
+        .filmstrip__videos.remote-videos span.videocontainer {
             position: relative !important;
             left: auto !important;
             top: auto !important;
             margin: 0 !important;
         }
 
-        /* Hide whiteboard and screenshare participant tiles safely for student view via CSS (prevents React removeChild crash on unmount) */
-        body.is-student #participant_whiteboard,
-        body.is-student #filmstripLocalScreenShare,
-        body.is-student #filmstripLocalScreenShareThumbnail,
-        body.is-student span.videocontainer[id*="-v0"] {
+        /* Hide whiteboard and screenshare participant tiles safely on filmstrip for both Teacher and Student via CSS */
+        #participant_whiteboard,
+        #filmstripLocalScreenShare,
+        #filmstripLocalScreenShareThumbnail,
+        span.videocontainer[id*="-v0"] {
             display: none !important;
         }
 
@@ -476,9 +476,8 @@ if (typeof window !== 'undefined') {
         };
     }
 
-    // Ẩn tile bảng trắng & màn share bằng CSS style (không dùng remove() để tránh lỗi React removeChild khi thoát phòng)
-    const hideStudentDistractions = () => {
-        if (!document.body || !document.body.classList.contains('is-student')) return;
+    // Ẩn tile bảng trắng & màn share bằng JS ngầm cho cả Giáo viên & Học viên
+    const hideFilmstripDistractions = () => {
         try {
             // Ẩn span whiteboard
             const whiteboard = document.getElementById('participant_whiteboard');
@@ -501,7 +500,7 @@ if (typeof window !== 'undefined') {
             }
         } catch (e) {}
     };
-    setInterval(hideStudentDistractions, 1000);
+    setInterval(hideFilmstripDistractions, 1000);
 }
 
 
@@ -1820,8 +1819,10 @@ if (typeof window !== 'undefined' && !window.hasBoundCustomUnpinMenuItemClickLis
                 const isTileView = !!state['features/video-layout']?.tileViewEnabled;
                 const isWbPinned = pinnedId === 'whiteboard' && !isTileView;
 
+                const roomName = (state['features/base/conference']?.room || '').toLowerCase();
+
                 if (isWbPinned) {
-                    console.log('📌 [GIÁO VIÊN] Click Ẩn bảng -> BỎ GHIM BẢNG TRẮNG & BẬT GRID VIEW');
+                    console.log('📌 [GIÁO VIÊN] Click Ẩn bảng -> BỎ GHIM BẢNG TRẮNG & BẬT GRID VIEW & BROADCAST');
                     window.APP.store.dispatch({
                         type: 'PIN_PARTICIPANT',
                         participant: { id: null }
@@ -1830,8 +1831,14 @@ if (typeof window !== 'undefined' && !window.hasBoundCustomUnpinMenuItemClickLis
                         type: 'SET_TILE_VIEW',
                         enabled: true
                     });
+                    try {
+                        if (roomName) localStorage.setItem('teacher_tile_view_' + roomName, 'true');
+                        if (window.APP?.conference?.sendTextMessage) {
+                            window.APP.conference.sendTextMessage('__TILE_VIEW__:true');
+                        }
+                    } catch (e) {}
                 } else {
-                    console.log('📌 [GIÁO VIÊN] Click Bảng trắng -> GHIM BẢNG TRẮNG làm màn chính');
+                    console.log('📌 [GIÁO VIÊN] Click Bảng trắng -> GHIM BẢNG TRẮNG làm màn chính & BROADCAST');
                     window.APP.store.dispatch({
                         type: 'SET_TILE_VIEW',
                         enabled: false
@@ -1840,6 +1847,12 @@ if (typeof window !== 'undefined' && !window.hasBoundCustomUnpinMenuItemClickLis
                         type: 'PIN_PARTICIPANT',
                         participant: { id: 'whiteboard' }
                     });
+                    try {
+                        if (roomName) localStorage.setItem('teacher_tile_view_' + roomName, 'false');
+                        if (window.APP?.conference?.sendTextMessage) {
+                            window.APP.conference.sendTextMessage('__TILE_VIEW__:false');
+                        }
+                    } catch (e) {}
                 }
             }
         }
@@ -1850,6 +1863,8 @@ if (typeof window !== 'undefined' && !window.hasBoundCustomUnpinMenuItemClickLis
 if (typeof window !== 'undefined') {
     setInterval(() => {
         try {
+            if (typeof checkIfStudent === 'function' && checkIfStudent()) return;
+
             const docs = [document];
             const iframes = document.querySelectorAll('iframe');
             iframes.forEach(iframe => {
@@ -1892,19 +1907,38 @@ if (typeof window !== 'undefined') {
 
                             // Dynamic state calculation
                             let isWbPinned = false;
+                            let isScreensharing = false;
                             if (window.APP && window.APP.store) {
                                 const state = window.APP.store.getState();
                                 const pinnedId = state['features/large-video']?.participantId;
                                 const isTileView = !!state['features/video-layout']?.tileViewEnabled;
                                 isWbPinned = pinnedId === 'whiteboard' && !isTileView;
+
+                                // Check screenshare status in Redux store
+                                const tracks = state['features/base/tracks'] || [];
+                                const hasDesktopTrack = Array.isArray(tracks) 
+                                    ? tracks.some(t => t && t.mediaType === 'desktop' && !t.muted)
+                                    : Object.values(tracks).some(t => t && t.mediaType === 'desktop' && !t.muted);
+                                
+                                const isLargeDesktop = !!(state['features/large-video']?.isScreenSharing);
+                                isScreensharing = hasDesktopTrack || isLargeDesktop;
                             }
 
-                            const dynamicText = isWbPinned ? 'Ẩn bảng' : 'Bảng trắng';
+                            if (!isScreensharing && document.body && document.body.classList.contains('whiteboard-screenshare-active')) {
+                                isScreensharing = true;
+                            }
 
-                            customItem.style.removeProperty('display');
-                            customItem.style.display = '';
-                            customItem.setAttribute('aria-label', dynamicText);
-                            customItem.querySelectorAll('span').forEach(s => s.textContent = dynamicText);
+                            if (isScreensharing) {
+                                // Ẩn nút custom khi ĐANG CHIA SẺ MÀN HÌNH
+                                customItem.style.setProperty('display', 'none', 'important');
+                            } else {
+                                const dynamicText = isWbPinned ? 'Ẩn bảng' : 'Bảng trắng';
+
+                                customItem.style.removeProperty('display');
+                                customItem.style.display = '';
+                                customItem.setAttribute('aria-label', dynamicText);
+                                customItem.querySelectorAll('span').forEach(s => s.textContent = dynamicText);
+                            }
                         }
                     }
                 });
@@ -2879,6 +2913,39 @@ if (typeof window !== 'undefined') {
                         timerMessagesCount++;
                         const enabled = msgText.includes(':true');
                         console.log('[Jitsi custom-config] __TILE_VIEW__ received from Teacher:', enabled);
+                        
+                        const roomName = (window.APP?.store?.getState()?.['features/base/conference']?.room || '').toLowerCase();
+                        try {
+                            if (roomName) localStorage.setItem('teacher_tile_view_' + roomName, enabled ? 'true' : 'false');
+                        } catch (e) {}
+
+                        let isStudent = false;
+                        if (window.APP && window.APP.store) {
+                            const state = window.APP.store.getState();
+                            const participantsState = state['features/base/participants'] || {};
+                            const localP = Object.values(participantsState).find(p => p && p.local);
+                            if (localP) isStudent = localP.role !== 'moderator';
+
+                            if (isStudent) {
+                                if (enabled) {
+                                    // Teacher turned ON Grid View (Ẩn bảng) -> Student unpins Whiteboard & enables Grid View
+                                    console.log('📌 [HỌC VIÊN] ĐỒNG BỘ: Bỏ ghim Bảng trắng & Bật Grid View');
+                                    window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: null } });
+                                    window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: true });
+                                } else {
+                                    // Teacher turned OFF Grid View (Bảng trắng) -> Student disables Grid View, and if Whiteboard is open -> Pin Whiteboard
+                                    console.log('📌 [HỌC VIÊN] ĐỒNG BỘ: Tắt Grid View');
+                                    window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: false });
+                                    
+                                    const isWbOpen = !!(state['features/whiteboard']?.isOpen);
+                                    if (isWbOpen) {
+                                        console.log('📌 [HỌC VIÊN] Tắt Grid View & Bảng trắng đang mở -> Ghim Bảng trắng làm màn chính');
+                                        window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: 'whiteboard' } });
+                                    }
+                                }
+                            }
+                        }
+
                         window.parent.postMessage({ type: 'TEACHER_TOGGLED_TILE_VIEW', enabled }, '*');
                     } else if (isDice) {
                         timerMessagesCount++;
@@ -2911,7 +2978,7 @@ if (typeof window !== 'undefined') {
                     } else if (isTimer) {
                         timerMessagesCount++;
                     }
-                } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg || isPinMsg) {
+                } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg) {
                     timerMessagesCount++;
                 } else {
                     realMessagesCount++;
@@ -2941,7 +3008,7 @@ if (typeof window !== 'undefined') {
     }
 
     const hideTimerMessages = () => {
-        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__PIN_PARTICIPANT__'];
+        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__'];
 
         const wrappers = document.querySelectorAll('[class*="-chatMessageWrapper"]');
         wrappers.forEach((wrapper) => {
@@ -3062,5 +3129,58 @@ const updateStarBadgesInJitsiUI = () => {
 };
 
 setInterval(updateStarBadgesInJitsiUI, 1000);
+
+// Student Grid View & Whiteboard Auto-Pin Listener & Rejoin Sync
+(function setupStudentTileViewAndWbPinSync() {
+    if (typeof window === 'undefined') return;
+
+    setInterval(() => {
+        try {
+            if (!window.APP || !window.APP.store) return;
+            const state = window.APP.store.getState();
+            const roomName = (state['features/base/conference']?.room || '').toLowerCase();
+            if (!roomName) return;
+
+            const participantsState = state['features/base/participants'] || {};
+            const localP = Object.values(participantsState).find(p => p && p.local);
+            const isStudent = localP ? localP.role !== 'moderator' : false;
+
+            if (!isStudent) return;
+
+            // 1. Rejoin state restoration from localStorage
+            const savedTileView = localStorage.getItem('teacher_tile_view_' + roomName);
+            if (savedTileView && window.hasSyncedTileViewState !== savedTileView) {
+                window.hasSyncedTileViewState = savedTileView;
+                if (savedTileView === 'true') {
+                    console.log('📌 [HỌC VIÊN - REJOIN] Khôi phục BẬT Grid View & Bỏ ghim Bảng');
+                    window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: null } });
+                    window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: true });
+                } else if (savedTileView === 'false') {
+                    console.log('📌 [HỌC VIÊN - REJOIN] Khôi phục TẮT Grid View');
+                    window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: false });
+                    const isWbOpen = !!(state['features/whiteboard']?.isOpen);
+                    if (isWbOpen) {
+                        window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: 'whiteboard' } });
+                    }
+                }
+            }
+
+            // 2. Continuous check: If Student Grid View is OFF and Whiteboard is OPEN -> Auto pin Whiteboard
+            const isTileView = !!state['features/video-layout']?.tileViewEnabled;
+            const isWbOpen = !!(state['features/whiteboard']?.isOpen);
+            const currentPinned = state['features/large-video']?.participantId;
+
+            if (!isTileView && isWbOpen && currentPinned !== 'whiteboard') {
+                console.log('📌 [HỌC VIÊN] Tắt Grid View & Bảng trắng đang mở -> Tự động ghim Bảng trắng');
+                window.APP.store.dispatch({
+                    type: 'PIN_PARTICIPANT',
+                    participant: { id: 'whiteboard' }
+                });
+            }
+        } catch (e) {}
+    }, 1000);
+})();
+
+
 
 

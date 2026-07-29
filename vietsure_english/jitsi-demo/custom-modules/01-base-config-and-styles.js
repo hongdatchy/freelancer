@@ -156,11 +156,11 @@ if (typeof document !== 'undefined') {
             display: none !important;
         }
 
-        /* Student Filmstrip Container and Tile Spans Alignment */
-        body.is-student .filmstrip__videos.remote-videos {
+        /* Filmstrip Container and Tile Spans Alignment for both Teacher & Student */
+        .filmstrip__videos.remote-videos {
             align-items: center !important;
         }
-        body.is-student .filmstrip__videos.remote-videos > div {
+        .filmstrip__videos.remote-videos > div {
             display: flex !important;
             flex-direction: row !important;
             flex-wrap: wrap !important;
@@ -172,18 +172,18 @@ if (typeof document !== 'undefined') {
             left: auto !important;
             top: auto !important;
         }
-        body.is-student .filmstrip__videos.remote-videos span.videocontainer {
+        .filmstrip__videos.remote-videos span.videocontainer {
             position: relative !important;
             left: auto !important;
             top: auto !important;
             margin: 0 !important;
         }
 
-        /* Hide whiteboard and screenshare participant tiles safely for student view via CSS (prevents React removeChild crash on unmount) */
-        body.is-student #participant_whiteboard,
-        body.is-student #filmstripLocalScreenShare,
-        body.is-student #filmstripLocalScreenShareThumbnail,
-        body.is-student span.videocontainer[id*="-v0"] {
+        /* Hide whiteboard and screenshare participant tiles safely on filmstrip for both Teacher and Student via CSS */
+        #participant_whiteboard,
+        #filmstripLocalScreenShare,
+        #filmstripLocalScreenShareThumbnail,
+        span.videocontainer[id*="-v0"] {
             display: none !important;
         }
 
@@ -409,8 +409,8 @@ if (typeof window !== 'undefined') {
                     .large-video-background,
                     .filmstrip,
                     #largeVideoBackgroundContainer {
-                        background: #FEF3C7 !important;
-                        background-color: #FEF3C7 !important;
+                        background: red !important;
+                        background-color: red !important;
                     }
                     /* Disable clicking/pinning ONLY on video thumbnails inside filmstrip for students */
                     body.is-student .filmstrip #filmstripLocalVideo,
@@ -468,9 +468,8 @@ if (typeof window !== 'undefined') {
         };
     }
 
-    // Ẩn tile bảng trắng & màn share bằng CSS style (không dùng remove() để tránh lỗi React removeChild khi thoát phòng)
-    const hideStudentDistractions = () => {
-        if (!document.body || !document.body.classList.contains('is-student')) return;
+    // Ẩn tile bảng trắng & màn share bằng JS ngầm cho cả Giáo viên & Học viên
+    const hideFilmstripDistractions = () => {
         try {
             // Ẩn span whiteboard
             const whiteboard = document.getElementById('participant_whiteboard');
@@ -493,5 +492,5 @@ if (typeof window !== 'undefined') {
             }
         } catch (e) {}
     };
-    setInterval(hideStudentDistractions, 1000);
+    setInterval(hideFilmstripDistractions, 1000);
 }

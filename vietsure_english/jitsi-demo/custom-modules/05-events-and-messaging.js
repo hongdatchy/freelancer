@@ -391,6 +391,39 @@ if (typeof window !== 'undefined') {
                         timerMessagesCount++;
                         const enabled = msgText.includes(':true');
                         console.log('[Jitsi custom-config] __TILE_VIEW__ received from Teacher:', enabled);
+                        
+                        const roomName = (window.APP?.store?.getState()?.['features/base/conference']?.room || '').toLowerCase();
+                        try {
+                            if (roomName) localStorage.setItem('teacher_tile_view_' + roomName, enabled ? 'true' : 'false');
+                        } catch (e) {}
+
+                        let isStudent = false;
+                        if (window.APP && window.APP.store) {
+                            const state = window.APP.store.getState();
+                            const participantsState = state['features/base/participants'] || {};
+                            const localP = Object.values(participantsState).find(p => p && p.local);
+                            if (localP) isStudent = localP.role !== 'moderator';
+
+                            if (isStudent) {
+                                if (enabled) {
+                                    // Teacher turned ON Grid View (Ẩn bảng) -> Student unpins Whiteboard & enables Grid View
+                                    console.log('📌 [HỌC VIÊN] ĐỒNG BỘ: Bỏ ghim Bảng trắng & Bật Grid View');
+                                    window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: null } });
+                                    window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: true });
+                                } else {
+                                    // Teacher turned OFF Grid View (Bảng trắng) -> Student disables Grid View, and if Whiteboard is open -> Pin Whiteboard
+                                    console.log('📌 [HỌC VIÊN] ĐỒNG BỘ: Tắt Grid View');
+                                    window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: false });
+                                    
+                                    const isWbOpen = !!(state['features/whiteboard']?.isOpen);
+                                    if (isWbOpen) {
+                                        console.log('📌 [HỌC VIÊN] Tắt Grid View & Bảng trắng đang mở -> Ghim Bảng trắng làm màn chính');
+                                        window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: 'whiteboard' } });
+                                    }
+                                }
+                            }
+                        }
+
                         window.parent.postMessage({ type: 'TEACHER_TOGGLED_TILE_VIEW', enabled }, '*');
                     } else if (isDice) {
                         timerMessagesCount++;
@@ -423,7 +456,7 @@ if (typeof window !== 'undefined') {
                     } else if (isTimer) {
                         timerMessagesCount++;
                     }
-                } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg || isPinMsg) {
+                } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg) {
                     timerMessagesCount++;
                 } else {
                     realMessagesCount++;
@@ -453,7 +486,7 @@ if (typeof window !== 'undefined') {
     }
 
     const hideTimerMessages = () => {
-        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__PIN_PARTICIPANT__'];
+        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__'];
 
         const wrappers = document.querySelectorAll('[class*="-chatMessageWrapper"]');
         wrappers.forEach((wrapper) => {
@@ -574,4 +607,57 @@ const updateStarBadgesInJitsiUI = () => {
 };
 
 setInterval(updateStarBadgesInJitsiUI, 1000);
+
+// Student Grid View & Whiteboard Auto-Pin Listener & Rejoin Sync
+(function setupStudentTileViewAndWbPinSync() {
+    if (typeof window === 'undefined') return;
+
+    setInterval(() => {
+        try {
+            if (!window.APP || !window.APP.store) return;
+            const state = window.APP.store.getState();
+            const roomName = (state['features/base/conference']?.room || '').toLowerCase();
+            if (!roomName) return;
+
+            const participantsState = state['features/base/participants'] || {};
+            const localP = Object.values(participantsState).find(p => p && p.local);
+            const isStudent = localP ? localP.role !== 'moderator' : false;
+
+            if (!isStudent) return;
+
+            // 1. Rejoin state restoration from localStorage
+            const savedTileView = localStorage.getItem('teacher_tile_view_' + roomName);
+            if (savedTileView && window.hasSyncedTileViewState !== savedTileView) {
+                window.hasSyncedTileViewState = savedTileView;
+                if (savedTileView === 'true') {
+                    console.log('📌 [HỌC VIÊN - REJOIN] Khôi phục BẬT Grid View & Bỏ ghim Bảng');
+                    window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: null } });
+                    window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: true });
+                } else if (savedTileView === 'false') {
+                    console.log('📌 [HỌC VIÊN - REJOIN] Khôi phục TẮT Grid View');
+                    window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: false });
+                    const isWbOpen = !!(state['features/whiteboard']?.isOpen);
+                    if (isWbOpen) {
+                        window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: 'whiteboard' } });
+                    }
+                }
+            }
+
+            // 2. Continuous check: If Student Grid View is OFF and Whiteboard is OPEN -> Auto pin Whiteboard
+            const isTileView = !!state['features/video-layout']?.tileViewEnabled;
+            const isWbOpen = !!(state['features/whiteboard']?.isOpen);
+            const currentPinned = state['features/large-video']?.participantId;
+
+            if (!isTileView && isWbOpen && currentPinned !== 'whiteboard') {
+                console.log('📌 [HỌC VIÊN] Tắt Grid View & Bảng trắng đang mở -> Tự động ghim Bảng trắng');
+                window.APP.store.dispatch({
+                    type: 'PIN_PARTICIPANT',
+                    participant: { id: 'whiteboard' }
+                });
+            }
+        } catch (e) {}
+    }, 1000);
+})();
+
+
 

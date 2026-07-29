@@ -272,8 +272,10 @@ if (typeof window !== 'undefined' && !window.hasBoundCustomUnpinMenuItemClickLis
                 const isTileView = !!state['features/video-layout']?.tileViewEnabled;
                 const isWbPinned = pinnedId === 'whiteboard' && !isTileView;
 
+                const roomName = (state['features/base/conference']?.room || '').toLowerCase();
+
                 if (isWbPinned) {
-                    console.log('📌 [GIÁO VIÊN] Click Ẩn bảng -> BỎ GHIM BẢNG TRẮNG & BẬT GRID VIEW');
+                    console.log('📌 [GIÁO VIÊN] Click Ẩn bảng -> BỎ GHIM BẢNG TRẮNG & BẬT GRID VIEW & BROADCAST');
                     window.APP.store.dispatch({
                         type: 'PIN_PARTICIPANT',
                         participant: { id: null }
@@ -282,8 +284,14 @@ if (typeof window !== 'undefined' && !window.hasBoundCustomUnpinMenuItemClickLis
                         type: 'SET_TILE_VIEW',
                         enabled: true
                     });
+                    try {
+                        if (roomName) localStorage.setItem('teacher_tile_view_' + roomName, 'true');
+                        if (window.APP?.conference?.sendTextMessage) {
+                            window.APP.conference.sendTextMessage('__TILE_VIEW__:true');
+                        }
+                    } catch (e) {}
                 } else {
-                    console.log('📌 [GIÁO VIÊN] Click Bảng trắng -> GHIM BẢNG TRẮNG làm màn chính');
+                    console.log('📌 [GIÁO VIÊN] Click Bảng trắng -> GHIM BẢNG TRẮNG làm màn chính & BROADCAST');
                     window.APP.store.dispatch({
                         type: 'SET_TILE_VIEW',
                         enabled: false
@@ -292,6 +300,12 @@ if (typeof window !== 'undefined' && !window.hasBoundCustomUnpinMenuItemClickLis
                         type: 'PIN_PARTICIPANT',
                         participant: { id: 'whiteboard' }
                     });
+                    try {
+                        if (roomName) localStorage.setItem('teacher_tile_view_' + roomName, 'false');
+                        if (window.APP?.conference?.sendTextMessage) {
+                            window.APP.conference.sendTextMessage('__TILE_VIEW__:false');
+                        }
+                    } catch (e) {}
                 }
             }
         }
@@ -302,6 +316,8 @@ if (typeof window !== 'undefined' && !window.hasBoundCustomUnpinMenuItemClickLis
 if (typeof window !== 'undefined') {
     setInterval(() => {
         try {
+            if (typeof checkIfStudent === 'function' && checkIfStudent()) return;
+
             const docs = [document];
             const iframes = document.querySelectorAll('iframe');
             iframes.forEach(iframe => {
@@ -344,19 +360,38 @@ if (typeof window !== 'undefined') {
 
                             // Dynamic state calculation
                             let isWbPinned = false;
+                            let isScreensharing = false;
                             if (window.APP && window.APP.store) {
                                 const state = window.APP.store.getState();
                                 const pinnedId = state['features/large-video']?.participantId;
                                 const isTileView = !!state['features/video-layout']?.tileViewEnabled;
                                 isWbPinned = pinnedId === 'whiteboard' && !isTileView;
+
+                                // Check screenshare status in Redux store
+                                const tracks = state['features/base/tracks'] || [];
+                                const hasDesktopTrack = Array.isArray(tracks) 
+                                    ? tracks.some(t => t && t.mediaType === 'desktop' && !t.muted)
+                                    : Object.values(tracks).some(t => t && t.mediaType === 'desktop' && !t.muted);
+                                
+                                const isLargeDesktop = !!(state['features/large-video']?.isScreenSharing);
+                                isScreensharing = hasDesktopTrack || isLargeDesktop;
                             }
 
-                            const dynamicText = isWbPinned ? 'Ẩn bảng' : 'Bảng trắng';
+                            if (!isScreensharing && document.body && document.body.classList.contains('whiteboard-screenshare-active')) {
+                                isScreensharing = true;
+                            }
 
-                            customItem.style.removeProperty('display');
-                            customItem.style.display = '';
-                            customItem.setAttribute('aria-label', dynamicText);
-                            customItem.querySelectorAll('span').forEach(s => s.textContent = dynamicText);
+                            if (isScreensharing) {
+                                // Ẩn nút custom khi ĐANG CHIA SẺ MÀN HÌNH
+                                customItem.style.setProperty('display', 'none', 'important');
+                            } else {
+                                const dynamicText = isWbPinned ? 'Ẩn bảng' : 'Bảng trắng';
+
+                                customItem.style.removeProperty('display');
+                                customItem.style.display = '';
+                                customItem.setAttribute('aria-label', dynamicText);
+                                customItem.querySelectorAll('span').forEach(s => s.textContent = dynamicText);
+                            }
                         }
                     }
                 });
