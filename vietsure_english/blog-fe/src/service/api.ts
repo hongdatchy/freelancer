@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 
 const isServer = typeof window === 'undefined';
 const BASE_URL = isServer
@@ -6,13 +7,23 @@ const BASE_URL = isServer
   : process.env.NEXT_PUBLIC_BE_HOST;
 const BE_TOKEN_ADMIN = process.env.NEXT_PUBLIC_BE_TOKEN_ADMIN;
 
-// Centralized response checker: If HTTP Status 401, redirect to '/' on both Server and Client
+// Centralized response checker: If HTTP Status 401, clear jwt cookie & redirect to '/' safely
 const checkResponse = async (response: Response, endpoint: string) => {
   if (response.status === 401) {
     if (typeof window === 'undefined') {
+      try {
+        const cookieStore = cookies();
+        (await cookieStore).delete('jwt');
+      } catch (e) {}
       redirect('/');
     } else {
-      window.location.href = '/';
+      try {
+        document.cookie = 'jwt=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        localStorage.removeItem('user-login-store');
+      } catch (e) {}
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      }
       return;
     }
   }
