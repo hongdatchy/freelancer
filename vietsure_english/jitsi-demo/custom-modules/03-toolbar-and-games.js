@@ -259,11 +259,12 @@ if (typeof window !== 'undefined' && !window.hasBoundCustomUnpinMenuItemClickLis
             e.stopPropagation();
             e.stopImmediatePropagation();
 
-            // Đóng menu popover Jitsi
-            try {
-                const popovers = document.querySelectorAll('[class*="popover"], [role="menu"]');
-                popovers.forEach(p => p.style.setProperty('display', 'none', 'important'));
-            } catch (err) {}
+            // Đóng menu popover Jitsi chuẩn React (bằng event click outside để React state đồng bộ isOpen = false)
+            setTimeout(() => {
+                try {
+                    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                } catch (err) {}
+            }, 30);
 
             if (window.APP && window.APP.store) {
                 const state = window.APP.store.getState();
@@ -311,6 +312,10 @@ if (typeof window !== 'undefined') {
             });
 
             docs.forEach(doc => {
+                // Only process when popover menu is actually open (prevents interfering with initial click to open popover)
+                const isPopoverOpen = !!doc.querySelector('[class*="popover"]') || !!doc.querySelector('[role="menu"]');
+                if (!isPopoverOpen) return;
+
                 const menuItems = doc.querySelectorAll('[role="button"], [role="menuitem"]');
                 menuItems.forEach(item => {
                     if (item.id === 'custom-unpin-whiteboard-menu-item') return;
