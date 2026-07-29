@@ -2089,9 +2089,16 @@ if (typeof window !== 'undefined') {
                     const customWbBtn = doc.getElementById('custom-unpin-whiteboard-menu-item');
                     const nativeWbBtns = doc.querySelectorAll('[data-testid="toolbox-whiteboard"], .toolbox-button[aria-label*="Whiteboard"], .toolbox-button[aria-label*="Bảng trắng"], .toolbox-button[aria-label*="Ẩn bảng"], .toolbox-button[aria-label*="Hiện bảng"]');
 
-                    const isSharingScreen = isActionActive(doc, shareBtn,
-                        s => s['features/base/tracks']?.some(t => t.local && t.mediaType === 'desktop') || s['features/base/conference']?.isScreenSharing
+                    // Check if Teacher locally is sharing screen
+                    const isTeacherSharingScreen = isActionActive(doc, shareBtn,
+                        s => s['features/base/tracks']?.some(t => t && t.local && (t.mediaType === 'desktop' || t.videoType === 'desktop') && !t.muted)
                     );
+
+                    // Check if a Remote Student is sharing screen
+                    const isStudentSharingScreen = isActionActive(doc, null,
+                        s => s['features/base/tracks']?.some(t => t && !t.local && (t.mediaType === 'desktop' || t.videoType === 'desktop') && !t.muted)
+                    );
+
                     const isSharingVideo = isActionActive(doc, videoBtn,
                         s => !!(s['features/shared-video']?.status || s['features/shared-video']?.videoUrl),
                         () => !!(doc.querySelector('#sharedVideo') || doc.querySelector('iframe[src*="youtube"]'))
@@ -2106,7 +2113,7 @@ if (typeof window !== 'undefined') {
                         isWbActive = (pinnedId === 'whiteboard' || isWbOpen) && !isTileView;
                     }
 
-                    const isCtrlActive = !!(window.allowStudentScreenshare);
+                    const isCtrlActive = !!(window.allowStudentScreenshare || window.isStudentShareAllowedByTeacher);
 
                     const setSlotDisplay = (elements, show) => {
                         const list = Array.isArray(elements) ? elements : [elements];
@@ -2123,27 +2130,38 @@ if (typeof window !== 'undefined') {
 
                     const wbGroup = [customWbBtn, ...Array.from(nativeWbBtns)];
 
-                    if (isSharingScreen) {
+                    if (isTeacherSharingScreen) {
+                        // 1. Giáo viên tự Share màn hình -> Hiện nút Share của GV (để bấm dừng), Ẩn các nút khác
                         setSlotDisplay(shareBtn, true);
                         setSlotDisplay(videoBtn, false);
                         setSlotDisplay(ctrlBtn, false);
                         setSlotDisplay(wbGroup, false);
+                    } else if (isStudentSharingScreen) {
+                        // 2. Học viên đang Share màn hình -> Hiện nút Quyền Share của GV (để GV bấm khóa/dừng), Ẩn các nút khác
+                        setSlotDisplay(ctrlBtn, true);
+                        setSlotDisplay(shareBtn, false);
+                        setSlotDisplay(videoBtn, false);
+                        setSlotDisplay(wbGroup, false);
                     } else if (isSharingVideo) {
+                        // 3. Đang phát Video -> Hiện nút Phát Video, Ẩn các nút khác
                         setSlotDisplay(videoBtn, true);
                         setSlotDisplay(shareBtn, false);
                         setSlotDisplay(ctrlBtn, false);
                         setSlotDisplay(wbGroup, false);
                     } else if (isWbActive) {
+                        // 4. Bảng trắng Active -> Hiện cụm Bảng trắng, Ẩn các nút khác
                         setSlotDisplay(wbGroup, true);
                         setSlotDisplay(shareBtn, false);
                         setSlotDisplay(videoBtn, false);
                         setSlotDisplay(ctrlBtn, false);
                     } else if (isCtrlActive) {
+                        // 5. Đang mở quyền Share cho HS -> Hiện nút Quyền Share, Ẩn các nút khác
                         setSlotDisplay(ctrlBtn, true);
                         setSlotDisplay(shareBtn, false);
                         setSlotDisplay(videoBtn, false);
                         setSlotDisplay(wbGroup, false);
                     } else {
+                        // Mặc định không có tính năng nào active -> Hiển thị tất cả
                         setSlotDisplay(shareBtn, true);
                         setSlotDisplay(videoBtn, true);
                         setSlotDisplay(ctrlBtn, true);
