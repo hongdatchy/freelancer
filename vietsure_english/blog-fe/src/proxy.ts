@@ -17,6 +17,7 @@ export function proxy(request: NextRequest) {
   const token = request.cookies.get('jwt')?.value;
 
   const isProtectedRoute =
+    url.pathname.startsWith('/login') ||
     url.pathname.startsWith('/elearning') ||
     url.pathname.startsWith('/schedule-management') ||
     url.pathname.startsWith('/teacher-training');

@@ -6,24 +6,13 @@ const BASE_URL = isServer
   : process.env.NEXT_PUBLIC_BE_HOST;
 const BE_TOKEN_ADMIN = process.env.NEXT_PUBLIC_BE_TOKEN_ADMIN;
 
-// Centralized response checker: If HTTP Status 401, clear jwt cookie & redirect to '/' safely
+// Centralized response checker: If HTTP Status 401, redirect to '/login' on both Server and Client
 const checkResponse = async (response: Response, endpoint: string) => {
   if (response.status === 401) {
     if (typeof window === 'undefined') {
-      try {
-        const { cookies } = await import('next/headers');
-        const cookieStore = await cookies();
-        cookieStore.delete('jwt');
-      } catch (e) {}
-      redirect('/');
+      redirect('/login'); // Server-side (RSC/Server Actions) tự động chuyển hướng về '/login'
     } else {
-      try {
-        document.cookie = 'jwt=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-        localStorage.removeItem('user-login-store');
-      } catch (e) {}
-      if (window.location.pathname !== '/') {
-        window.location.href = '/';
-      }
+      window.location.href = '/login'; // Client-side trình duyệt tự động về '/login'
       return;
     }
   }
@@ -41,7 +30,7 @@ export const getData = async (endpoint: string, token = BE_TOKEN_ADMIN) => {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json', // Nếu cần thiết
     },
   });
 
@@ -51,16 +40,11 @@ export const getData = async (endpoint: string, token = BE_TOKEN_ADMIN) => {
 // POST
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const postData = async (endpoint: string, data: any, token = BE_TOKEN_ADMIN) => {
-  let authToken = token;
-  if (data && typeof data === 'object' && data.token && token === BE_TOKEN_ADMIN) {
-    authToken = data.token;
-  }
-
   const response = await fetch(`${BASE_URL}/${endpoint}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${authToken}`,
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(data),
   });
