@@ -246,7 +246,58 @@ const injectToolbarToolsButton = () => {
     }
 };
 
-// Dynamically hide only the "Ẩn bảng" (Hide board) action button
+// Document-level delegated click listener for custom Whiteboard Pin/Unpin menu item
+if (typeof window !== 'undefined' && !window.hasBoundCustomUnpinMenuItemClickListener) {
+    window.hasBoundCustomUnpinMenuItemClickListener = true;
+    
+    document.addEventListener('click', (e) => {
+        const target = e.target;
+        const customItem = target && target.closest ? target.closest('#custom-unpin-whiteboard-menu-item') : null;
+        
+        if (customItem) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+
+            // Đóng menu popover Jitsi
+            try {
+                const popovers = document.querySelectorAll('[class*="popover"], [role="menu"]');
+                popovers.forEach(p => p.style.setProperty('display', 'none', 'important'));
+            } catch (err) {}
+
+            if (window.APP && window.APP.store) {
+                const state = window.APP.store.getState();
+                const pinnedId = state['features/large-video']?.participantId;
+                const isTileView = !!state['features/video-layout']?.tileViewEnabled;
+                const isWbPinned = pinnedId === 'whiteboard' && !isTileView;
+
+                if (isWbPinned) {
+                    console.log('📌 [GIÁO VIÊN] Click Ẩn bảng -> BỎ GHIM BẢNG TRẮNG & BẬT GRID VIEW');
+                    window.APP.store.dispatch({
+                        type: 'PIN_PARTICIPANT',
+                        participant: { id: null }
+                    });
+                    window.APP.store.dispatch({
+                        type: 'SET_TILE_VIEW',
+                        enabled: true
+                    });
+                } else {
+                    console.log('📌 [GIÁO VIÊN] Click Bảng trắng -> GHIM BẢNG TRẮNG làm màn chính');
+                    window.APP.store.dispatch({
+                        type: 'SET_TILE_VIEW',
+                        enabled: false
+                    });
+                    window.APP.store.dispatch({
+                        type: 'PIN_PARTICIPANT',
+                        participant: { id: 'whiteboard' }
+                    });
+                }
+            }
+        }
+    }, true);
+}
+
+// Hide native default "Ẩn bảng" / "Bảng trắng" items & inject custom toggle menu item
 if (typeof window !== 'undefined') {
     setInterval(() => {
         try {
@@ -262,6 +313,8 @@ if (typeof window !== 'undefined') {
             docs.forEach(doc => {
                 const menuItems = doc.querySelectorAll('[role="button"], [role="menuitem"]');
                 menuItems.forEach(item => {
+                    if (item.id === 'custom-unpin-whiteboard-menu-item') return;
+
                     const label = item.getAttribute('aria-label') || '';
                     const text = item.textContent || '';
                     
@@ -271,10 +324,35 @@ if (typeof window !== 'undefined') {
                     const isShowAction = label === 'Bảng trắng' || label === 'Bật bảng' || label === 'Mở bảng' || label === 'Whiteboard' ||
                                          text.trim() === 'Bảng trắng' || text.trim() === 'Bật bảng' || text.trim() === 'Mở bảng' || text.trim() === 'Whiteboard';
 
-                    if (isHideAction) {
+                    if (isHideAction || isShowAction) {
+                        // 1. Ẩn các nút mặc định của Jitsi
                         item.style.setProperty('display', 'none', 'important');
-                    } else if (isShowAction) {
-                        item.style.setProperty('display', '', '');
+
+                        // 2. Chèn nút custom tùy chỉnh vào vị trí đó
+                        if (item.parentNode) {
+                            let customItem = item.parentNode.querySelector('#custom-unpin-whiteboard-menu-item');
+                            if (!customItem) {
+                                customItem = item.cloneNode(true);
+                                customItem.id = 'custom-unpin-whiteboard-menu-item';
+                                item.parentNode.insertBefore(customItem, item.nextSibling);
+                            }
+
+                            // Dynamic state calculation
+                            let isWbPinned = false;
+                            if (window.APP && window.APP.store) {
+                                const state = window.APP.store.getState();
+                                const pinnedId = state['features/large-video']?.participantId;
+                                const isTileView = !!state['features/video-layout']?.tileViewEnabled;
+                                isWbPinned = pinnedId === 'whiteboard' && !isTileView;
+                            }
+
+                            const dynamicText = isWbPinned ? 'Ẩn bảng' : 'Bảng trắng';
+
+                            customItem.style.removeProperty('display');
+                            customItem.style.display = '';
+                            customItem.setAttribute('aria-label', dynamicText);
+                            customItem.querySelectorAll('span').forEach(s => s.textContent = dynamicText);
+                        }
                     }
                 });
             });
