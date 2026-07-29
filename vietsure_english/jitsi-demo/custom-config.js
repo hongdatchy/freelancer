@@ -1835,7 +1835,6 @@ if (typeof window !== 'undefined' && !window.hasBoundCustomUnpinMenuItemClickLis
                         if (roomName) localStorage.setItem('teacher_tile_view_' + roomName, 'true');
                         if (window.APP?.conference?.sendTextMessage) {
                             window.APP.conference.sendTextMessage('__TILE_VIEW__:true');
-                            window.APP.conference.sendTextMessage('__PIN_PARTICIPANT__:null');
                         }
                     } catch (e) {}
                 } else {
@@ -1852,7 +1851,6 @@ if (typeof window !== 'undefined' && !window.hasBoundCustomUnpinMenuItemClickLis
                         if (roomName) localStorage.setItem('teacher_tile_view_' + roomName, 'false');
                         if (window.APP?.conference?.sendTextMessage) {
                             window.APP.conference.sendTextMessage('__TILE_VIEW__:false');
-                            window.APP.conference.sendTextMessage('__PIN_PARTICIPANT__:whiteboard');
                         }
                     } catch (e) {}
                 }
@@ -2958,6 +2956,12 @@ if (typeof window !== 'undefined') {
                             if (isStudent) {
                                 console.log('📌 [HỌC VIÊN] ĐỒNG BỘ GRID VIEW:', enabled);
                                 window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled });
+                                if (!enabled) {
+                                    window.APP.store.dispatch({
+                                        type: 'PIN_PARTICIPANT',
+                                        participant: { id: null }
+                                    });
+                                }
                             }
                         }
 
