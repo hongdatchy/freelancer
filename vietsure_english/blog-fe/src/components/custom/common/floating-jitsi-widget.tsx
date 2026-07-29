@@ -444,10 +444,15 @@ export default function FloatingJitsiWidget() {
         }
       });
 
-      // Track tile view state
+      // Track tile view state and broadcast to students
       apiRef.current.addEventListener('tileViewChanged', (event: any) => {
-        isTileViewEnabledRef.current = event.enabled;
-        setIsTileViewActive(!!event.enabled);
+        const enabled = !!event.enabled;
+        isTileViewEnabledRef.current = enabled;
+        setIsTileViewActive(enabled);
+        console.log('📢 [Teacher TileView] Toggled Grid View to:', enabled);
+        try {
+          apiRef.current.executeCommand('sendChatMessage', `__TILE_VIEW__:${enabled}`);
+        } catch (e) {}
       });
 
       // Auto-disable tile view when host starts screen sharing

@@ -2618,13 +2618,15 @@ if (typeof window !== 'undefined') {
             text.includes('__WHEEL__') ||
             text.includes('__DICE__') ||
             text.includes('__TOGGLE_STUDENT_SCREENSHARE__') ||
+            text.includes('__TILE_VIEW__') ||
             html.includes('__TIMER__') ||
             html.includes('TIMER_ACTION') ||
             html.includes('__CLK__') ||
             html.includes('__PRAISE__') ||
             html.includes('__WHEEL__') ||
             html.includes('__DICE__') ||
-            html.includes('__TOGGLE_STUDENT_SCREENSHARE__')
+            html.includes('__TOGGLE_STUDENT_SCREENSHARE__') ||
+            html.includes('__TILE_VIEW__')
         );
     };
 
@@ -2633,7 +2635,7 @@ if (typeof window !== 'undefined') {
             document.querySelector('[aria-live="polite"]') ||
             document.querySelector('[aria-live="assertive"]');
         if (notifContainer) {
-            const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__'];
+            const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__'];
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     mutation.addedNodes.forEach((node) => {
@@ -2734,6 +2736,7 @@ if (typeof window !== 'undefined') {
                 }
 
                 const isToggleStudentShare = msgText.startsWith('__TOGGLE_STUDENT_SCREENSHARE__:');
+                const isTileViewMsg = msgText.startsWith('__TILE_VIEW__:');
                 const isPraise = msgText.includes('__PRAISE__');
                 const isWheel = msgText.includes('__WHEEL__');
                 const isDice = msgText.includes('__DICE__') || msgText.includes('__DICE_COUNT__');
@@ -2778,6 +2781,11 @@ if (typeof window !== 'undefined') {
                         console.log('[Jitsi custom-config] __TOGGLE_STUDENT_SCREENSHARE__ received:', allowed);
                         window.allowStudentScreenshare = allowed;
                         window.parent.postMessage({ type: 'STUDENT_SCREENSHARE_PERMITTED', allowed }, '*');
+                    } else if (isTileViewMsg) {
+                        timerMessagesCount++;
+                        const enabled = msgText.includes(':true');
+                        console.log('[Jitsi custom-config] __TILE_VIEW__ received from Teacher:', enabled);
+                        window.parent.postMessage({ type: 'TEACHER_TOGGLED_TILE_VIEW', enabled }, '*');
                     } else if (isDice) {
                         timerMessagesCount++;
                         if (msgText.startsWith('__DICE__:')) {
@@ -2809,7 +2817,7 @@ if (typeof window !== 'undefined') {
                     } else if (isTimer) {
                         timerMessagesCount++;
                     }
-                } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare) {
+                } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg) {
                     timerMessagesCount++;
                 } else {
                     realMessagesCount++;
@@ -2839,7 +2847,7 @@ if (typeof window !== 'undefined') {
     }
 
     const hideTimerMessages = () => {
-        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__'];
+        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__'];
 
         const wrappers = document.querySelectorAll('[class*="-chatMessageWrapper"]');
         wrappers.forEach((wrapper) => {

@@ -114,6 +114,11 @@ export default function ClassroomPage() {
     };
   }, []);
 
+  const roomName = decodeURIComponent((params?.roomName as string) || '')
+    // Sanitize: remove special chars to keep Jitsi happy
+    .replace(/[^a-zA-Z0-9À-ỹ\-_]/g, '-')
+    .replace(/-+/g, '-');
+
   // Client-side mount check to prevent hydration mismatch and race conditions
   useEffect(() => {
     setIsMounted(true);
@@ -121,10 +126,27 @@ export default function ClassroomPage() {
     setClientUser(storeState.user);
   }, []);
 
-  const roomName = decodeURIComponent(params.roomName as string)
-    // Sanitize: remove special chars to keep Jitsi happy
-    .replace(/[^a-zA-Z0-9À-ỹ\-_]/g, '-')
-    .replace(/-+/g, '-');
+  // Listen for TileView sync message from Teacher, save to localStorage & toggle Grid View
+  useEffect(() => {
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data && e.data.type === 'TEACHER_TOGGLED_TILE_VIEW') {
+        const enabled = !!e.data.enabled;
+        try {
+          if (roomName) {
+            localStorage.setItem(`student_tile_view_${roomName}`, String(enabled));
+          }
+        } catch (err) {}
+
+        if (apiRef.current) {
+          try {
+            apiRef.current.executeCommand('setTileView', enabled);
+          } catch (err) {}
+        }
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [roomName]);
 
   useEffect(() => {
     if (!isMounted) return;
@@ -241,30 +263,15 @@ export default function ClassroomPage() {
         }, 1000);
       }
 
-      // Auto-enable Grid View on join ONLY if whiteboard is NOT active
+      // Restore saved TileView state from localStorage on student join / rejoin
       setTimeout(() => {
-        if (apiRef.current) {
-          try {
-            const iframe = apiRef.current.getIFrame();
-            const iframeDoc = iframe?.contentDocument || iframe?.contentWindow?.document;
-            const isWhiteboardOpen = !!(
-              iframeDoc?.querySelector('.excalidraw') ||
-              iframeDoc?.querySelector('#whiteboard-wrapper') ||
-              iframeDoc?.querySelector('.whiteboard-container')
-            );
-            if (isWhiteboardOpen) {
-              console.log('[Student Jitsi] Whiteboard IS active, turning OFF Grid View to show Whiteboard');
-              apiRef.current.executeCommand('setTileView', false);
-            } else if (!isTileViewEnabledRef.current) {
-              console.log('[Student Jitsi] Auto-enabling Grid View on join (Whiteboard is NOT active)');
-              apiRef.current.executeCommand('setTileView', true);
-            }
-          } catch (e) {
-            if (!isTileViewEnabledRef.current) {
-              apiRef.current.executeCommand('setTileView', true);
-            }
+        try {
+          const savedState = localStorage.getItem(`student_tile_view_${roomName}`);
+          if (savedState !== null && apiRef.current) {
+            const isEnabled = savedState === 'true';
+            apiRef.current.executeCommand('setTileView', isEnabled);
           }
-        }
+        } catch (e) {}
       }, 1000);
 
       if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
