@@ -224,6 +224,7 @@ if (typeof window !== 'undefined') {
             text.includes('__DICE__') ||
             text.includes('__TOGGLE_STUDENT_SCREENSHARE__') ||
             text.includes('__TILE_VIEW__') ||
+            text.includes('__TEACHER_PIN__') ||
             html.includes('__TIMER__') ||
             html.includes('TIMER_ACTION') ||
             html.includes('__CLK__') ||
@@ -231,7 +232,8 @@ if (typeof window !== 'undefined') {
             html.includes('__WHEEL__') ||
             html.includes('__DICE__') ||
             html.includes('__TOGGLE_STUDENT_SCREENSHARE__') ||
-            html.includes('__TILE_VIEW__')
+            html.includes('__TILE_VIEW__') ||
+            html.includes('__TEACHER_PIN__')
         );
     };
 
@@ -240,7 +242,7 @@ if (typeof window !== 'undefined') {
             document.querySelector('[aria-live="polite"]') ||
             document.querySelector('[aria-live="assertive"]');
         if (notifContainer) {
-            const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__'];
+            const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__TEACHER_PIN__'];
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     mutation.addedNodes.forEach((node) => {
@@ -342,6 +344,7 @@ if (typeof window !== 'undefined') {
 
                 const isToggleStudentShare = msgText.startsWith('__TOGGLE_STUDENT_SCREENSHARE__:');
                 const isTileViewMsg = msgText.startsWith('__TILE_VIEW__:');
+                const isTeacherPinMsg = msgText.startsWith('__TEACHER_PIN__:');
                 const isPraise = msgText.includes('__PRAISE__');
                 const isWheel = msgText.includes('__WHEEL__');
                 const isDice = msgText.includes('__DICE__') || msgText.includes('__DICE_COUNT__');
@@ -386,6 +389,31 @@ if (typeof window !== 'undefined') {
                         console.log('[Jitsi custom-config] __TOGGLE_STUDENT_SCREENSHARE__ received:', allowed);
                         window.allowStudentScreenshare = allowed;
                         window.parent.postMessage({ type: 'STUDENT_SCREENSHARE_PERMITTED', allowed }, '*');
+                    } else if (isTeacherPinMsg) {
+                        timerMessagesCount++;
+                        const targetId = msgText.slice('__TEACHER_PIN__:'.length);
+                        const pinId = (targetId === 'null' || !targetId) ? null : targetId;
+                        console.log('📌 [HỌC VIÊN] ĐỒNG BỘ GHIM TỪ GIÁO VIÊN:', pinId);
+
+                        const roomName = (window.APP?.store?.getState()?.['features/base/conference']?.room || '').toLowerCase();
+                        try {
+                            if (roomName) localStorage.setItem('teacher_pinned_' + roomName, pinId ? pinId : 'null');
+                        } catch (e) {}
+
+                        let isStudent = false;
+                        if (window.APP && window.APP.store) {
+                            const state = window.APP.store.getState();
+                            const participantsState = state['features/base/participants'] || {};
+                            const localP = Object.values(participantsState).find(p => p && p.local);
+                            if (localP) isStudent = localP.role !== 'moderator';
+
+                            if (isStudent) {
+                                window.APP.store.dispatch({
+                                    type: 'PIN_PARTICIPANT',
+                                    participant: { id: pinId }
+                                });
+                            }
+                        }
                     } else if (isTileViewMsg) {
                         timerMessagesCount++;
                         const enabled = msgText.includes(':true');
@@ -441,7 +469,7 @@ if (typeof window !== 'undefined') {
                     } else if (isTimer) {
                         timerMessagesCount++;
                     }
-                } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg) {
+                } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg || isTeacherPinMsg) {
                     timerMessagesCount++;
                 } else {
                     realMessagesCount++;
@@ -471,7 +499,7 @@ if (typeof window !== 'undefined') {
     }
 
     const hideTimerMessages = () => {
-        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__'];
+        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__TEACHER_PIN__'];
 
         const wrappers = document.querySelectorAll('[class*="-chatMessageWrapper"]');
         wrappers.forEach((wrapper) => {
@@ -611,14 +639,60 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
             if (!isStudent) return;
 
             const savedTileView = localStorage.getItem('teacher_tile_view_' + roomName);
-            if (savedTileView && window.hasSyncedTileViewState !== savedTileView) {
-                window.hasSyncedTileViewState = savedTileView;
+            const savedPinned = localStorage.getItem('teacher_pinned_' + roomName);
+            const syncKey = `${savedTileView}_${savedPinned}`;
+
+            if (savedTileView !== null && window.hasSyncedTileViewState !== syncKey) {
+                window.hasSyncedTileViewState = syncKey;
                 const isTile = savedTileView === 'true';
-                console.log('📌 [HỌC VIÊN - REJOIN] Khôi phục Grid View:', isTile);
+                const pinId = (savedPinned === 'null' || !savedPinned) ? null : savedPinned;
+                console.log('📌 [HỌC VIÊN - REJOIN] Khôi phục Grid View & Ghim:', isTile, pinId);
                 window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: isTile });
+                window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: pinId } });
             }
         } catch (e) {}
     }, 1000);
+})();
+
+// Log pin events on Teacher screen & broadcast message to Student
+(function setupTeacherPinLogger() {
+    if (typeof window === 'undefined') return;
+
+    let lastPinnedId = undefined;
+
+    setInterval(() => {
+        try {
+            if (!window.APP || !window.APP.store) return;
+            const state = window.APP.store.getState();
+
+            const participantsState = state['features/base/participants'] || {};
+            const localP = Object.values(participantsState).find(p => p && p.local);
+            const isTeacher = localP ? localP.role === 'moderator' : true;
+
+            if (!isTeacher) return;
+
+            const pinnedId = state['features/large-video']?.participantId ?? null;
+
+            if (pinnedId !== lastPinnedId) {
+                lastPinnedId = pinnedId;
+                console.log('📌 [GIÁO VIÊN LOG GHIM]:', pinnedId);
+
+                try {
+                    if (window.APP?.conference && typeof window.APP.conference.sendTextMessage === 'function') {
+                        window.APP.conference.sendTextMessage('__TEACHER_PIN__:' + (pinnedId ? String(pinnedId) : 'null'));
+                        console.log('📡 [GIÁO VIÊN BẮN TÍN HIỆU THÀNH CÔNG]:', '__TEACHER_PIN__:' + (pinnedId ? String(pinnedId) : 'null'));
+                    } else if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
+                        window.APP.conference._room.sendTextMessage('__TEACHER_PIN__:' + (pinnedId ? String(pinnedId) : 'null'));
+                        console.log('📡 [_room BẮN TÍN HIỆU THÀNH CÔNG]:', '__TEACHER_PIN__:' + (pinnedId ? String(pinnedId) : 'null'));
+                    } else {
+                        console.warn('⚠️ [GIÁO VIÊN] Chưa sẵn sàng sendTextMessage');
+                    }
+                } catch (err) {
+                    console.error('Error sending pin msg:', err);
+                }
+            }
+        } catch (e) {}
+    }, 300);
 })();
 
 
