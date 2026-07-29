@@ -244,38 +244,72 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
 
   const rollAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Animate dice then show result & play freesound_community-diceshake.mp3 during roll, then dragon-studio-fireworks.mp3 when finished
-  const animateToResult = useCallback((rollResults: number[]) => {
-    setIsRolling(true);
+  const playSoundViaJitsi = useCallback((soundPath: string, key?: string) => {
+    try {
+      const api = apiRef.current;
+      if (api) {
+        const iframe = api.getIFrame();
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({
+            type: 'PLAY_CUSTOM_SOUND',
+            soundPath,
+            key,
+            origin: typeof window !== 'undefined' ? window.location.origin : ''
+          }, '*');
+          return;
+        }
+      }
+    } catch (e) {}
 
     try {
       if (rollAudioRef.current) {
         rollAudioRef.current.pause();
         rollAudioRef.current.currentTime = 0;
       }
-      const audio = new Audio('/freesound_community-diceshake.mp3');
+      const audio = new Audio(soundPath);
       rollAudioRef.current = audio;
       audio.currentTime = 0;
-      audio.play().catch((err) => console.warn('[Dice Audio] Play failed:', err));
+      audio.play().catch((err) => console.warn('[Dice Audio Fallback] Play failed:', err));
     } catch (e) {}
+  }, [apiRef]);
+
+  const stopSoundViaJitsi = useCallback((key?: string) => {
+    try {
+      const api = apiRef.current;
+      if (api) {
+        const iframe = api.getIFrame();
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({
+            type: 'STOP_CUSTOM_SOUND',
+            key
+          }, '*');
+        }
+      }
+    } catch (e) {}
+
+    if (rollAudioRef.current) {
+      try {
+        rollAudioRef.current.pause();
+        rollAudioRef.current.currentTime = 0;
+      } catch (e) {}
+    }
+  }, [apiRef]);
+
+  // Animate dice then show result & play freesound_community-diceshake.mp3 during roll, then dragon-studio-fireworks.mp3 when finished
+  const animateToResult = useCallback((rollResults: number[]) => {
+    setIsRolling(true);
+    stopSoundViaJitsi('diceRoll');
+    stopSoundViaJitsi('diceFinish');
+
+    playSoundViaJitsi('/freesound_community-diceshake.mp3', 'diceRoll');
 
     setTimeout(() => {
       setIsRolling(false);
       setResults(rollResults);
-
-      // Play fireworks audio when dice finish rolling
-      try {
-        if (rollAudioRef.current) {
-          rollAudioRef.current.pause();
-          rollAudioRef.current.currentTime = 0;
-        }
-        const finishAudio = new Audio('/dragon-studio-fireworks.mp3');
-        rollAudioRef.current = finishAudio;
-        finishAudio.currentTime = 0;
-        finishAudio.play().catch((err) => console.warn('[Dice Finish Audio] Play failed:', err));
-      } catch (e) {}
+      stopSoundViaJitsi('diceRoll');
+      playSoundViaJitsi('/dragon-studio-fireworks.mp3', 'diceFinish');
     }, 1400);
-  }, []);
+  }, [playSoundViaJitsi, stopSoundViaJitsi]);
 
   // Teacher rolls (uses custom selected numbers if set, otherwise random between 1 and maxDots)
   const handleRoll = useCallback(() => {
@@ -321,15 +355,14 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
   }, [isHost, diceCount, broadcast]);
 
   const handleClose = () => {
-    if (rollAudioRef.current) {
-      rollAudioRef.current.pause();
-      rollAudioRef.current.currentTime = 0;
-    }
+    stopSoundViaJitsi('diceRoll');
+    stopSoundViaJitsi('diceFinish');
     setIsOpen(false);
     if (isHost) {
       broadcast({ action: 'CLOSE' });
     }
   };
+
 
   // Listen for sync events from host (Student / Remote participants)
   useEffect(() => {

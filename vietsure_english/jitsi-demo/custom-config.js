@@ -2450,6 +2450,38 @@ if (typeof window !== 'undefined') {
             } catch (e) {}
         }
 
+        if (event.data.type === 'PLAY_CUSTOM_SOUND') {
+            const soundPath = event.data.soundPath || '';
+            const origin = event.data.origin || (typeof window !== 'undefined' ? window.location.origin : '');
+            const fullUrl = soundPath.startsWith('http') ? soundPath : `${origin}${soundPath.startsWith('/') ? '' : '/'}${soundPath}`;
+            try {
+                window.customAudioMap = window.customAudioMap || {};
+                if (event.data.key && window.customAudioMap[event.data.key]) {
+                    window.customAudioMap[event.data.key].pause();
+                    window.customAudioMap[event.data.key].currentTime = 0;
+                }
+                const audio = new Audio(fullUrl);
+                if (typeof event.data.volume === 'number') {
+                    audio.volume = event.data.volume;
+                }
+                audio.play().catch(err => console.warn('[Jitsi Custom Sound] Play failed:', err));
+                if (event.data.key) {
+                    window.customAudioMap[event.data.key] = audio;
+                }
+            } catch (e) {
+                console.warn('[Jitsi Custom Sound] Audio creation failed:', e);
+            }
+        }
+
+        if (event.data.type === 'STOP_CUSTOM_SOUND') {
+            if (event.data.key && window.customAudioMap && window.customAudioMap[event.data.key]) {
+                try {
+                    window.customAudioMap[event.data.key].pause();
+                    window.customAudioMap[event.data.key].currentTime = 0;
+                } catch (e) {}
+            }
+        }
+
         if (event.data.type === 'LEAVE_BREAKOUT_ROOM') {
             console.log('[Jitsi custom-config] LEAVE_BREAKOUT_ROOM message received:', event.data);
             try {

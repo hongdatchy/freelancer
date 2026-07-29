@@ -227,15 +227,57 @@ export default function WheelWidget({
   const spinAudioRef = useRef<HTMLAudioElement | null>(null);
   const winAudioRef = useRef<HTMLAudioElement | null>(null);
 
+  const playSoundViaJitsi = (soundPath: string, key?: string) => {
+    try {
+      const api = apiRef.current;
+      if (api) {
+        const iframe = api.getIFrame();
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({
+            type: 'PLAY_CUSTOM_SOUND',
+            soundPath,
+            key,
+            origin: typeof window !== 'undefined' ? window.location.origin : ''
+          }, '*');
+          return;
+        }
+      }
+    } catch (e) {}
+
+    try {
+      const audio = new Audio(soundPath);
+      if (key === 'wheelSpin') spinAudioRef.current = audio;
+      if (key === 'wheelWin') winAudioRef.current = audio;
+      audio.currentTime = 0;
+      audio.play().catch((err) => console.warn('[Wheel Audio Fallback] Play failed:', err));
+    } catch (e) {}
+  };
+
+  const stopSoundViaJitsi = (key?: string) => {
+    try {
+      const api = apiRef.current;
+      if (api) {
+        const iframe = api.getIFrame();
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({
+            type: 'STOP_CUSTOM_SOUND',
+            key
+          }, '*');
+        }
+      }
+    } catch (e) {}
+
+    if (key === 'wheelSpin' && spinAudioRef.current) {
+      try { spinAudioRef.current.pause(); spinAudioRef.current.currentTime = 0; } catch (e) {}
+    }
+    if (key === 'wheelWin' && winAudioRef.current) {
+      try { winAudioRef.current.pause(); winAudioRef.current.currentTime = 0; } catch (e) {}
+    }
+  };
+
   const stopAllAudio = () => {
-    if (spinAudioRef.current) {
-      spinAudioRef.current.pause();
-      spinAudioRef.current.currentTime = 0;
-    }
-    if (winAudioRef.current) {
-      winAudioRef.current.pause();
-      winAudioRef.current.currentTime = 0;
-    }
+    stopSoundViaJitsi('wheelSpin');
+    stopSoundViaJitsi('wheelWin');
   };
 
   // Execute Spin animation smoothly towards target angle
@@ -244,13 +286,8 @@ export default function WheelWidget({
     setIsSpinning(true);
     setWinner(null);
 
-    // Play spin audio
-    try {
-      const spinAudio = new Audio('/floraphonic-spin-whoosh.mp3');
-      spinAudioRef.current = spinAudio;
-      spinAudio.currentTime = 0;
-      spinAudio.play().catch((err) => console.warn('[Wheel Audio] Spin play failed:', err));
-    } catch (e) {}
+    // Play spin audio via Jitsi iframe
+    playSoundViaJitsi('/floraphonic-spin-whoosh.mp3', 'wheelSpin');
 
     const startDeg = currentAngleRef.current;
     const startTime = performance.now();
@@ -273,19 +310,12 @@ export default function WheelWidget({
         setWinner(winningText);
         console.log('[Wheel] Spin completed! Winner:', winningText);
 
-        // Stop spin sound & play winning audio
-        if (spinAudioRef.current) {
-          spinAudioRef.current.pause();
-          spinAudioRef.current.currentTime = 0;
-        }
-        try {
-          const winAudio = new Audio('/scottishperson-sound-effect-happy-birthday-music-box.mp3');
-          winAudioRef.current = winAudio;
-          winAudio.currentTime = 0;
-          winAudio.play().catch((err) => console.warn('[Wheel Audio] Win play failed:', err));
-        } catch (e) {}
+        // Stop spin sound & play winning audio via Jitsi iframe
+        stopSoundViaJitsi('wheelSpin');
+        playSoundViaJitsi('/scottishperson-sound-effect-happy-birthday-music-box.mp3', 'wheelWin');
       }
     };
+
 
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     animFrameRef.current = requestAnimationFrame(step);

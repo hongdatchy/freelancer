@@ -10,7 +10,7 @@ interface PraiseWidgetProps {
 }
 
 // Celebration / Praise animations (mascot characters bubbling up from the bottom with hooray sounds & banner)
-export const triggerPraiseAnimation = (param?: any) => {
+export const triggerPraiseAnimation = (param?: any, apiRef?: any) => {
   if (typeof window === 'undefined') return;
 
   let mascotIdx = 0;
@@ -25,13 +25,30 @@ export const triggerPraiseAnimation = (param?: any) => {
     isAll = !!param.isAll;
   }
 
-  // 1. Play Hooray celebratory sound via MP3
+  // 1. Play Hooray celebratory sound via MP3 (attempt via Jitsi iframe if apiRef provided)
   try {
-    const audio = new Audio('/Hooray.mp3');
-    audio.play().catch(e => console.warn('[Praise] MP3 play failed:', e));
+    const api = apiRef?.current;
+    let playedViaIframe = false;
+    if (api) {
+      const iframe = api.getIFrame();
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage({
+          type: 'PLAY_CUSTOM_SOUND',
+          soundPath: '/Hooray.mp3',
+          key: 'praiseSound',
+          origin: window.location.origin
+        }, '*');
+        playedViaIframe = true;
+      }
+    }
+    if (!playedViaIframe) {
+      const audio = new Audio('/Hooray.mp3');
+      audio.play().catch(e => console.warn('[Praise] MP3 play failed:', e));
+    }
   } catch (e) {
     console.warn('[Praise] Audio player creation failed:', e);
   }
+
 
   const targetParent = document.fullscreenElement || document.body;
   const containerId = 'custom-celebration-container';
@@ -189,7 +206,7 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
               setStarScores({});
               try { localStorage.removeItem(starScoresKey); } catch {}
             } else {
-              triggerPraiseAnimation(payload);
+              triggerPraiseAnimation(payload, apiRef);
               if (payload.allScores) {
                 setStarScores(payload.allScores);
                 try { localStorage.setItem(starScoresKey, JSON.stringify(payload.allScores)); } catch {}
@@ -203,7 +220,7 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
             }
           } else {
             const idx = parseInt(jsonStr, 10);
-            triggerPraiseAnimation({ mascotIdx: isNaN(idx) ? 0 : idx });
+            triggerPraiseAnimation({ mascotIdx: isNaN(idx) ? 0 : idx }, apiRef);
           }
         } catch (e) {
           console.warn('[Praise] Failed to parse chat praise payload:', e);
@@ -215,7 +232,7 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
     return () => {
       api.removeEventListener('incomingMessage', onIncomingChat);
     };
-  }, [apiReady, roomName, starScoresKey]);
+  }, [apiReady, roomName, starScoresKey, apiRef]);
 
   // Helper to extract student list from Jitsi participants info
   const getStudentList = () => {
@@ -250,7 +267,7 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
         apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${JSON.stringify(payload)}`);
       }
 
-      triggerPraiseAnimation({ isAll: true, mascotIdx: randIndex });
+      triggerPraiseAnimation({ isAll: true, mascotIdx: randIndex }, apiRef);
       setStarScores(newScores);
       try { localStorage.setItem(starScoresKey, JSON.stringify(newScores)); } catch {}
 
@@ -260,7 +277,7 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
       if (apiRef.current) {
         apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${JSON.stringify(payload)}`);
       }
-      triggerPraiseAnimation(payload);
+      triggerPraiseAnimation(payload, apiRef);
       setStarScores(newScores);
       try { localStorage.setItem(starScoresKey, JSON.stringify(newScores)); } catch {}
     }

@@ -196,7 +196,7 @@ export default function FloatingJitsiWidget() {
       }
 
       // Giáo viên tự chơi animation phía parent
-      triggerPraiseAnimation({ isAll: true, mascotIdx: randIndex });
+      triggerPraiseAnimation({ isAll: true, mascotIdx: randIndex }, apiRef);
       setStarScores(newScores);
       try { localStorage.setItem(starScoresKey, JSON.stringify(newScores)); } catch {}
 
@@ -207,7 +207,7 @@ export default function FloatingJitsiWidget() {
       if (apiRef.current) {
         apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${JSON.stringify(payload)}`);
       }
-      triggerPraiseAnimation(payload);
+      triggerPraiseAnimation(payload, apiRef);
       setStarScores(newScores);
       try { localStorage.setItem(starScoresKey, JSON.stringify(newScores)); } catch {}
     }
@@ -417,7 +417,7 @@ export default function FloatingJitsiWidget() {
         // Set initial filmstrip width to 310px on join if widget width > 1100px
         if (size.width > 1100) {
           if (apiRef.current) {
-            apiRef.current.executeCommand('resizeFilmStrip', { width: 310 });
+            apiRef.current.executeCommand('resizeFilmStrip', { width: 260 });
           }
         }
 
@@ -567,7 +567,7 @@ export default function FloatingJitsiWidget() {
     if (!isResizing && !isMinimized && apiRef.current && apiReady) {
       if (size.width > 1100) {
         if (apiRef.current) {
-          apiRef.current.executeCommand('resizeFilmStrip', { width: 310 });
+          apiRef.current.executeCommand('resizeFilmStrip', { width: 260 });
         }
       }
     }
@@ -596,7 +596,7 @@ export default function FloatingJitsiWidget() {
         } else if (event.data.type === 'PLAY_PRAISE') {
           const payload = event.data.payload || { mascotIdx: 0 };
           console.log('[Parent] PLAY_PRAISE received with payload:', payload);
-          triggerPraiseAnimation(payload);
+          triggerPraiseAnimation(payload, apiRef);
           if (payload.studentName) {
             setStarScores(prev => ({
               ...prev,
@@ -997,7 +997,7 @@ export default function FloatingJitsiWidget() {
 }
 
 // Celebration / Praise animations (mascot characters bubbling up from the bottom with hooray sounds & banner)
-const triggerPraiseAnimation = (param?: any) => {
+const triggerPraiseAnimation = (param?: any, apiRef?: any) => {
   if (typeof window === 'undefined') return;
 
   let mascotIdx = 0;
@@ -1012,13 +1012,30 @@ const triggerPraiseAnimation = (param?: any) => {
     isAll = !!param.isAll;
   }
 
-  // 1. Play Hooray celebratory sound via MP3
+  // 1. Play Hooray celebratory sound via MP3 (route via Jitsi iframe if apiRef provided)
   try {
-    const audio = new Audio('/Hooray.mp3');
-    audio.play().catch(e => console.warn('[Praise] MP3 play failed:', e));
+    const api = apiRef?.current;
+    let playedViaIframe = false;
+    if (api) {
+      const iframe = api.getIFrame();
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage({
+          type: 'PLAY_CUSTOM_SOUND',
+          soundPath: '/Hooray.mp3',
+          key: 'praiseSound',
+          origin: window.location.origin
+        }, '*');
+        playedViaIframe = true;
+      }
+    }
+    if (!playedViaIframe) {
+      const audio = new Audio('/Hooray.mp3');
+      audio.play().catch(e => console.warn('[Praise] MP3 play failed:', e));
+    }
   } catch (e) {
     console.warn('[Praise] Audio player creation failed:', e);
   }
+
 
   const targetParent = document.fullscreenElement || document.body;
   const containerId = 'custom-celebration-container';

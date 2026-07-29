@@ -236,7 +236,7 @@ export default function ClassroomPage() {
       if (window.innerWidth > 1100) {
         setTimeout(() => {
           if (apiRef.current) {
-            apiRef.current.executeCommand('resizeFilmStrip', { width: 310 });
+            apiRef.current.executeCommand('resizeFilmStrip', { width: 260 });
           }
         }, 1000);
       }
