@@ -329,9 +329,26 @@ if (typeof window !== 'undefined') {
         const room = getRoom();
         if (!room) return false;
         try {
+            if (!window.joinTimestamp) {
+                window.joinTimestamp = Date.now();
+            }
+
             room.on('conference.messageReceived', (id, text, ts) => {
                 const myId = (typeof APP !== 'undefined' && APP.conference) ? APP.conference.getMyUserId() : null;
                 const isFromMe = !!(myId && id === myId);
+
+                let messageTime = null;
+                if (typeof ts === 'number') {
+                    messageTime = ts;
+                } else if (ts && typeof ts.getTime === 'function') {
+                    messageTime = ts.getTime();
+                } else if (typeof ts === 'string') {
+                    const parsed = Date.parse(ts);
+                    if (!isNaN(parsed)) messageTime = parsed;
+                }
+
+                // If message timestamp is older than student's room join timestamp, mark as history playback
+                const isHistoryMessage = !!(messageTime && window.joinTimestamp && messageTime < (window.joinTimestamp - 2000));
 
                 let msgText = '';
                 if (typeof text === 'string') {
@@ -382,10 +399,10 @@ if (typeof window !== 'undefined') {
                         updateStarBadgesInJitsiUI();
                     }
 
-                    if (!isFromMe && !payload.reset) {
+                    if (!isFromMe && !payload.reset && !isHistoryMessage) {
                         window.parent.postMessage({ type: 'PLAY_PRAISE', payload }, '*');
                     }
-                } else if (!isFromMe) {
+                } else if (!isFromMe && !isHistoryMessage) {
                     if (isToggleStudentShare) {
                         const allowed = msgText.includes(':true');
                         console.log('[Jitsi custom-config] __TOGGLE_STUDENT_SCREENSHARE__ received:', allowed);
