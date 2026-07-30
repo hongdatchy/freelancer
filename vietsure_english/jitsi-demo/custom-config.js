@@ -2142,6 +2142,27 @@ if (typeof window !== 'undefined') {
                         s => s['features/base/tracks']?.some(t => t && t.local && (t.mediaType === 'desktop' || t.videoType === 'desktop') && !t.muted)
                     );
 
+                    // Khi Giáo viên vừa dừng Share màn hình của bản thân -> Thực thi ngay lập tức không timeout
+                    if (window.lastTeacherSharingScreenState && !isTeacherSharingScreen) {
+                        console.log('📌 [GIÁO VIÊN] Tắt Share màn hình bản thân -> Bỏ ghim, Bật Grid View & Đồng bộ lập tức (không timeout)');
+                        if (window.APP && window.APP.store) {
+                            window.APP.store.dispatch({
+                                type: 'PIN_PARTICIPANT',
+                                participant: { id: null }
+                            });
+                            window.APP.store.dispatch({
+                                type: 'SET_TILE_VIEW',
+                                enabled: true
+                            });
+                            try {
+                                if (window.APP?.conference?.sendTextMessage) {
+                                    window.APP.conference.sendTextMessage('__TILE_VIEW__:true');
+                                }
+                            } catch (err) {}
+                        }
+                    }
+                    window.lastTeacherSharingScreenState = isTeacherSharingScreen;
+
                     // Check if a Remote Student is sharing screen
                     const isStudentSharingScreen = isActionActive(doc, null,
                         s => s['features/base/tracks']?.some(t => t && !t.local && (t.mediaType === 'desktop' || t.videoType === 'desktop') && !t.muted)
