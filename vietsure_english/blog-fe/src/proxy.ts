@@ -16,21 +16,19 @@ export function proxy(request: NextRequest) {
 
   const token = request.cookies.get('jwt')?.value;
 
+  // ===== 1. CÁC TRANG BẮT BUỘC ĐĂNG NHẬP MỚI ĐƯỢC VÀO =====
   const isProtectedRoute =
-    url.pathname.startsWith('/login') ||
     url.pathname.startsWith('/elearning') ||
     url.pathname.startsWith('/schedule-management') ||
     url.pathname.startsWith('/teacher-training');
 
-  // ===== 1. CHƯA LOGIN -> CHỈ ĐƯỢC VÀO "/" =====
+  // ===== 2. CHƯA LOGIN -> CỐ VÀO TRANG BẢO VỆ ➡ REDIRECT VỀ /login =====
   if (!token && isProtectedRoute) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // ===== 2. ĐÃ LOGIN -> CHỈ ĐƯỢC VÀO PROTECTED =====
-  const isPublicRoute = !isProtectedRoute;
-
-  if (token && isPublicRoute ) {
+  // ===== 3. ĐÃ LOGIN -> CỐ VÀO TRANG CHỦ "/" ➡ REDIRECT VỀ /elearning (CHO PHÉP VÀO /login THOẢI MÁI) =====
+  if (token && url.pathname === '/') {
     return NextResponse.redirect(new URL('/elearning', request.url));
   }
 
