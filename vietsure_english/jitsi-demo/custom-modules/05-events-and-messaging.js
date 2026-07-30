@@ -389,6 +389,33 @@ if (typeof window !== 'undefined') {
                         console.log('[Jitsi custom-config] __TOGGLE_STUDENT_SCREENSHARE__ received:', allowed);
                         window.allowStudentScreenshare = allowed;
                         window.parent.postMessage({ type: 'STUDENT_SCREENSHARE_PERMITTED', allowed }, '*');
+
+                        // If teacher revokes permission (allowed = false), student self-cancels active screenshare
+                        if (!allowed) {
+                            console.log('📢📢📢 [HỌC VIÊN] Nhận message hủy quyền từ Giáo viên -> Tự ngắt Share màn hình');
+                            try {
+                                if (window.APP?.conference && typeof window.APP.conference.toggleScreenSharing === 'function') {
+                                    window.APP.conference.toggleScreenSharing(false);
+                                }
+                            } catch (e) {}
+
+                            try {
+                                if (window.APP?.store) {
+                                    const state = window.APP.store.getState();
+                                    const tracks = state['features/base/tracks'] || [];
+                                    const trackList = Array.isArray(tracks) ? tracks : Object.values(tracks);
+                                    trackList.forEach(t => {
+                                        if (t && (t.local || t.jitsiTrack?.isLocal?.()) && (t.mediaType === 'desktop' || t.videoType === 'desktop')) {
+                                            if (t.jitsiTrack && typeof t.jitsiTrack.dispose === 'function') {
+                                                t.jitsiTrack.dispose();
+                                            } else if (typeof t.dispose === 'function') {
+                                                t.dispose();
+                                            }
+                                        }
+                                    });
+                                }
+                            } catch (e) {}
+                        }
                     } else if (isTeacherPinMsg) {
                         timerMessagesCount++;
                         const targetId = msgText.slice('__TEACHER_PIN__:'.length);

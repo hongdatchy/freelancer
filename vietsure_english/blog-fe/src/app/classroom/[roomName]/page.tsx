@@ -126,17 +126,11 @@ export default function ClassroomPage() {
     setClientUser(storeState.user);
   }, []);
 
-  // Listen for TileView sync message from Teacher, save to localStorage & toggle Grid View
+  // Listen for TileView sync message from Teacher & toggle Grid View
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
       if (e.data && e.data.type === 'TEACHER_TOGGLED_TILE_VIEW') {
         const enabled = !!e.data.enabled;
-        try {
-          if (roomName) {
-            localStorage.setItem(`student_tile_view_${roomName}`, String(enabled));
-          }
-        } catch (err) {}
-
         if (apiRef.current) {
           try {
             apiRef.current.executeCommand('setTileView', enabled);
@@ -265,18 +259,14 @@ export default function ClassroomPage() {
 
 
 
-      if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
-        // Restore saved TileView state from localStorage on student join / rejoin
-        setTimeout(() => {
-          try {
-            const savedState = localStorage.getItem(`student_tile_view_${roomName}`);
-            if (savedState !== null && apiRef.current) {
-              const isEnabled = savedState === 'true';
-              apiRef.current.executeCommand('setTileView', isEnabled);
-            }
-          } catch (e) {}
-        }, 1000);
+      // Ensure Grid View is enabled on join / rejoin
+      setTimeout(() => {
+        if (apiRef.current && !isTileViewEnabledRef.current) {
+          apiRef.current.executeCommand('setTileView', true);
+        }
+      }, 1000);
 
+      if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
         apiRef.current.getIFrame().contentWindow.postMessage({
           type: 'SET_WHITEBOARD_BACKGROUND',
           imageUrl: bgImageRef.current
