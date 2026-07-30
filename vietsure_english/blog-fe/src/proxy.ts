@@ -24,7 +24,7 @@ export function proxy(request: NextRequest) {
 
   // ===== 1. CHƯA LOGIN -> CHỈ ĐƯỢC VÀO "/" =====
   if (!token && isProtectedRoute) {
-    return NextResponse.redirect(new URL('/', request.url));
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   // ===== 2. ĐÃ LOGIN -> CHỈ ĐƯỢC VÀO PROTECTED =====
