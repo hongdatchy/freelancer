@@ -2054,9 +2054,7 @@ if (typeof window !== 'undefined') {
 
                 console.log('📢📢📢 [TEACHER TOOLBAR] Bấm nút Bật/Tắt Share Học viên. allowStudentShare =', isAllowed);
 
-                if (!isAllowed) {
-                    clickCustomWhiteboardBtn(doc);
-                }
+                
 
                 // Send event to parent window to broadcast via apiRef to Student
                 try {
@@ -2065,6 +2063,27 @@ if (typeof window !== 'undefined') {
 
                 // Update local toolbar UI
                 updateTeacherShareBtnUI(doc, isAllowed);
+
+                if (!isAllowed) {
+                    setTimeout(() => {
+                        if (window.APP && window.APP.store) {
+                            console.log('📌 [GIÁO VIÊN] (Sau 3s) Hủy cấp quyền Share -> Bỏ ghim, Bật Grid View & Đồng bộ sang Học viên');
+                            window.APP.store.dispatch({
+                                type: 'PIN_PARTICIPANT',
+                                participant: { id: null }
+                            });
+                            window.APP.store.dispatch({
+                                type: 'SET_TILE_VIEW',
+                                enabled: true
+                            });
+                            try {
+                                if (window.APP?.conference?.sendTextMessage) {
+                                    window.APP.conference.sendTextMessage('__TILE_VIEW__:true');
+                                }
+                            } catch (err) {}
+                        }
+                    }, 3000);
+                }
             };
 
             btnWrapper.addEventListener('click', handleToggleClick, true);
