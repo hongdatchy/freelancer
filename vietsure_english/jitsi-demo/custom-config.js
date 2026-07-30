@@ -1321,13 +1321,21 @@ if (typeof window !== 'undefined') {
             if (window.APP && window.APP.store) {
                 const state = window.APP.store.getState();
                 const largeVideoId = state['features/large-video']?.participantId;
-                const isWbPinned = largeVideoId === 'whiteboard';
+                const isTileView = !!state['features/video-layout']?.tileViewEnabled;
+                
+                // Whiteboard is only active when pinned AND tile view is NOT enabled
+                const isWbPinned = largeVideoId === 'whiteboard' && !isTileView;
+                
                 const isScreenSharing = (state['features/base/tracks'] || []).some(
                     t => t && (t.mediaType === 'desktop' || t.videoType === 'desktop') && !t.muted
                 ) || !!state['features/base/conference']?.isScreenSharing;
 
                 if (isWbPinned || isScreenSharing) {
                     return true;
+                }
+
+                if (isTileView || (!isWbPinned && !isScreenSharing)) {
+                    return false;
                 }
             }
         } catch (e) {}
@@ -1338,12 +1346,7 @@ if (typeof window !== 'undefined') {
             (window.videoBgElement && window.videoBgElement.srcObject && window.videoBgElement.srcObject.getVideoTracks && window.videoBgElement.srcObject.getVideoTracks().some(t => t.readyState === 'live' && t.enabled))
         );
 
-        const isWhiteboardPinnedOnStage = !!(
-            doc.querySelector('#largeVideoElementsContainer #whiteboard') ||
-            document.querySelector('#largeVideoElementsContainer #whiteboard')
-        );
-
-        return isScreenshareActive || isWhiteboardPinnedOnStage;
+        return isScreenshareActive;
     };
 
     setInterval(() => {
