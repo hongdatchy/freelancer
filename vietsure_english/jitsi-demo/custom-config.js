@@ -2018,7 +2018,7 @@ if (typeof window !== 'undefined') {
                 <div class="custom-tooltip-popup">Mở quyền Share màn hình cho Học viên</div>
             `;
 
-            const clickNativeStopScreenShareBtn = (targetDoc) => {
+            const clickCustomWhiteboardBtn = (targetDoc) => {
                 try {
                     const docs = targetDoc ? [targetDoc] : [document];
                     const iframes = document.querySelectorAll('iframe');
@@ -2030,42 +2030,18 @@ if (typeof window !== 'undefined') {
                     });
 
                     for (let d of docs) {
-                        const directItem = d.querySelector('.mutedesktoplink') || d.querySelector('[aria-label="Stop screen sharing"]');
-                        if (directItem) {
-                            console.log('🎯 [GIÁO VIÊN] Found .mutedesktoplink directly, clicking!');
-                            directItem.click();
+                        const customWbItem = d.querySelector('#custom-unpin-whiteboard-menu-item');
+                        if (customWbItem) {
+                            console.log('🎯 [GIÁO VIÊN] Click thêm nút Bảng trắng custom #custom-unpin-whiteboard-menu-item');
+                            customWbItem.click();
                             return true;
-                        }
-
-                        const menuItems = d.querySelectorAll('.mutedesktoplink, [aria-label="Stop screen sharing"], [role="menuitem"], [role="button"]');
-                        for (let item of menuItems) {
-                            const text = `${item.getAttribute('aria-label') || ''} ${item.textContent || ''}`.trim().toLowerCase();
-                            if (item.classList.contains('mutedesktoplink') || text.includes('stop screen sharing') || text.includes('dừng chia sẻ màn hình')) {
-                                console.log('🎯 [GIÁO VIÊN] Click nút native Stop Screen Sharing!');
-                                item.click();
-                                return true;
-                            }
-                        }
-
-                        const popoverTriggers = d.querySelectorAll('.popover-trigger, [aria-label*="xem thêm"], [aria-label*="more"], .indicators-sub-container, .avatar-container');
-                        for (let trigger of popoverTriggers) {
-                            trigger.click();
-                            setTimeout(() => {
-                                const openItem = d.querySelector('.mutedesktoplink') || d.querySelector('[aria-label="Stop screen sharing"]');
-                                if (openItem) {
-                                    console.log('🎯 [GIÁO VIÊN] Click .mutedesktoplink sau khi mở popover!');
-                                    openItem.click();
-                                }
-                            }, 50);
                         }
                     }
                 } catch (e) {
-                    console.error('Error clicking native stop screen share button:', e);
+                    console.error('Error clicking custom whiteboard button:', e);
                 }
                 return false;
             };
-
-    
 
             const handleToggleClick = (e) => {
                 if (e) {
@@ -2079,10 +2055,10 @@ if (typeof window !== 'undefined') {
                 console.log('📢📢📢 [TEACHER TOOLBAR] Bấm nút Bật/Tắt Share Học viên. allowStudentShare =', isAllowed);
 
                 if (!isAllowed) {
-                    clickNativeStopScreenShareBtn(doc);
+                    clickCustomWhiteboardBtn(doc);
                 }
 
-                // Send event to parent window to broadcast via apiRef
+                // Send event to parent window to broadcast via apiRef to Student
                 try {
                     window.parent.postMessage({ type: 'TEACHER_TOGGLED_STUDENT_SHARE', allowed: isAllowed }, '*');
                 } catch (err) {}
@@ -3041,6 +3017,32 @@ if (typeof window !== 'undefined') {
                         console.log('[Jitsi custom-config] __TOGGLE_STUDENT_SCREENSHARE__ received:', allowed);
                         window.allowStudentScreenshare = allowed;
                         window.parent.postMessage({ type: 'STUDENT_SCREENSHARE_PERMITTED', allowed }, '*');
+
+                        // If teacher revokes permission (allowed = false), student self-cancels active screenshare
+                        if (!allowed) {
+                            console.log('📢📢📢 [HỌC VIÊN] Nhận message hủy quyền từ Giáo viên -> Tự ngắt Share màn hình');
+                            try {
+                                if (window.APP?.conference && typeof window.APP.conference.toggleScreenSharing === 'function') {
+                                    window.APP.conference.toggleScreenSharing(false);
+                                }
+                            } catch (e) {}
+                            try {
+                                if (window.APP?.store) {
+                                    const state = window.APP.store.getState();
+                                    const tracks = state['features/base/tracks'] || [];
+                                    const trackList = Array.isArray(tracks) ? tracks : Object.values(tracks);
+                                    trackList.forEach(t => {
+                                        if (t && (t.local || t.jitsiTrack?.isLocal?.()) && (t.mediaType === 'desktop' || t.videoType === 'desktop')) {
+                                            if (t.jitsiTrack && typeof t.jitsiTrack.dispose === 'function') {
+                                                t.jitsiTrack.dispose();
+                                            } else if (typeof t.dispose === 'function') {
+                                                t.dispose();
+                                            }
+                                        }
+                                    });
+                                }
+                            } catch (e) {}
+                        }
                     } else if (isTeacherPinMsg) {
                         timerMessagesCount++;
                         const targetId = msgText.slice('__TEACHER_PIN__:'.length);

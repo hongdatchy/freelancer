@@ -398,7 +398,6 @@ if (typeof window !== 'undefined') {
                                     window.APP.conference.toggleScreenSharing(false);
                                 }
                             } catch (e) {}
-
                             try {
                                 if (window.APP?.store) {
                                     const state = window.APP.store.getState();

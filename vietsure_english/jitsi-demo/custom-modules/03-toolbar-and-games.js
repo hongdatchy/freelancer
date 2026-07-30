@@ -463,6 +463,31 @@ if (typeof window !== 'undefined') {
                 <div class="custom-tooltip-popup">Mở quyền Share màn hình cho Học viên</div>
             `;
 
+            const clickCustomWhiteboardBtn = (targetDoc) => {
+                try {
+                    const docs = targetDoc ? [targetDoc] : [document];
+                    const iframes = document.querySelectorAll('iframe');
+                    iframes.forEach(iframe => {
+                        try {
+                            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                            if (iframeDoc) docs.push(iframeDoc);
+                        } catch (e) {}
+                    });
+
+                    for (let d of docs) {
+                        const customWbItem = d.querySelector('#custom-unpin-whiteboard-menu-item');
+                        if (customWbItem) {
+                            console.log('🎯 [GIÁO VIÊN] Click thêm nút Bảng trắng custom #custom-unpin-whiteboard-menu-item');
+                            customWbItem.click();
+                            return true;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error clicking custom whiteboard button:', e);
+                }
+                return false;
+            };
+
             const handleToggleClick = (e) => {
                 if (e) {
                     e.preventDefault();
@@ -473,6 +498,10 @@ if (typeof window !== 'undefined') {
                 const isAllowed = window.isStudentShareAllowedByTeacher;
 
                 console.log('📢📢📢 [TEACHER TOOLBAR] Bấm nút Bật/Tắt Share Học viên. allowStudentShare =', isAllowed);
+
+                if (!isAllowed) {
+                    clickCustomWhiteboardBtn(doc);
+                }
 
                 // Send event to parent window to broadcast via apiRef to Student
                 try {
