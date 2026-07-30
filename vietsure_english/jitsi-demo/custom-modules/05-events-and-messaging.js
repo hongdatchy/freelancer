@@ -367,20 +367,22 @@ if (typeof window !== 'undefined') {
                     console.log('[Jitsi custom-config] __PRAISE__ payload received:', payload);
 
                     window.praiseStarMap = window.praiseStarMap || {};
-                    // If allScores included, restore full map (handles rejoin case)
-                    if (payload.allScores && typeof payload.allScores === 'object') {
-                        Object.assign(window.praiseStarMap, payload.allScores);
+                    if (payload.reset) {
+                        window.praiseStarMap = {};
+                        try { localStorage.removeItem(_praiseStarKey); } catch (e) {}
+                    } else if (payload.allScores && typeof payload.allScores === 'object') {
+                        window.praiseStarMap = { ...payload.allScores };
+                        try { localStorage.setItem(_praiseStarKey, JSON.stringify(window.praiseStarMap)); } catch (e) {}
                     } else if (payload.studentName) {
                         window.praiseStarMap[payload.studentName] = (window.praiseStarMap[payload.studentName] || 0) + 1;
+                        try { localStorage.setItem(_praiseStarKey, JSON.stringify(window.praiseStarMap)); } catch (e) {}
                     }
-                    // Save to localStorage so student can restore on rejoin
-                    try { localStorage.setItem(_praiseStarKey, JSON.stringify(window.praiseStarMap)); } catch (e) {}
 
                     if (typeof updateStarBadgesInJitsiUI === 'function') {
                         updateStarBadgesInJitsiUI();
                     }
 
-                    if (!isFromMe) {
+                    if (!isFromMe && !payload.reset) {
                         window.parent.postMessage({ type: 'PLAY_PRAISE', payload }, '*');
                     }
                 } else if (!isFromMe) {
@@ -617,7 +619,6 @@ try {
 const updateStarBadgesInJitsiUI = () => {
     try {
         const starMap = window.praiseStarMap || {};
-        if (Object.keys(starMap).length === 0) return;
 
         const nameEls = document.querySelectorAll('.displayname, #localDisplayName, [id$="DisplayName"], [class*="participant-name"]');
         nameEls.forEach(el => {
@@ -640,6 +641,10 @@ const updateStarBadgesInJitsiUI = () => {
                 const targetText = `${cleanName} ⭐ ${starCount}`;
                 if (el.textContent !== targetText) {
                     el.textContent = targetText;
+                }
+            } else {
+                if (el.textContent !== cleanName) {
+                    el.textContent = cleanName;
                 }
             }
         });
