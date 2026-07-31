@@ -366,6 +366,18 @@ export default function ClassroomPage() {
       }
     });
 
+    // Listen directly for __TILE_VIEW__ messages from Teacher
+    apiRef.current.addEventListener('incomingMessage', (event: any) => {
+      const msg = event?.message;
+      if (typeof msg === 'string' && msg.startsWith('__TILE_VIEW__:')) {
+        const enabled = msg.includes(':true');
+        console.log('📌 [HỌC VIÊN] ĐỒNG BỘ GRID VIEW:', enabled);
+        try {
+          apiRef.current?.executeCommand('setTileView', enabled);
+        } catch (err) {}
+      }
+    });
+
     // Listen for hangup
     apiRef.current.addEventListener('readyToClose', () => {
       router.back();

@@ -325,13 +325,13 @@ if (typeof window !== 'undefined') {
         }
     };
 
+    let lastTrackedRoom = null;
     const setupMessageTracking = () => {
         const room = getRoom();
-        if (!room) return false;
+        if (!room || room === lastTrackedRoom) return !!lastTrackedRoom;
         try {
-            if (!window.joinTimestamp) {
-                window.joinTimestamp = Date.now();
-            }
+            lastTrackedRoom = room;
+            window.joinTimestamp = Date.now();
 
             room.on('conference.messageReceived', (id, text, ts) => {
                 const myId = (typeof APP !== 'undefined' && APP.conference) ? APP.conference.getMyUserId() : null;
@@ -484,9 +484,10 @@ if (typeof window !== 'undefined') {
                         const enabled = msgText.includes(':true');
                         console.log('[Jitsi custom-config] __TILE_VIEW__ received from Teacher:', enabled);
                         
-                        const roomName = (window.APP?.store?.getState()?.['features/base/conference']?.room || '').toLowerCase();
+                        const rawRoomName = (window.APP?.store?.getState()?.['features/base/conference']?.room || '').toLowerCase();
+                        const mainRoomName = rawRoomName.split(/[-_]?breakout/i)[0].split(/[-_]?subroom/i)[0] || 'default';
                         try {
-                            if (roomName) localStorage.setItem('teacher_tile_view_' + roomName, enabled ? 'true' : 'false');
+                            if (mainRoomName) localStorage.setItem('teacher_tile_view_' + mainRoomName, enabled ? 'true' : 'false');
                         } catch (e) {}
 
                         let isStudent = false;
@@ -525,13 +526,9 @@ if (typeof window !== 'undefined') {
         }
     };
 
-    if (!setupMessageTracking()) {
-        const trackingInterval = setInterval(() => {
-            if (setupMessageTracking()) {
-                clearInterval(trackingInterval);
-            }
-        }, 1000);
-    }
+    setInterval(() => {
+        setupMessageTracking();
+    }, 1000);
 
     if (!setupNotificationObserver()) {
         const interval = setInterval(() => {
@@ -682,8 +679,10 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
         try {
             if (!window.APP || !window.APP.store) return;
             const state = window.APP.store.getState();
-            const roomName = (state['features/base/conference']?.room || '').toLowerCase();
-            if (!roomName) return;
+            const rawRoomName = (state['features/base/conference']?.room || '').toLowerCase();
+            if (!rawRoomName) return;
+
+            const mainRoomName = rawRoomName.split(/[-_]?breakout/i)[0].split(/[-_]?subroom/i)[0] || 'default';
 
             const participantsState = state['features/base/participants'] || {};
             const localP = Object.values(participantsState).find(p => p && p.local);
@@ -691,17 +690,17 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
 
             if (!isStudent) return;
 
-            const savedTileView = localStorage.getItem('teacher_tile_view_' + roomName);
-            const syncKey = `${savedTileView}`;
+            const savedTileView = localStorage.getItem('teacher_tile_view_' + mainRoomName);
+            const syncKey = `${mainRoomName}_${savedTileView}_${state['features/base/conference']?.room || ''}`;
 
             if (savedTileView !== null && window.hasSyncedTileViewState !== syncKey) {
                 window.hasSyncedTileViewState = syncKey;
                 const isTile = savedTileView === 'true';
-                console.log('📌 [HỌC VIÊN - REJOIN] Khôi phục Grid View:', isTile);
+                console.log('📌 [HỌC VIÊN - REJOIN/SWITCH] Khôi phục Grid View:', isTile);
                 window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: isTile });
             }
         } catch (e) {}
-    }, 1000);
+    }, 800);
 })();
 
 // Log pin events on Teacher screen & broadcast message to Student
