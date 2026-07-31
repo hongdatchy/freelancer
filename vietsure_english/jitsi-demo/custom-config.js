@@ -1789,15 +1789,20 @@ const injectToolbarToolsButton = () => {
     const oldPraiseBtn = targetDoc.getElementById('custom-jitsi-praise-btn');
     if (oldPraiseBtn) oldPraiseBtn.remove();
 
-    let btn = targetDoc.getElementById('custom-jitsi-tools-btn');
-    if (!btn) {
-        btn = createToolbarToolsButton(targetDoc);
-    }
-    
     const camWrapper = findCameraWrapper(targetDoc);
     if (camWrapper) {
         injectToolbarDivider(targetDoc, camWrapper);
         const divider = targetDoc.getElementById('custom-jitsi-divider');
+
+        let btn = targetDoc.getElementById('custom-jitsi-tools-btn');
+
+        // ✅ Already in correct position, skip re-injection to avoid DOM flash
+        if (btn && divider && btn.previousSibling === divider) return;
+
+        if (!btn) {
+            btn = createToolbarToolsButton(targetDoc);
+        }
+
         if (divider && btn.previousSibling !== divider) {
             divider.parentNode.insertBefore(btn, divider.nextSibling);
         }
