@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { playSound } from '@/lib/audio-context';
 
 interface WheelWidgetProps {
   apiRef: React.MutableRefObject<any>;
@@ -229,23 +230,7 @@ export default function WheelWidget({
 
   const playSoundViaJitsi = (soundPath: string, key?: string) => {
     try {
-      const api = apiRef.current;
-      if (api) {
-        const iframe = api.getIFrame();
-        if (iframe && iframe.contentWindow) {
-          iframe.contentWindow.postMessage({
-            type: 'PLAY_CUSTOM_SOUND',
-            soundPath,
-            key,
-            origin: typeof window !== 'undefined' ? window.location.origin : ''
-          }, '*');
-          return;
-        }
-      }
-    } catch (e) {}
-
-    try {
-      import('@/lib/audio-context').then(({ playSound }) => playSound(soundPath));
+      playSound(soundPath);
     } catch (e) {}
   };
 

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { playSound, playTickSound, stopTickSound } from '@/lib/audio-context';
 
 interface TimerWidgetProps {
   apiRef: React.MutableRefObject<any>;
@@ -182,15 +183,7 @@ export default function TimerWidget({
   // ── Local tick interval ────────────────────────────────────────────────────
   useEffect(() => {
     if (!isActive) {
-      try {
-        const api = apiRef.current;
-        if (api) {
-          const iframe = api.getIFrame();
-          if (iframe && iframe.contentWindow) {
-            iframe.contentWindow.postMessage({ type: 'STOP_TICK_SOUND' }, '*');
-          }
-        }
-      } catch (e) {}
+      stopTickSound();
       return;
     }
 
@@ -229,23 +222,15 @@ export default function TimerWidget({
         }
       }
 
-      // Send tick sound instruction to Jitsi Meet iframe
-      try {
-        const api = apiRef.current;
-        if (api) {
-          const iframe = api.getIFrame();
-          if (iframe && iframe.contentWindow) {
-            iframe.contentWindow.postMessage({
-              type: 'PLAY_TICK_SOUND',
-              seconds: nextTime,
-              timerMode,
-              origin: typeof window !== 'undefined' ? window.location.origin : ''
-            }, '*');
-          }
-        }
-      } catch (e) {}
+      // Single-instance ticking sound player (fast speed in last 10 seconds of countdown)
+      const isFast = timerMode === 'DOWN' && nextTime <= 10 && nextTime > 0;
+      const isAlarm = timerMode === 'DOWN' && nextTime === 0;
+      playTickSound(isAlarm, isFast);
     }, 1000);
-    return () => clearInterval(id);
+    return () => {
+      clearInterval(id);
+      stopTickSound();
+    };
   }, [isActive, timerMode, initialLimit]);
 
   // ── Final 10 seconds fast flashing toggler (JS-based to bypass CSS styling conflicts) ──

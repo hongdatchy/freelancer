@@ -88,13 +88,62 @@ export const playSound = async (url: string): Promise<AudioBufferSourceNode | nu
   return null;
 };
 
+export const ALL_GAME_SOUNDS = [
+  '/Hooray.mp3',
+  '/dragon-studio-fireworks.mp3',
+  '/floraphonic-spin-whoosh.mp3',
+  '/freesound_community-diceshake.mp3',
+  '/phone-ring-medium.mp3',
+  '/quartz-clock.mp3',
+  '/scottishperson-sound-effect-happy-birthday-music-box.mp3'
+];
+
 /**
- * Pre-unlock audio on a user gesture (call this on first meaningful button click).
- * This ensures the AudioContext is created and running before any game sounds needed.
+ * Preload all game sound files into memory ahead of time.
+ * Decodes audio data into RAM cache so playback is instant (0ms delay).
+ */
+export const preloadAllSounds = async () => {
+  if (typeof window === 'undefined') return;
+  const ctx = getAudioContext();
+  if (ctx && ctx.state === 'suspended') {
+    ctx.resume().catch(() => {});
+  }
+  await Promise.all(ALL_GAME_SOUNDS.map(url => loadBuffer(url)));
+};
+
+/**
+ * Pre-unlock audio on a user gesture and preload all game sounds into RAM.
+ * Call this on first button click ("Vào lớp học").
  */
 export const unlockAudio = () => {
   const ctx = getAudioContext();
   if (ctx && ctx.state === 'suspended') {
     ctx.resume().catch(() => {});
+  }
+  preloadAllSounds().catch(() => {});
+};
+
+let _tickSource: AudioBufferSourceNode | null = null;
+
+/**
+ * Unified single-instance timer ticking sound player.
+ * Plays directly from RAM bufferCache (0ms delay, 0 network requests)
+ */
+export const playTickSound = async (isAlarm: boolean, isFast: boolean = false) => {
+  if (typeof window === 'undefined') return;
+  const url = isAlarm ? '/phone-ring-medium.mp3' : '/quartz-clock.mp3';
+  stopTickSound();
+  _tickSource = await playSound(url);
+};
+
+/**
+ * Stop active timer ticking sound cleanly.
+ */
+export const stopTickSound = () => {
+  if (_tickSource) {
+    try {
+      _tickSource.stop();
+    } catch (_) {}
+    _tickSource = null;
   }
 };

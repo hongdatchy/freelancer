@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { playSound } from '@/lib/audio-context';
 
 interface DiceWidgetProps {
   apiRef: React.MutableRefObject<any>;
@@ -246,28 +247,9 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
 
   const playSoundViaJitsi = useCallback((soundPath: string, key?: string) => {
     try {
-      const api = apiRef.current;
-      if (api) {
-        const iframe = api.getIFrame();
-        if (iframe && iframe.contentWindow) {
-          iframe.contentWindow.postMessage({
-            type: 'PLAY_CUSTOM_SOUND',
-            soundPath,
-            key,
-            origin: typeof window !== 'undefined' ? window.location.origin : ''
-          }, '*');
-          return;
-        }
-      }
+      playSound(soundPath);
     } catch (e) {}
-
-    try {
-      if (rollAudioRef.current) {
-        try { rollAudioRef.current.pause(); rollAudioRef.current.currentTime = 0; } catch (_) {}
-      }
-      import('@/lib/audio-context').then(({ playSound }) => playSound(soundPath));
-    } catch (e) {}
-  }, [apiRef]);
+  }, []);
 
   const stopSoundViaJitsi = useCallback((key?: string) => {
     try {

@@ -23,7 +23,7 @@ export default function FloatingJitsiWidget() {
             setLogin(jwt, { ...user, avatar: fullUser.avatar });
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [user, jwt, setLogin]);
   const isHost = true;
@@ -226,7 +226,7 @@ export default function FloatingJitsiWidget() {
       // Giáo viên tự chơi animation phía parent
       triggerPraiseAnimation({ isAll: true, mascotIdx: randIndex }, apiRef);
       setStarScores(newScores);
-      try { localStorage.setItem(starScoresKey, JSON.stringify(newScores)); } catch {}
+      try { localStorage.setItem(starScoresKey, JSON.stringify(newScores)); } catch { }
 
     } else if (opts.studentName) {
       const newScores = { ...starScores, [opts.studentName]: (starScores[opts.studentName] || 0) + 1 };
@@ -237,7 +237,7 @@ export default function FloatingJitsiWidget() {
       }
       triggerPraiseAnimation(payload, apiRef);
       setStarScores(newScores);
-      try { localStorage.setItem(starScoresKey, JSON.stringify(newScores)); } catch {}
+      try { localStorage.setItem(starScoresKey, JSON.stringify(newScores)); } catch { }
     }
 
     setIsPraiseModalOpen(false);
@@ -268,8 +268,8 @@ export default function FloatingJitsiWidget() {
       const email = userRef.current?.email || '';
 
       const avatarRawUrl = userRef.current?.avatar?.formats?.small?.url ||
-                           userRef.current?.avatar?.formats?.thumbnail?.url ||
-                           userRef.current?.avatar?.url;
+        userRef.current?.avatar?.formats?.thumbnail?.url ||
+        userRef.current?.avatar?.url;
       const avatarURL = avatarRawUrl
         ? (avatarRawUrl.startsWith('http') ? avatarRawUrl : (process.env.NEXT_PUBLIC_BE_HOST || '') + avatarRawUrl)
         : '';
@@ -446,14 +446,14 @@ export default function FloatingJitsiWidget() {
         if (avatarURL && apiRef.current) {
           try {
             apiRef.current.executeCommand('avatarUrl', avatarURL);
-          } catch (e) {}
+          } catch (e) { }
         }
 
         // Automatically trigger Fullscreen mode for Teacher floating widget
         if (widgetInnerRef.current && !document.fullscreenElement) {
           widgetInnerRef.current.requestFullscreen()
             .then(() => setIsFullscreen(true))
-            .catch(() => {});
+            .catch(() => { });
         }
 
         // Set initial filmstrip width to 310px on join if widget width > 1100px
@@ -494,7 +494,7 @@ export default function FloatingJitsiWidget() {
         console.log('📢 [Teacher TileView] Toggled Grid View to:', enabled);
         try {
           apiRef.current.executeCommand('sendChatMessage', `__TILE_VIEW__:${enabled}`);
-        } catch (e) {}
+        } catch (e) { }
       });
 
       // Auto-disable tile view when host starts screen sharing

@@ -8,6 +8,7 @@ import WheelWidget from '@/components/custom/common/wheel-widget';
 import DiceWidget from '@/components/custom/common/dice-widget';
 import PraiseWidget from '@/components/custom/common/praise-widget';
 import { getData } from '@/service/api';
+import { playSound, unlockAudio, preloadAllSounds } from '@/lib/audio-context';
 
 const JITSI_SERVER = process.env.NEXT_PUBLIC_JITSI_SERVER;
 
@@ -134,11 +135,12 @@ export default function ClassroomPage() {
     .replace(/[^a-zA-Z0-9À-ỹ\-_]/g, '-')
     .replace(/-+/g, '-');
 
-  // Client-side mount check to prevent hydration mismatch and race conditions
+  // Client-side mount check & preload all game sound files into RAM
   useEffect(() => {
     setIsMounted(true);
     const storeState = useUserLoginStore.getState();
     setClientUser(storeState.user);
+    preloadAllSounds().catch(() => {});
   }, []);
 
   // Listen for TileView sync message from Teacher & toggle Grid View
@@ -495,7 +497,7 @@ export default function ClassroomPage() {
               e.preventDefault();
               if (studentInputName.trim()) {
                 // 🔓 Unlock AudioContext on mobile (iOS/Android require user gesture before any audio)
-                import('@/lib/audio-context').then(({ unlockAudio }) => unlockAudio());
+                unlockAudio();
                 setHasEnteredName(true);
               }
             }}
@@ -677,12 +679,11 @@ const triggerPraiseAnimation = (param?: any) => {
     isAll = !!param.isAll;
   }
 
-  // 1. Play Hooray celebratory sound via MP3
+  // 1. Play Hooray celebratory sound directly from RAM bufferCache
   try {
-    const audio = new Audio('/Hooray.mp3');
-    audio.play().catch(e => console.warn('[Praise] MP3 play failed:', e));
+    playSound('/Hooray.mp3');
   } catch (e) {
-    console.warn('[Praise] Audio player creation failed:', e);
+    console.warn('[Praise] MP3 play failed:', e);
   }
   const targetParent = document.fullscreenElement || document.body;
   const containerId = 'custom-celebration-container';

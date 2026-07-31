@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { playSound } from '@/lib/audio-context';
 
 interface PraiseWidgetProps {
   apiRef: React.MutableRefObject<any>;
@@ -25,27 +26,11 @@ export const triggerPraiseAnimation = (param?: any, apiRef?: any) => {
     isAll = !!param.isAll;
   }
 
-  // 1. Play Hooray celebratory sound via MP3 (attempt via Jitsi iframe if apiRef provided)
+  // 1. Play Hooray celebratory sound directly in parent window (works on mobile)
   try {
-    const api = apiRef?.current;
-    let playedViaIframe = false;
-    if (api) {
-      const iframe = api.getIFrame();
-      if (iframe && iframe.contentWindow) {
-        iframe.contentWindow.postMessage({
-          type: 'PLAY_CUSTOM_SOUND',
-          soundPath: '/Hooray.mp3',
-          key: 'praiseSound',
-          origin: window.location.origin
-        }, '*');
-        playedViaIframe = true;
-      }
-    }
-    if (!playedViaIframe) {
-      import('@/lib/audio-context').then(({ playSound }) => playSound('/Hooray.mp3'));
-    }
+    playSound('/Hooray.mp3');
   } catch (e) {
-    console.warn('[Praise] Audio player creation failed:', e);
+    console.warn('[Praise] Audio play failed:', e);
   }
 
 
