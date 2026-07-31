@@ -360,6 +360,12 @@ export default function WheelWidget({
     const api = apiRef.current;
     if (!api || !apiReady) return;
 
+    joinTimeRef.current = Date.now() - 2000;
+
+    const onConferenceJoined = () => {
+      joinTimeRef.current = Date.now() - 2000;
+    };
+
     const onIncomingChat = (event: any) => {
       const msg = event?.message;
       if (typeof msg === 'string' && msg.startsWith('__WHEEL__:')) {
@@ -388,8 +394,10 @@ export default function WheelWidget({
       }
     };
 
+    api.addEventListener('videoConferenceJoined', onConferenceJoined);
     api.addEventListener('incomingMessage', onIncomingChat);
     return () => {
+      api.removeEventListener('videoConferenceJoined', onConferenceJoined);
       api.removeEventListener('incomingMessage', onIncomingChat);
     };
   }, [apiReady]);

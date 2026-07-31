@@ -396,6 +396,12 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
     const api = apiRef.current;
     if (!api || !apiReady) return;
 
+    joinTimeRef.current = Date.now() - 2000;
+
+    const onConferenceJoined = () => {
+      joinTimeRef.current = Date.now() - 2000;
+    };
+
     const onIncomingChat = (event: any) => {
       const msg = event?.message;
       if (typeof msg === 'string' && msg.startsWith('__DICE__:')) {
@@ -444,8 +450,10 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
       }
     };
 
+    api.addEventListener('videoConferenceJoined', onConferenceJoined);
     api.addEventListener('incomingMessage', onIncomingChat);
     return () => {
+      api.removeEventListener('videoConferenceJoined', onConferenceJoined);
       api.removeEventListener('incomingMessage', onIncomingChat);
     };
   }, [apiRef, apiReady, animateToResult]);

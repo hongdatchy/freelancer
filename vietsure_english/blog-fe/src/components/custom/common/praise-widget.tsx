@@ -211,6 +211,13 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
     const api = apiRef.current;
     if (!api || !apiReady) return;
 
+    // Reset join timestamp whenever room switches/joins so past messages are correctly filtered as history
+    joinTimeRef.current = Date.now() - 2000;
+
+    const onConferenceJoined = () => {
+      joinTimeRef.current = Date.now() - 2000;
+    };
+
     const onIncomingChat = (event: any) => {
       const msg = event?.message;
       if (typeof msg === 'string' && msg.startsWith('__PRAISE__:')) {
@@ -261,8 +268,10 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
       }
     };
 
+    api.addEventListener('videoConferenceJoined', onConferenceJoined);
     api.addEventListener('incomingMessage', onIncomingChat);
     return () => {
+      api.removeEventListener('videoConferenceJoined', onConferenceJoined);
       api.removeEventListener('incomingMessage', onIncomingChat);
     };
   }, [apiReady, roomName, starScoresKey, apiRef]);
