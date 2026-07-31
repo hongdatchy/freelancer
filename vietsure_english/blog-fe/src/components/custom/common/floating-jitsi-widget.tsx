@@ -659,6 +659,8 @@ export default function FloatingJitsiWidget() {
         } else if (event.data.type === 'BREAKOUT_ROOM_STATUS') {
           console.log('[Widget] BREAKOUT_ROOM_STATUS received:', event.data.inBreakout);
           setIsInBreakoutRoom(!!event.data.inBreakout);
+        } else if (event.data.type === 'JITSI_CLICKED') {
+          setShowExitConfirm(false);
         } else if (event.data.type === 'FORCE_END_MEETING_ALL') {
           console.log('[Widget] FORCE_END_MEETING_ALL received, closing widget');
           try {

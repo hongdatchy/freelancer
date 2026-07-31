@@ -3412,6 +3412,19 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
     }, 300);
 })();
 
+// Notify parent window whenever user clicks inside Jitsi iframe (to close external popups/menus)
+(function setupJitsiClickBroadcaster() {
+    if (typeof window === 'undefined') return;
+    const handleMouseDown = () => {
+        try {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'JITSI_CLICKED' }, '*');
+            }
+        } catch (e) {}
+    };
+    document.addEventListener('mousedown', handleMouseDown, true);
+})();
+
 
 
 

@@ -414,6 +414,8 @@ export default function ClassroomPage() {
       } else if (event.data.type === 'STUDENT_SCREENSHARE_PERMITTED') {
         const allowed = event.data.allowed;
         showToast(allowed ? '🎉 Giáo viên đã cho phép bạn chia sẻ màn hình!' : '🔒 Giáo viên đã khóa quyền chia sẻ màn hình.');
+      } else if (event.data.type === 'JITSI_CLICKED') {
+        setShowExitConfirm(false);
       } else if (event.data.type === 'FORCE_END_MEETING_ALL') {
         console.log('[Room] FORCE_END_MEETING_ALL received, exiting classroom');
         try {
