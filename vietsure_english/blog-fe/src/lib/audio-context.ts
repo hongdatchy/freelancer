@@ -62,7 +62,7 @@ const loadBuffer = async (url: string): Promise<AudioBuffer | null> => {
  * @param url - path to the sound file (e.g. '/Hooray.mp3')
  * @returns the AudioBufferSourceNode (so it can be stopped if needed)
  */
-export const playSound = async (url: string): Promise<AudioBufferSourceNode | null> => {
+export const playSound = async (url: string, playbackRate: number = 1.0): Promise<AudioBufferSourceNode | null> => {
   const ctx = getAudioContext();
 
   if (ctx) {
@@ -74,6 +74,9 @@ export const playSound = async (url: string): Promise<AudioBufferSourceNode | nu
     if (buffer) {
       const source = ctx.createBufferSource();
       source.buffer = buffer;
+      if (playbackRate !== 1.0) {
+        source.playbackRate.value = playbackRate;
+      }
       source.connect(ctx.destination);
       source.start(0);
       return source;
@@ -83,6 +86,7 @@ export const playSound = async (url: string): Promise<AudioBufferSourceNode | nu
   // Fallback: new Audio() for environments without AudioContext
   try {
     const audio = new Audio(url);
+    if (playbackRate !== 1.0) audio.playbackRate = playbackRate;
     audio.play().catch(() => {});
   } catch (e) {}
   return null;
@@ -124,26 +128,42 @@ export const unlockAudio = () => {
 };
 
 let _tickSource: AudioBufferSourceNode | null = null;
+let _isAlarmPlaying = false;
 
 /**
  * Unified single-instance timer ticking sound player.
  * Plays directly from RAM bufferCache (0ms delay, 0 network requests)
+ * Supports 3.0x speed up for last 10 seconds of countdown and protects alarm playback on finish.
  */
 export const playTickSound = async (isAlarm: boolean, isFast: boolean = false) => {
   if (typeof window === 'undefined') return;
-  const url = isAlarm ? '/phone-ring-medium.mp3' : '/quartz-clock.mp3';
-  stopTickSound();
-  _tickSource = await playSound(url);
+
+  if (isAlarm) {
+    stopTickSound(true); // force stop ticking
+    _isAlarmPlaying = true;
+    _tickSource = await playSound('/phone-ring-medium.mp3');
+    return;
+  }
+
+  stopTickSound(false);
+  const rate = isFast ? 3.0 : 1.0;
+  _tickSource = await playSound('/quartz-clock.mp3', rate);
 };
 
 /**
  * Stop active timer ticking sound cleanly.
+ * @param forceStopAlarm - set to true to force kill alarm ringtone when user resets or closes timer
  */
-export const stopTickSound = () => {
+export const stopTickSound = (forceStopAlarm: boolean = false) => {
   if (_tickSource) {
+    if (_isAlarmPlaying && !forceStopAlarm) {
+      // Do not kill alarm ringtone when timer naturally finishes at 0s
+      return;
+    }
     try {
       _tickSource.stop();
     } catch (_) {}
     _tickSource = null;
+    _isAlarmPlaying = false;
   }
 };

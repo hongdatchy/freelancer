@@ -279,16 +279,19 @@ export default function TimerWidget({
       case 'PAUSE':
         startTsRef.current = null;
         setIsActive(false);
+        stopTickSound(true);
         setTime(payload.elapsed ?? 0);
         break;
       case 'RESET':
         startTsRef.current = null;
         setIsActive(false);
+        stopTickSound(true);
         setTime(payload.timerMode === 'DOWN' ? (payload.initialLimit ?? 300) : 0);
         break;
       case 'CLOSE':
         startTsRef.current = null;
         setIsActive(false);
+        stopTickSound(true);
         setIsOpen(false);
         setTime(payload.timerMode === 'DOWN' ? (payload.initialLimit ?? 300) : 0);
         break;
