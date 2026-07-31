@@ -426,29 +426,29 @@ if (typeof window !== 'undefined') {
                     body.is-student .filmstrip .remote-videos .videocontainer {
                         pointer-events: none !important;
                     }
+                    /* Disable clicking/pausing shared video for students so student cannot pause teacher's video */
+                    body.is-student #sharedVideo,
+                    body.is-student #sharedVideoIFrame,
+                    body.is-student #sharedVideoContainer,
+                    body.is-student .shared-video-container,
+                    body.is-student [id*="sharedVideo"],
+                    body.is-student iframe[src*="youtube"],
+                    body.is-student iframe[src*="youtu.be"] {
+                        pointer-events: none !important;
+                    }
                 `;
                 document.head.appendChild(style);
                 console.log("🎨 Applied bright layout background theme.");
             }
 
-            let isStudent = false;
-            if (window.location.hash && window.location.hash.includes('config.isStudent=true')) {
-                isStudent = true;
-            } else if (window.location.hash && window.location.hash.includes('config.isStudent=false')) {
-                isStudent = false;
-            } else if (typeof config !== 'undefined' && typeof config.isStudent !== 'undefined') {
-                isStudent = !!config.isStudent;
-            }
-            try {
-                if (window.APP && window.APP.store) {
-                    const state = window.APP.store.getState();
-                    const participants = state['features/base/participants'] || [];
-                    const localP = Array.isArray(participants) ? participants.find(p => p && p.local) : Object.values(participants).find((p) => p && p.local);
-                    if (localP && localP.role === 'moderator') {
-                        isStudent = false;
-                    }
+            let isStudent = typeof checkIfStudent === 'function' ? checkIfStudent() : false;
+            if (!isStudent) {
+                if (window.location.hash && window.location.hash.includes('config.isStudent=true')) {
+                    isStudent = true;
+                } else if (typeof config !== 'undefined' && typeof config.isStudent !== 'undefined') {
+                    isStudent = !!config.isStudent;
                 }
-            } catch (e) {}
+            }
 
             if (document.body) {
                 if (isStudent) {
@@ -498,6 +498,7 @@ if (typeof window !== 'undefined') {
             if (localVideo && remoteContainer && !remoteContainer.contains(localVideo)) {
                 remoteContainer.prepend(localVideo);
             }
+            applyBrightTheme();
         } catch (e) {}
     };
     setInterval(hideFilmstripDistractions, 1000);

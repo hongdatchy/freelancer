@@ -153,6 +153,14 @@ export default function ClassroomPage() {
             apiRef.current.executeCommand('setTileView', enabled);
           } catch (err) {}
         }
+      } else if (e.data && e.data.type === 'TEACHER_TOGGLED_STUDENT_SHARE') {
+        const allowed = !!e.data.allowed;
+        if (apiRef.current) {
+          try {
+            apiRef.current.executeCommand('sendChatMessage', `__TOGGLE_STUDENT_SCREENSHARE__:${allowed}`);
+            console.log('📢 [page.tsx] Broadcasted __TOGGLE_STUDENT_SCREENSHARE__:', allowed);
+          } catch (err) {}
+        }
       }
     };
     window.addEventListener('message', handleMessage);

@@ -5,6 +5,59 @@
 // Global ticking audio instance tracking to prevent layering
 window.currentTickAudio = null;
 
+// Toast notification helper when Teacher grants or revokes Student screen share permission
+const showSharePermissionToast = (isAllowed) => {
+    try {
+        const toastId = 'custom-share-permission-toast';
+        let toast = document.getElementById(toastId);
+        if (toast && toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+
+        toast = document.createElement('div');
+        toast.id = toastId;
+        const bgColor = isAllowed ? '#10B981' : '#EF4444';
+        const icon = isAllowed ? '🎉' : '🔒';
+        const text = isAllowed 
+            ? 'Giáo viên đã mở quyền chia sẻ màn hình cho bạn!' 
+            : 'Giáo viên đã khóa quyền chia sẻ màn hình.';
+
+        toast.style.cssText = `
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: ${bgColor};
+            color: #ffffff;
+            padding: 10px 22px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        `;
+        toast.innerHTML = `<span style="font-size: 16px;">${icon}</span> <span>${text}</span>`;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            if (toast) {
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    if (toast && toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }
+        }, 3500);
+    } catch (e) {}
+};
+
 if (typeof window !== 'undefined') {
     window.addEventListener('message', (event) => {
         if (!event.data) return;
@@ -293,7 +346,17 @@ if (typeof window !== 'undefined') {
                                 msgText.includes('__CLK__') || 
                                 msgText.includes('TIMER_ACTION');
 
-                if (isPraise) {
+                if (isToggleStudentShare) {
+                    timerMessagesCount++;
+                    const val = msgText.slice('__TOGGLE_STUDENT_SCREENSHARE__:'.length).trim();
+                    const isAllowed = (val === 'true');
+                    window.allowStudentScreenshare = isAllowed;
+                    console.log('📌 [Jitsi] Received __TOGGLE_STUDENT_SCREENSHARE__:', val, 'window.allowStudentScreenshare =', window.allowStudentScreenshare);
+
+                    if (!isFromMe && !isHistoryMessage) {
+                        showSharePermissionToast(isAllowed);
+                    }
+                } else if (isPraise) {
                     timerMessagesCount++;
                     let payload = { index: 0 };
                     if (msgText.startsWith('__PRAISE__:')) {

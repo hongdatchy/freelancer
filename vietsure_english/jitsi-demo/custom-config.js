@@ -434,29 +434,29 @@ if (typeof window !== 'undefined') {
                     body.is-student .filmstrip .remote-videos .videocontainer {
                         pointer-events: none !important;
                     }
+                    /* Disable clicking/pausing shared video for students so student cannot pause teacher's video */
+                    body.is-student #sharedVideo,
+                    body.is-student #sharedVideoIFrame,
+                    body.is-student #sharedVideoContainer,
+                    body.is-student .shared-video-container,
+                    body.is-student [id*="sharedVideo"],
+                    body.is-student iframe[src*="youtube"],
+                    body.is-student iframe[src*="youtu.be"] {
+                        pointer-events: none !important;
+                    }
                 `;
                 document.head.appendChild(style);
                 console.log("🎨 Applied bright layout background theme.");
             }
 
-            let isStudent = false;
-            if (window.location.hash && window.location.hash.includes('config.isStudent=true')) {
-                isStudent = true;
-            } else if (window.location.hash && window.location.hash.includes('config.isStudent=false')) {
-                isStudent = false;
-            } else if (typeof config !== 'undefined' && typeof config.isStudent !== 'undefined') {
-                isStudent = !!config.isStudent;
-            }
-            try {
-                if (window.APP && window.APP.store) {
-                    const state = window.APP.store.getState();
-                    const participants = state['features/base/participants'] || [];
-                    const localP = Array.isArray(participants) ? participants.find(p => p && p.local) : Object.values(participants).find((p) => p && p.local);
-                    if (localP && localP.role === 'moderator') {
-                        isStudent = false;
-                    }
+            let isStudent = typeof checkIfStudent === 'function' ? checkIfStudent() : false;
+            if (!isStudent) {
+                if (window.location.hash && window.location.hash.includes('config.isStudent=true')) {
+                    isStudent = true;
+                } else if (typeof config !== 'undefined' && typeof config.isStudent !== 'undefined') {
+                    isStudent = !!config.isStudent;
                 }
-            } catch (e) {}
+            }
 
             if (document.body) {
                 if (isStudent) {
@@ -506,6 +506,7 @@ if (typeof window !== 'undefined') {
             if (localVideo && remoteContainer && !remoteContainer.contains(localVideo)) {
                 remoteContainer.prepend(localVideo);
             }
+            applyBrightTheme();
         } catch (e) {}
     };
     setInterval(hideFilmstripDistractions, 1000);
@@ -2681,6 +2682,59 @@ if (typeof window !== 'undefined') {
 // Global ticking audio instance tracking to prevent layering
 window.currentTickAudio = null;
 
+// Toast notification helper when Teacher grants or revokes Student screen share permission
+const showSharePermissionToast = (isAllowed) => {
+    try {
+        const toastId = 'custom-share-permission-toast';
+        let toast = document.getElementById(toastId);
+        if (toast && toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+
+        toast = document.createElement('div');
+        toast.id = toastId;
+        const bgColor = isAllowed ? '#10B981' : '#EF4444';
+        const icon = isAllowed ? '🎉' : '🔒';
+        const text = isAllowed 
+            ? 'Giáo viên đã mở quyền chia sẻ màn hình cho bạn!' 
+            : 'Giáo viên đã khóa quyền chia sẻ màn hình.';
+
+        toast.style.cssText = `
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: ${bgColor};
+            color: #ffffff;
+            padding: 10px 22px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        `;
+        toast.innerHTML = `<span style="font-size: 16px;">${icon}</span> <span>${text}</span>`;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            if (toast) {
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    if (toast && toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }
+        }, 3500);
+    } catch (e) {}
+};
+
 if (typeof window !== 'undefined') {
     window.addEventListener('message', (event) => {
         if (!event.data) return;
@@ -2969,7 +3023,17 @@ if (typeof window !== 'undefined') {
                                 msgText.includes('__CLK__') || 
                                 msgText.includes('TIMER_ACTION');
 
-                if (isPraise) {
+                if (isToggleStudentShare) {
+                    timerMessagesCount++;
+                    const val = msgText.slice('__TOGGLE_STUDENT_SCREENSHARE__:'.length).trim();
+                    const isAllowed = (val === 'true');
+                    window.allowStudentScreenshare = isAllowed;
+                    console.log('📌 [Jitsi] Received __TOGGLE_STUDENT_SCREENSHARE__:', val, 'window.allowStudentScreenshare =', window.allowStudentScreenshare);
+
+                    if (!isFromMe && !isHistoryMessage) {
+                        showSharePermissionToast(isAllowed);
+                    }
+                } else if (isPraise) {
                     timerMessagesCount++;
                     let payload = { index: 0 };
                     if (msgText.startsWith('__PRAISE__:')) {
