@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import Image from 'next/image';
 import { useBreadcrumb } from '@/context/useBreadcrumb';
+import { getData } from '@/service/api';
 
 const REMEMBER_KEY = 'vietsure_remember';
 
@@ -60,7 +61,15 @@ export default function Login() {
         Cookies.set('jwt', data.jwt, { expires: 1 });
       }
 
-      setLogin(data.jwt, data.user);
+      let userObj = data.user;
+      try {
+        const fullUser = await getData(`api/users/${data.user.id}?populate=avatar`, data.jwt);
+        if (fullUser && fullUser.avatar) {
+          userObj = { ...data.user, avatar: fullUser.avatar };
+        }
+      } catch (e) {}
+
+      setLogin(data.jwt, userObj);
       setMenuState({ itemTitle: 'Elearning', itemHref: '/elearning', level: 'item' });
       router.push('/elearning');
     } catch (err: any) {

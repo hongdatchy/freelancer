@@ -14,7 +14,8 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   publishedAt: string;
-  posts: any
+  posts: any;
+  avatar?: any;
 }
 
 interface State {

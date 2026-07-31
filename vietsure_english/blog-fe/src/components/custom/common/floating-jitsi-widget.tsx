@@ -7,18 +7,46 @@ import TimerWidget from '@/components/custom/common/timer-widget';
 import WheelWidget from '@/components/custom/common/wheel-widget';
 import DiceWidget from '@/components/custom/common/dice-widget';
 import PraiseWidget from '@/components/custom/common/praise-widget';
+import { getData } from '@/service/api';
 
 const JITSI_SERVER = process.env.NEXT_PUBLIC_JITSI_SERVER;
 
 export default function FloatingJitsiWidget() {
   const { roomName, isOpen, isMinimized, closeMeeting, setMinimized } = useJitsiStore();
-  const { user } = useUserLoginStore();
+  const { user, jwt, setLogin } = useUserLoginStore();
+
+  useEffect(() => {
+    if (user && !user.avatar && user.id) {
+      getData(`api/users/${user.id}?populate=avatar`)
+        .then((fullUser) => {
+          if (fullUser && fullUser.avatar && jwt) {
+            setLogin(jwt, { ...user, avatar: fullUser.avatar });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user, jwt, setLogin]);
   const isHost = true;
   const containerRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<any>(null);
   const [position, setPosition] = useState({ x: 20, y: 20 });
   const [isDragging, setIsDragging] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const teacherExitPopoverRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!showExitConfirm) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (teacherExitPopoverRef.current && !teacherExitPopoverRef.current.contains(e.target as Node)) {
+        const btn = (e.target as HTMLElement).closest('button');
+        if (!btn || (!btn.getAttribute('title')?.includes('Thoát') && !btn.closest('[title*="Thoát"]'))) {
+          setShowExitConfirm(false);
+        }
+      }
+    };
+    window.addEventListener('mousedown', handleOutsideClick);
+    return () => window.removeEventListener('mousedown', handleOutsideClick);
+  }, [showExitConfirm]);
   const dragStartRef = useRef({ x: 0, y: 0 });
 
   // Custom resizing state (NW-resize dragging from top-left) - Landscape default (width > height)
@@ -239,6 +267,13 @@ export default function FloatingJitsiWidget() {
       const displayName = userRef.current?.fullName || userRef.current?.username || 'Giáo viên';
       const email = userRef.current?.email || '';
 
+      const avatarRawUrl = userRef.current?.avatar?.formats?.small?.url ||
+                           userRef.current?.avatar?.formats?.thumbnail?.url ||
+                           userRef.current?.avatar?.url;
+      const avatarURL = avatarRawUrl
+        ? (avatarRawUrl.startsWith('http') ? avatarRawUrl : (process.env.NEXT_PUBLIC_BE_HOST || '') + avatarRawUrl)
+        : '';
+
       const sanitizedRoom = decodeURIComponent(roomName)
         .replace(/[^a-zA-Z0-9À-ỹ\-_]/g, '-')
         .replace(/-+/g, '-');
@@ -251,7 +286,7 @@ export default function FloatingJitsiWidget() {
         const now = Math.floor(Date.now() / 1000);
         const payload = {
           context: {
-            user: { name: displayName, email: email },
+            user: { name: displayName, email: email, avatar: avatarURL },
             features: { recording: true, livestreaming: true }
           },
           aud: "vietsure_app",
@@ -307,6 +342,7 @@ export default function FloatingJitsiWidget() {
         userInfo: {
           displayName,
           email,
+          avatarURL,
         },
         configOverwrite: {
           startWithAudioMuted: false,
@@ -406,6 +442,12 @@ export default function FloatingJitsiWidget() {
 
       apiRef.current.addEventListener('videoConferenceJoined', () => {
         setApiReady(true);
+
+        if (avatarURL && apiRef.current) {
+          try {
+            apiRef.current.executeCommand('avatarUrl', avatarURL);
+          } catch (e) {}
+        }
 
         // Automatically trigger Fullscreen mode for Teacher floating widget
         if (widgetInnerRef.current && !document.fullscreenElement) {
@@ -950,6 +992,7 @@ export default function FloatingJitsiWidget() {
               {/* Custom Exit Popover for Teacher */}
               {showExitConfirm && (
                 <div
+                  ref={teacherExitPopoverRef}
                   className="absolute top-[10px] right-[10px] bg-[#141414] p-3 rounded-xl flex flex-col items-center shadow-[0_4px_16px_rgba(0,0,0,0.5)] border border-white/10 w-[260px] z-[99999] no-drag"
                   style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
                 >

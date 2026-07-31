@@ -44,6 +44,21 @@ export default function ClassroomPage() {
   const currentSubRoomJidRef = useRef<string>('');
   const shouldEndConferenceOnMainJoinRef = useRef<boolean>(false);
   const isTileViewEnabledRef = useRef<boolean>(false);
+  const exitPopoverRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!showExitConfirm) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (exitPopoverRef.current && !exitPopoverRef.current.contains(e.target as Node)) {
+        const btn = (e.target as HTMLElement).closest('button');
+        if (!btn || (!btn.getAttribute('title')?.includes('Thoát') && !btn.closest('[title*="Thoát"]'))) {
+          setShowExitConfirm(false);
+        }
+      }
+    };
+    window.addEventListener('mousedown', handleOutsideClick);
+    return () => window.removeEventListener('mousedown', handleOutsideClick);
+  }, [showExitConfirm]);
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -554,7 +569,8 @@ export default function ClassroomPage() {
         {/* Custom Exit Popover (Matches Jitsi's native look) */}
         {showExitConfirm && (
           <div 
-            className="absolute top-[60px] right-[20px] bg-[#141414] p-3 rounded-xl flex flex-col items-center shadow-[0_4px_16px_rgba(0,0,0,0.5)] border border-white/10 w-[260px] z-[99999]"
+            ref={exitPopoverRef}
+            className="absolute top-[10px] right-[10px] bg-[#141414] p-3 rounded-xl flex flex-col items-center shadow-[0_4px_16px_rgba(0,0,0,0.5)] border border-white/10 w-[260px] z-[99999]"
             style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
           >
             {isInBreakoutRoom && (
