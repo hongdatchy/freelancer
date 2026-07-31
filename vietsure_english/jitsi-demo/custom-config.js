@@ -1947,12 +1947,10 @@ if (typeof window !== 'undefined') {
                                 isScreensharing = hasDesktopTrack || isLargeDesktop;
                             }
 
-                            if (!isScreensharing && document.body && document.body.classList.contains('whiteboard-screenshare-active')) {
-                                isScreensharing = true;
-                            }
+                            const isStudentShareAllowed = !!(window.allowStudentScreenshare || window.isStudentShareAllowedByTeacher);
 
-                            if (isScreensharing) {
-                                // Ẩn nút custom khi ĐANG CHIA SẺ MÀN HÌNH
+                            if (isScreensharing || isStudentShareAllowed) {
+                                // Ẩn nút custom khi ĐANG CHIA SẺ MÀN HÌNH hoặc KHI GIÁO VIÊN CẤP QUYỀN SHARE CHO HỌC VIÊN
                                 customItem.style.setProperty('display', 'none', 'important');
                             } else {
                                 const dynamicText = isWbPinned ? 'Ẩn bảng' : 'Bảng trắng';
