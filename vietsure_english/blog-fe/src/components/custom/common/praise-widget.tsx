@@ -42,8 +42,7 @@ export const triggerPraiseAnimation = (param?: any, apiRef?: any) => {
       }
     }
     if (!playedViaIframe) {
-      const audio = new Audio('/Hooray.mp3');
-      audio.play().catch(e => console.warn('[Praise] MP3 play failed:', e));
+      import('@/lib/audio-context').then(({ playSound }) => playSound('/Hooray.mp3'));
     }
   } catch (e) {
     console.warn('[Praise] Audio player creation failed:', e);

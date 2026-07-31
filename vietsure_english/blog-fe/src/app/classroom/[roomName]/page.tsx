@@ -494,12 +494,8 @@ export default function ClassroomPage() {
             onSubmit={(e) => {
               e.preventDefault();
               if (studentInputName.trim()) {
-                // 🔓 Unlock audio autoplay on mobile (iOS/Android require user gesture)
-                try {
-                  const silence = new Audio('/Hooray.mp3');
-                  silence.volume = 0.001;
-                  silence.play().catch(() => {});
-                } catch (_) {}
+                // 🔓 Unlock AudioContext on mobile (iOS/Android require user gesture before any audio)
+                import('@/lib/audio-context').then(({ unlockAudio }) => unlockAudio());
                 setHasEnteredName(true);
               }
             }}

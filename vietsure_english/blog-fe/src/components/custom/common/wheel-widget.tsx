@@ -245,11 +245,7 @@ export default function WheelWidget({
     } catch (e) {}
 
     try {
-      const audio = new Audio(soundPath);
-      if (key === 'wheelSpin') spinAudioRef.current = audio;
-      if (key === 'wheelWin') winAudioRef.current = audio;
-      audio.currentTime = 0;
-      audio.play().catch((err) => console.warn('[Wheel Audio Fallback] Play failed:', err));
+      import('@/lib/audio-context').then(({ playSound }) => playSound(soundPath));
     } catch (e) {}
   };
 

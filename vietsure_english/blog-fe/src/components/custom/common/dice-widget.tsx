@@ -263,13 +263,9 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
 
     try {
       if (rollAudioRef.current) {
-        rollAudioRef.current.pause();
-        rollAudioRef.current.currentTime = 0;
+        try { rollAudioRef.current.pause(); rollAudioRef.current.currentTime = 0; } catch (_) {}
       }
-      const audio = new Audio(soundPath);
-      rollAudioRef.current = audio;
-      audio.currentTime = 0;
-      audio.play().catch((err) => console.warn('[Dice Audio Fallback] Play failed:', err));
+      import('@/lib/audio-context').then(({ playSound }) => playSound(soundPath));
     } catch (e) {}
   }, [apiRef]);
 
