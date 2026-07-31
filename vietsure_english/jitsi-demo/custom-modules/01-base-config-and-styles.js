@@ -67,10 +67,16 @@ config.disabledSounds = ['INCOMING_MSG_SOUND_ID', 'OUTGOING_MSG_SOUND_ID'];
     };
 })();
 
-// Force selfBrowserSurface to 'include' to allow sharing the current tab
+// Force selfBrowserSurface to 'include' to allow sharing the current tab + Block unauthorized Student getDisplayMedia
 if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
     const originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
     navigator.mediaDevices.getDisplayMedia = function(constraints) {
+        const isStudent = typeof checkIfStudent === 'function' ? checkIfStudent() : false;
+        if (isStudent && !window.allowStudentScreenshare) {
+            console.warn('⛔ [Jitsi Security] Blocked getDisplayMedia call on Student screen because allowStudentScreenshare is false.');
+            return Promise.reject(new DOMException('Permission denied', 'NotAllowedError'));
+        }
+
         if (!constraints) constraints = {};
         if (typeof constraints.video === 'boolean' || !constraints.video) {
             constraints.video = {};

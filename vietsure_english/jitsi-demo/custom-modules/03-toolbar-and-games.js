@@ -691,6 +691,12 @@ if (typeof window !== 'undefined') {
                     const shareWrapper = findShareScreenWrapper(doc);
                     if (shareWrapper) {
                         if (!window.allowStudentScreenshare) {
+                            try {
+                                const activeEl = doc.activeElement;
+                                if (activeEl && (shareWrapper.contains(activeEl) || activeEl === shareWrapper)) {
+                                    activeEl.blur();
+                                }
+                            } catch (e) {}
                             shareWrapper.style.setProperty('display', 'none', 'important');
                         } else {
                             shareWrapper.style.removeProperty('display');

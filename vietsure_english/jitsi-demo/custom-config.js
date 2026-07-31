@@ -75,10 +75,16 @@ config.disabledSounds = ['INCOMING_MSG_SOUND_ID', 'OUTGOING_MSG_SOUND_ID'];
     };
 })();
 
-// Force selfBrowserSurface to 'include' to allow sharing the current tab
+// Force selfBrowserSurface to 'include' to allow sharing the current tab + Block unauthorized Student getDisplayMedia
 if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
     const originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
     navigator.mediaDevices.getDisplayMedia = function(constraints) {
+        const isStudent = typeof checkIfStudent === 'function' ? checkIfStudent() : false;
+        if (isStudent && !window.allowStudentScreenshare) {
+            console.warn('⛔ [Jitsi Security] Blocked getDisplayMedia call on Student screen because allowStudentScreenshare is false.');
+            return Promise.reject(new DOMException('Permission denied', 'NotAllowedError'));
+        }
+
         if (!constraints) constraints = {};
         if (typeof constraints.video === 'boolean' || !constraints.video) {
             constraints.video = {};
@@ -2250,6 +2256,12 @@ if (typeof window !== 'undefined') {
                     const shareWrapper = findShareScreenWrapper(doc);
                     if (shareWrapper) {
                         if (!window.allowStudentScreenshare) {
+                            try {
+                                const activeEl = doc.activeElement;
+                                if (activeEl && (shareWrapper.contains(activeEl) || activeEl === shareWrapper)) {
+                                    activeEl.blur();
+                                }
+                            } catch (e) {}
                             shareWrapper.style.setProperty('display', 'none', 'important');
                         } else {
                             shareWrapper.style.removeProperty('display');
@@ -3029,6 +3041,24 @@ if (typeof window !== 'undefined') {
                     const isAllowed = (val === 'true');
                     window.allowStudentScreenshare = isAllowed;
                     console.log('📌 [Jitsi] Received __TOGGLE_STUDENT_SCREENSHARE__:', val, 'window.allowStudentScreenshare =', window.allowStudentScreenshare);
+
+                    if (!isAllowed) {
+                        try {
+                            if (window.APP && window.APP.store) {
+                                const state = window.APP.store.getState();
+                                const tracks = state['features/base/tracks'] || [];
+                                const localDesktop = Array.isArray(tracks) 
+                                    ? tracks.find(t => t && t.local && (t.mediaType === 'desktop' || t.videoType === 'desktop') && !t.muted)
+                                    : Object.values(tracks).find((t) => t && t.local && (t.mediaType === 'desktop' || t.videoType === 'desktop') && !t.muted);
+                                if (localDesktop) {
+                                    console.log('📌 [STUDENT] Teacher revoked share permission -> Stopping local desktop share stream!');
+                                    if (window.APP.conference && typeof window.APP.conference.toggleScreenSharing === 'function') {
+                                        window.APP.conference.toggleScreenSharing(false);
+                                    }
+                                }
+                            }
+                        } catch (err) {}
+                    }
 
                     if (!isFromMe && !isHistoryMessage) {
                         showSharePermissionToast(isAllowed);
