@@ -592,31 +592,35 @@ if (typeof window !== 'undefined') {
                         s => s['features/base/tracks']?.some(t => t && t.local && (t.mediaType === 'desktop' || t.videoType === 'desktop') && !t.muted)
                     );
 
-                    // Khi Giáo viên vừa dừng Share màn hình của bản thân -> Thực thi ngay lập tức không timeout
-                    if (window.lastTeacherSharingScreenState && !isTeacherSharingScreen) {
-                        console.log('📌 [GIÁO VIÊN] Tắt Share màn hình bản thân -> Bỏ ghim, Bật Grid View & Đồng bộ lập tức (không timeout)');
-                        if (window.APP && window.APP.store) {
-                            window.APP.store.dispatch({
-                                type: 'PIN_PARTICIPANT',
-                                participant: { id: null }
-                            });
-                            window.APP.store.dispatch({
-                                type: 'SET_TILE_VIEW',
-                                enabled: true
-                            });
-                            try {
-                                if (window.APP?.conference?.sendTextMessage) {
-                                    window.APP.conference.sendTextMessage('__TILE_VIEW__:true');
-                                }
-                            } catch (err) {}
-                        }
-                    }
-                    window.lastTeacherSharingScreenState = isTeacherSharingScreen;
-
-                    // Check if a Remote Student is sharing screen
+                    // Check if Teacher or Remote Student is sharing screen
                     const isStudentSharingScreen = isActionActive(doc, null,
                         s => s['features/base/tracks']?.some(t => t && !t.local && (t.mediaType === 'desktop' || t.videoType === 'desktop') && !t.muted)
                     );
+                    const anyScreenSharing = isTeacherSharingScreen || isStudentSharingScreen;
+
+                    // Khi Giáo viên hoặc Học viên dừng Share màn hình -> Sau 3s Bỏ ghim, Bật Grid View & Đồng bộ sang cả lớp
+                    if (window.lastAnyScreenSharingState && !anyScreenSharing) {
+                        console.log('📌 [SHARE MÀN HÌNH] Dừng Share màn hình (Giáo viên/Học viên) -> Sau 3s Bỏ ghim, Bật Grid View & Đồng bộ');
+                        setTimeout(() => {
+                            if (window.APP && window.APP.store) {
+                                window.APP.store.dispatch({
+                                    type: 'PIN_PARTICIPANT',
+                                    participant: { id: null }
+                                });
+                                window.APP.store.dispatch({
+                                    type: 'SET_TILE_VIEW',
+                                    enabled: true
+                                });
+                                try {
+                                    if (window.APP?.conference?.sendTextMessage) {
+                                        window.APP.conference.sendTextMessage('__TILE_VIEW__:true');
+                                    }
+                                } catch (err) {}
+                            }
+                        }, 3000);
+                    }
+                    window.lastAnyScreenSharingState = anyScreenSharing;
+                    window.lastTeacherSharingScreenState = isTeacherSharingScreen;
 
                     const isSharingVideo = isActionActive(doc, videoBtn,
                         s => !!(s['features/shared-video']?.status || s['features/shared-video']?.videoUrl),
