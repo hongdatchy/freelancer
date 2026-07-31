@@ -391,6 +391,50 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
     return () => window.removeEventListener('sync-dice-action', handleSyncDice);
   }, [animateToResult]);
 
+  // Set up Jitsi XMPP Chat event listeners for sync (Same as Wheel & Praise)
+  useEffect(() => {
+    const api = apiRef.current;
+    if (!api || !apiReady) return;
+
+    const onIncomingChat = (event: any) => {
+      const msg = event?.message;
+      if (typeof msg === 'string' && msg.startsWith('__DICE__:')) {
+        const payloadStr = msg.slice('__DICE__:'.length);
+        try {
+          const payload = JSON.parse(payloadStr);
+          if (payload.action === 'OPEN') {
+            setIsOpen(true);
+            if (payload.diceCount) setDiceCount(payload.diceCount);
+          } else if (payload.action === 'CLOSE') {
+            setIsOpen(false);
+          } else if (payload.action === 'ROLL' || payload.action === 'SPIN') {
+            setIsOpen(true);
+            if (Array.isArray(payload.results) && payload.results.length > 0) {
+              setDiceCount(payload.results.length);
+              animateToResult(payload.results);
+            }
+          }
+        } catch (e) {
+          if (payloadStr === 'OPEN' || payloadStr === 'CLOSE') {
+            setIsOpen(payloadStr === 'OPEN');
+          } else {
+            const results = payloadStr.split(',').map(n => parseInt(n, 10)).filter(n => !isNaN(n));
+            if (results.length > 0) {
+              setDiceCount(results.length);
+              setIsOpen(true);
+              animateToResult(results);
+            }
+          }
+        }
+      }
+    };
+
+    api.addEventListener('incomingMessage', onIncomingChat);
+    return () => {
+      api.removeEventListener('incomingMessage', onIncomingChat);
+    };
+  }, [apiRef, apiReady, animateToResult]);
+
   // Die size based on count: larger for Student view (!isHost)
   const dieSize = !isHost 
     ? (diceCount === 1 ? 140 : diceCount === 2 ? 120 : 100) 

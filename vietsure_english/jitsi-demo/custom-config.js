@@ -3073,6 +3073,34 @@ if (typeof window !== 'undefined') {
                     if (!isFromMe && !payload.reset && !isHistoryMessage) {
                         window.parent.postMessage({ type: 'PLAY_PRAISE', payload }, '*');
                     }
+                } else if (isDice) {
+                    timerMessagesCount++;
+                    if (!isHistoryMessage && msgText.startsWith('__DICE__:')) {
+                        const payloadStr = msgText.slice('__DICE__:'.length);
+                        try {
+                            const payload = JSON.parse(payloadStr);
+                            console.log('[Jitsi custom-config] __DICE__ payload received:', payload);
+                            window.parent.postMessage({ type: 'DICE_ACTION', payload }, '*');
+                        } catch (e) {
+                            if (payloadStr === 'OPEN' || payloadStr === 'CLOSE') {
+                                window.parent.postMessage({ type: 'DICE_ACTION', payload: { action: payloadStr } }, '*');
+                            } else {
+                                const results = payloadStr.split(',').map(n => parseInt(n, 10)).filter(n => !isNaN(n));
+                                if (results.length > 0) {
+                                    window.parent.postMessage({ type: 'DICE_ACTION', payload: { action: 'ROLL', results } }, '*');
+                                }
+                            }
+                        }
+                    }
+                } else if (isWheel) {
+                    timerMessagesCount++;
+                    if (!isHistoryMessage && msgText.startsWith('__WHEEL__:')) {
+                        const payloadStr = msgText.slice('__WHEEL__:'.length);
+                        try {
+                            const payload = JSON.parse(payloadStr);
+                            window.parent.postMessage({ type: 'WHEEL_ACTION', payload }, '*');
+                        } catch (e) {}
+                    }
                 } else if (!isFromMe && !isHistoryMessage) {
                     if (isToggleStudentShare) {
                         const allowed = msgText.includes(':true');
@@ -3155,34 +3183,6 @@ if (typeof window !== 'undefined') {
                         }
 
                         window.parent.postMessage({ type: 'TEACHER_TOGGLED_TILE_VIEW', enabled }, '*');
-                    } else if (isDice) {
-                        timerMessagesCount++;
-                        if (msgText.startsWith('__DICE__:')) {
-                            const payloadStr = msgText.slice('__DICE__:'.length);
-                            try {
-                                const payload = JSON.parse(payloadStr);
-                                console.log('[Jitsi custom-config] __DICE__ payload received:', payload);
-                                window.parent.postMessage({ type: 'DICE_ACTION', payload }, '*');
-                            } catch (e) {
-                                if (payloadStr === 'OPEN' || payloadStr === 'CLOSE') {
-                                    window.parent.postMessage({ type: 'DICE_ACTION', payload: { action: payloadStr } }, '*');
-                                } else {
-                                    const results = payloadStr.split(',').map(n => parseInt(n, 10)).filter(n => !isNaN(n));
-                                    if (results.length > 0) {
-                                        window.parent.postMessage({ type: 'DICE_ACTION', payload: { action: 'ROLL', results } }, '*');
-                                    }
-                                }
-                            }
-                        }
-                    } else if (isWheel) {
-                        timerMessagesCount++;
-                        if (msgText.startsWith('__WHEEL__:')) {
-                            const payloadStr = msgText.slice('__WHEEL__:'.length);
-                            try {
-                                const payload = JSON.parse(payloadStr);
-                                window.parent.postMessage({ type: 'WHEEL_ACTION', payload }, '*');
-                            } catch (e) {}
-                        }
                     } else if (isTimer) {
                         timerMessagesCount++;
                     }

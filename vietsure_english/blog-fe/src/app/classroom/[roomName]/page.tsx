@@ -249,7 +249,7 @@ export default function ClassroomPage() {
           'microphone', 'camera', 'closedcaptions',
           'fodeviceselection', 'chat',
           'settings', 'raisehand', 'filmstrip',
-          'download', 'help', 'whiteboard', 'participants-pane', 'desktop'
+          'download', 'help', 'whiteboard', 'desktop'
         ],
       },
       interfaceConfigOverwrite: {
