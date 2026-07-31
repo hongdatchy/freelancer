@@ -176,6 +176,22 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
     return {};
   });
 
+  // Continuously sync starScores map to Jitsi iframe so avatars always show ⭐
+  useEffect(() => {
+    try {
+      const api = apiRef.current;
+      if (api) {
+        const iframe = api.getIFrame();
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({
+            type: 'SYNC_PRAISE_SCORES',
+            starScores
+          }, '*');
+        }
+      }
+    } catch (e) {}
+  }, [starScores, apiRef, apiReady]);
+
   // Listen for toggle / trigger praise event from parent or Jitsi toolbar
   useEffect(() => {
     const handleToggle = () => {
@@ -221,16 +237,16 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
             } else {
               if (!isHistory) {
                 triggerPraiseAnimation(payload, apiRef);
-              }
-              if (payload.allScores) {
-                setStarScores(payload.allScores);
-                try { localStorage.setItem(starScoresKey, JSON.stringify(payload.allScores)); } catch {}
-              } else if (payload.studentName) {
-                setStarScores(prev => {
-                  const next = { ...prev, [payload.studentName]: (prev[payload.studentName] || 0) + 1 };
-                  try { localStorage.setItem(starScoresKey, JSON.stringify(next)); } catch {}
-                  return next;
-                });
+                if (payload.allScores) {
+                  setStarScores(payload.allScores);
+                  try { localStorage.setItem(starScoresKey, JSON.stringify(payload.allScores)); } catch {}
+                } else if (payload.studentName) {
+                  setStarScores(prev => {
+                    const next = { ...prev, [payload.studentName]: (prev[payload.studentName] || 0) + 1 };
+                    try { localStorage.setItem(starScoresKey, JSON.stringify(next)); } catch {}
+                    return next;
+                  });
+                }
               }
             }
           } else {

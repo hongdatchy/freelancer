@@ -386,13 +386,10 @@ if (typeof window !== 'undefined') {
                     window.praiseStarMap = window.praiseStarMap || {};
                     if (payload.reset) {
                         window.praiseStarMap = {};
-                        try { localStorage.removeItem(_praiseStarKey); } catch (e) {}
                     } else if (payload.allScores && typeof payload.allScores === 'object') {
                         window.praiseStarMap = { ...payload.allScores };
-                        try { localStorage.setItem(_praiseStarKey, JSON.stringify(window.praiseStarMap)); } catch (e) {}
                     } else if (payload.studentName) {
                         window.praiseStarMap[payload.studentName] = (window.praiseStarMap[payload.studentName] || 0) + 1;
-                        try { localStorage.setItem(_praiseStarKey, JSON.stringify(window.praiseStarMap)); } catch (e) {}
                     }
 
                     if (typeof updateStarBadgesInJitsiUI === 'function') {
@@ -626,18 +623,25 @@ if (typeof window !== 'undefined') {
     setInterval(checkAndExit, 80);
 })();
 
-const _praiseStarKey = 'praiseStarMap_' + (window.location.pathname || 'default');
 window.praiseStarMap = window.praiseStarMap || {};
-try {
-    const _saved = localStorage.getItem(_praiseStarKey);
-    if (_saved) Object.assign(window.praiseStarMap, JSON.parse(_saved));
-} catch (e) {}
+
+// Sync Praise Stars from Parent Window
+window.addEventListener('message', (event) => {
+    if (event && event.data && event.data.type === 'SYNC_PRAISE_SCORES') {
+        if (event.data.starScores && typeof event.data.starScores === 'object') {
+            window.praiseStarMap = { ...event.data.starScores };
+            if (typeof updateStarBadgesInJitsiUI === 'function') {
+                updateStarBadgesInJitsiUI();
+            }
+        }
+    }
+});
 
 const updateStarBadgesInJitsiUI = () => {
     try {
         const starMap = window.praiseStarMap || {};
 
-        const nameEls = document.querySelectorAll('.displayname, #localDisplayName, [id$="DisplayName"], [class*="participant-name"]');
+        const nameEls = document.querySelectorAll('.displayname, #localDisplayName, [id$="DisplayName"], [class*="participant-name"], [class*="display-name"], [data-testid*="display-name"], .videocontainer .displayname-container');
         nameEls.forEach(el => {
             const rawText = el.getAttribute('data-raw-name') || el.textContent || '';
             const cleanName = rawText.replace(/\s*⭐\s*\d+/g, '').trim();
