@@ -366,15 +366,32 @@ export default function ClassroomPage() {
       }
     });
 
-    // Listen directly for __TILE_VIEW__ messages from Teacher
+    // Listen directly for Teacher control messages (__TILE_VIEW__, __TEACHER_PIN__, __TOGGLE_STUDENT_SCREENSHARE__)
     apiRef.current.addEventListener('incomingMessage', (event: any) => {
       const msg = event?.message;
-      if (typeof msg === 'string' && msg.startsWith('__TILE_VIEW__:')) {
+      if (typeof msg !== 'string') return;
+
+      if (msg.startsWith('__TILE_VIEW__:')) {
         const enabled = msg.includes(':true');
         console.log('📌 [HỌC VIÊN] ĐỒNG BỘ GRID VIEW:', enabled);
         try {
           apiRef.current?.executeCommand('setTileView', enabled);
         } catch (err) {}
+      } else if (msg.startsWith('__TEACHER_PIN__:')) {
+        const targetId = msg.slice('__TEACHER_PIN__:'.length);
+        const pinId = (targetId === 'null' || !targetId) ? null : targetId;
+        console.log('📌 [HỌC VIÊN] ĐỒNG BỘ GHIM TỪ GIÁO VIÊN:', pinId);
+        try {
+          apiRef.current?.executeCommand('pinParticipant', pinId);
+        } catch (err) {}
+      } else if (msg.startsWith('__TOGGLE_STUDENT_SCREENSHARE__:')) {
+        const allowed = msg.includes(':true');
+        console.log('📢 [HỌC VIÊN] NHẬN QUYỀN SHARE MÀN HÌNH TỪ GIÁO VIÊN:', allowed);
+        if (!allowed) {
+          try {
+            apiRef.current?.executeCommand('toggleShareScreen', false);
+          } catch (err) {}
+        }
       }
     });
 
