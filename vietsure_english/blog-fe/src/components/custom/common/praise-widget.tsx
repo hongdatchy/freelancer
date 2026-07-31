@@ -185,11 +185,12 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
     window.addEventListener('trigger-praise-modal', handleToggle);
     return () => {
       window.removeEventListener('toggle-praise-widget', handleToggle);
-      window.removeEventListener('trigger-praise-modal', handleToggle);
     };
   }, []);
 
-  // Listen for incoming Jitsi chat messages for broadcasted praise sync
+  const joinTimeRef = useRef<number>(Date.now() - 2000);
+
+  // Listen for incoming Jitsi chat messages for broadcasted praise sync with history filter
   useEffect(() => {
     const api = apiRef.current;
     if (!api || !apiReady) return;
@@ -197,16 +198,30 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
     const onIncomingChat = (event: any) => {
       const msg = event?.message;
       if (typeof msg === 'string' && msg.startsWith('__PRAISE__:')) {
+        let messageTime: number | null = null;
+        if (typeof event?.stamp === 'number') {
+          messageTime = event.stamp;
+        } else if (event?.stamp && typeof event.stamp.getTime === 'function') {
+          messageTime = event.stamp.getTime();
+        } else if (typeof event?.stamp === 'string') {
+          const parsed = Date.parse(event.stamp);
+          if (!isNaN(parsed)) messageTime = parsed;
+        } else if (typeof event?.timestamp === 'number') {
+          messageTime = event.timestamp;
+        }
+
+        const isHistory = !!(messageTime && joinTimeRef.current && messageTime < joinTimeRef.current);
         const jsonStr = msg.slice('__PRAISE__:'.length);
         try {
-          // Check if payload is JSON or plain index
           if (jsonStr.startsWith('{')) {
             const payload = JSON.parse(jsonStr);
             if (payload.reset) {
               setStarScores({});
               try { localStorage.removeItem(starScoresKey); } catch {}
             } else {
-              triggerPraiseAnimation(payload, apiRef);
+              if (!isHistory) {
+                triggerPraiseAnimation(payload, apiRef);
+              }
               if (payload.allScores) {
                 setStarScores(payload.allScores);
                 try { localStorage.setItem(starScoresKey, JSON.stringify(payload.allScores)); } catch {}
@@ -219,8 +234,10 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
               }
             }
           } else {
-            const idx = parseInt(jsonStr, 10);
-            triggerPraiseAnimation({ mascotIdx: isNaN(idx) ? 0 : idx }, apiRef);
+            if (!isHistory) {
+              const idx = parseInt(jsonStr, 10);
+              triggerPraiseAnimation({ mascotIdx: isNaN(idx) ? 0 : idx }, apiRef);
+            }
           }
         } catch (e) {
           console.warn('[Praise] Failed to parse chat praise payload:', e);
@@ -233,6 +250,8 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
       api.removeEventListener('incomingMessage', onIncomingChat);
     };
   }, [apiReady, roomName, starScoresKey, apiRef]);
+
+
 
   // Helper to extract student list from Jitsi participants info
   const getStudentList = () => {

@@ -383,15 +383,15 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
         }
       } else if (Array.isArray(payload.results) && payload.results.length > 0) {
         setDiceCount(payload.results.length);
-        setIsOpen(true);
-        animateToResult(payload.results);
       }
     };
     window.addEventListener('sync-dice-action', handleSyncDice);
     return () => window.removeEventListener('sync-dice-action', handleSyncDice);
   }, [animateToResult]);
 
-  // Set up Jitsi XMPP Chat event listeners for sync (Same as Wheel & Praise)
+  const joinTimeRef = useRef<number>(Date.now() - 2000);
+
+  // Set up Jitsi XMPP Chat event listeners for sync with history message filter
   useEffect(() => {
     const api = apiRef.current;
     if (!api || !apiReady) return;
@@ -399,6 +399,21 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
     const onIncomingChat = (event: any) => {
       const msg = event?.message;
       if (typeof msg === 'string' && msg.startsWith('__DICE__:')) {
+        let messageTime: number | null = null;
+        if (typeof event?.stamp === 'number') {
+          messageTime = event.stamp;
+        } else if (event?.stamp && typeof event.stamp.getTime === 'function') {
+          messageTime = event.stamp.getTime();
+        } else if (typeof event?.stamp === 'string') {
+          const parsed = Date.parse(event.stamp);
+          if (!isNaN(parsed)) messageTime = parsed;
+        } else if (typeof event?.timestamp === 'number') {
+          messageTime = event.timestamp;
+        }
+
+        const isHistory = !!(messageTime && joinTimeRef.current && messageTime < joinTimeRef.current);
+        if (isHistory) return;
+
         const payloadStr = msg.slice('__DICE__:'.length);
         try {
           const payload = JSON.parse(payloadStr);
@@ -434,6 +449,8 @@ export default function DiceWidget({ apiRef, isHost, apiReady = false }: DiceWid
       api.removeEventListener('incomingMessage', onIncomingChat);
     };
   }, [apiRef, apiReady, animateToResult]);
+
+
 
   // Die size based on count: larger for Student view (!isHost)
   const dieSize = !isHost 

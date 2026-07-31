@@ -353,7 +353,9 @@ export default function WheelWidget({
     }
   };
 
-  // Set up Jitsi XMPP Chat event listeners for sync
+  const joinTimeRef = useRef<number>(Date.now() - 2000);
+
+  // Set up Jitsi XMPP Chat event listeners for sync with history message filter
   useEffect(() => {
     const api = apiRef.current;
     if (!api || !apiReady) return;
@@ -361,6 +363,21 @@ export default function WheelWidget({
     const onIncomingChat = (event: any) => {
       const msg = event?.message;
       if (typeof msg === 'string' && msg.startsWith('__WHEEL__:')) {
+        let messageTime: number | null = null;
+        if (typeof event?.stamp === 'number') {
+          messageTime = event.stamp;
+        } else if (event?.stamp && typeof event.stamp.getTime === 'function') {
+          messageTime = event.stamp.getTime();
+        } else if (typeof event?.stamp === 'string') {
+          const parsed = Date.parse(event.stamp);
+          if (!isNaN(parsed)) messageTime = parsed;
+        } else if (typeof event?.timestamp === 'number') {
+          messageTime = event.timestamp;
+        }
+
+        const isHistory = !!(messageTime && joinTimeRef.current && messageTime < joinTimeRef.current);
+        if (isHistory) return;
+
         const jsonStr = msg.slice('__WHEEL__:'.length);
         try {
           const decoded = JSON.parse(jsonStr);
@@ -376,6 +393,8 @@ export default function WheelWidget({
       api.removeEventListener('incomingMessage', onIncomingChat);
     };
   }, [apiReady]);
+
+
 
   // Host Teacher: Trigger Spin action
   const handleHostSpin = () => {
