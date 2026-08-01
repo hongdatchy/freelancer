@@ -740,6 +740,7 @@ export default function FloatingJitsiWidget() {
   // ── Document Picture-in-Picture ──────────────────────────────────────────
   const [isPipActive, setIsPipActive] = useState(false);
   const pipWindowRef = useRef<any>(null);
+  const outerDivRef = useRef<HTMLDivElement | null>(null);
   const widgetInnerRef = useRef<HTMLDivElement | null>(null);
   const slotRef = useRef<HTMLDivElement | null>(null);
 
@@ -759,6 +760,148 @@ export default function FloatingJitsiWidget() {
         setIsPipActive(false);
         setMinimized(false);
       }
+    }
+  };
+
+  const widgetSlotRef = useRef<HTMLDivElement | null>(null);
+
+  const handlePiP2 = async () => {
+    if (typeof window === 'undefined') return;
+
+    if (!('documentPictureInPicture' in window)) {
+      alert('Trình duyệt của bạn chưa hỗ trợ Document Picture-in-Picture (vui lòng sử dụng Google Chrome hoặc Microsoft Edge 116+)!');
+      return;
+    }
+
+    if (pipWindowRef.current) {
+      try {
+        pipWindowRef.current.close();
+      } catch (e) {}
+      pipWindowRef.current = null;
+      return;
+    }
+
+    try {
+      const pipWin = await (window as any).documentPictureInPicture.requestWindow({
+        width: Math.max(680, size.width),
+        height: Math.max(480, size.height),
+      });
+      pipWindowRef.current = pipWin;
+
+      pipWin.addEventListener('pagehide', () => {
+        pipWindowRef.current = null;
+        setIsPipActive(false);
+      });
+
+      // Copy all style & stylesheet link tags to PiP window
+      const styleElements = document.querySelectorAll('style, link[rel="stylesheet"]');
+      styleElements.forEach((el) => {
+        pipWin.document.head.appendChild(el.cloneNode(true));
+      });
+
+      pipWin.document.title = `Vietsure English - Phòng: ${roomName}`;
+      pipWin.document.body.style.cssText = 'margin: 0; padding: 0; overflow: hidden; background: #1d285c; font-family: system-ui, -apple-system, sans-serif; height: 100vh; width: 100vw; display: flex; flex-direction: column;';
+
+      // Render full Meeting UI structure into PiP window
+      pipWin.document.body.innerHTML = `
+        <div style="width: 100vw; height: 100vh; display: flex; flex-direction: column; background: #1d285c; position: relative;">
+          <!-- Header Bar -->
+          <div style="height: 48px; background: #1d285c; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 12px; user-select: none; shrink: 0; z-index: 10;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <img src="/images/Vietsure English_Logo-15.png" alt="Vietsure" style="height: 24px; width: auto; object-fit: contain;" />
+              <span style="color: rgba(255,255,255,0.6); font-size: 11px;">| Phòng: ${roomName}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              ${isHost ? `<button id="pip-btn-praise" style="padding: 4px 10px; border-radius: 6px; background: #f59e0b; color: #fff; border: none; font-size: 12px; font-weight: 700; cursor: pointer;">⭐ Khen thưởng</button>` : ''}
+              ${isHost ? `<button id="pip-btn-timer" style="padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,0.15); color: #fff; border: none; font-size: 12px; cursor: pointer;">⏱️ Đồng hồ</button>` : ''}
+              ${isHost ? `<button id="pip-btn-dice" style="padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,0.15); color: #fff; border: none; font-size: 12px; cursor: pointer;">🎲 Xúc xắc</button>` : ''}
+              ${isHost ? `<button id="pip-btn-wheel" style="padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,0.15); color: #fff; border: none; font-size: 12px; cursor: pointer;">🎡 Vòng quay</button>` : ''}
+              ${isHost ? `<button id="pip-btn-close-meeting" style="padding: 4px 10px; border-radius: 6px; background: #ef4444; color: #fff; border: none; font-size: 12px; font-weight: 700; cursor: pointer; margin-left: 4px;">❌ Kết thúc</button>` : ''}
+            </div>
+          </div>
+
+          <!-- Video & Screen Mirroring Container -->
+          <div style="flex: 1; position: relative; width: 100%; height: calc(100vh - 48px); background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <video id="pip-video-feed" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: contain; background: #111;"></video>
+          </div>
+        </div>
+      `;
+
+      setIsPipActive(true);
+
+      // Connect video stream from Jitsi iframe into PiP video element
+      const pipVideo = pipWin.document.getElementById('pip-video-feed') as HTMLVideoElement;
+
+      const updateVideoStream = () => {
+        try {
+          const iframe = containerRef.current?.querySelector('iframe');
+          if (iframe) {
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+            if (iframeDoc) {
+              const videos = Array.from(iframeDoc.querySelectorAll('video')) as HTMLVideoElement[];
+              const activeVideo = videos.find(v => v.srcObject && (v.srcObject as MediaStream).active) || videos[0];
+              if (activeVideo && activeVideo.srcObject && pipVideo) {
+                if (pipVideo.srcObject !== activeVideo.srcObject) {
+                  pipVideo.srcObject = activeVideo.srcObject;
+                  pipVideo.play().catch(() => {});
+                }
+              }
+            }
+          }
+        } catch (e) {}
+      };
+
+      updateVideoStream();
+      const streamInterval = setInterval(updateVideoStream, 1000);
+
+      pipWin.addEventListener('pagehide', () => {
+        clearInterval(streamInterval);
+      });
+
+      // Bind Proxy Click Events for buttons in PiP window
+      const btnPraise = pipWin.document.getElementById('pip-btn-praise');
+      if (btnPraise) {
+        btnPraise.onclick = () => {
+          window.dispatchEvent(new CustomEvent('toggle-praise-widget'));
+        };
+      }
+
+      const btnTimer = pipWin.document.getElementById('pip-btn-timer');
+      if (btnTimer) {
+        btnTimer.onclick = () => {
+          window.dispatchEvent(new CustomEvent('toggle-timer-card'));
+        };
+      }
+
+      const btnDice = pipWin.document.getElementById('pip-btn-dice');
+      if (btnDice) {
+        btnDice.onclick = () => {
+          window.dispatchEvent(new CustomEvent('toggle-dice-widget'));
+        };
+      }
+
+      const btnWheel = pipWin.document.getElementById('pip-btn-wheel');
+      if (btnWheel) {
+        btnWheel.onclick = () => {
+          window.dispatchEvent(new CustomEvent('toggle-wheel-widget'));
+        };
+      }
+
+      const btnCloseMeeting = pipWin.document.getElementById('pip-btn-close-meeting');
+      if (btnCloseMeeting) {
+        btnCloseMeeting.onclick = () => {
+          try {
+            apiRef.current?.executeCommand('hangup');
+          } catch (e) {}
+          setTimeout(() => {
+            closeMeetingRef.current();
+          }, 200);
+        };
+      }
+
+    } catch (err) {
+      console.error('[Document PiP] Failed to open documentPictureInPicture:', err);
+      alert('Không thể mở Document Picture-in-Picture!');
     }
   };
 
@@ -829,9 +972,10 @@ export default function FloatingJitsiWidget() {
   if (!isOpen || !roomName) return null;
 
   return (
-    <>
+    <div ref={widgetSlotRef}>
       {/* Main page widget */}
       <div
+        ref={outerDivRef}
         style={{
           position: 'fixed',
           display: isMinimized ? 'none' : undefined,
@@ -950,6 +1094,18 @@ export default function FloatingJitsiWidget() {
                   </button>
                 )}
 
+                {/* PiP Button 2 */}
+                <button
+                  onClick={handlePiP2}
+                  className="p-1.5 rounded-lg text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 transition-colors"
+                  title="Mở Cửa sổ Nổi Meeting (Document Picture-in-Picture)"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2" />
+                    <path d="M14 10l5 5M19 10v5h-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+
                 {/* Minimize button */}
                 {/* {!isPipActive && (
                   <button
@@ -1044,7 +1200,7 @@ export default function FloatingJitsiWidget() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
