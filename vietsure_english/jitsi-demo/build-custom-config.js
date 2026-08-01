@@ -25,3 +25,29 @@ files.forEach(file => {
 
 fs.writeFileSync(outputFile, combinedContent, 'utf8');
 console.log(`✅ Successfully generated ${outputFile} (${fs.statSync(outputFile).size} bytes)`);
+
+// Sync directly to Docker web container volume config.js
+try {
+    const dockerCfgDir = path.join(process.env.USERPROFILE || 'C:/Users/Admin', '.jitsi-meet-cfg/web');
+    const dockerCustomCfg = path.join(dockerCfgDir, 'custom-config.js');
+    const dockerConfigJs = path.join(dockerCfgDir, 'config.js');
+
+    if (fs.existsSync(dockerCfgDir)) {
+        fs.writeFileSync(dockerCustomCfg, combinedContent, 'utf8');
+        console.log(`✅ Synced to Docker volume: ${dockerCustomCfg}`);
+
+        if (fs.existsSync(dockerConfigJs)) {
+            let baseConfig = fs.readFileSync(dockerConfigJs, 'utf8');
+            const marker = '// ==========================================\n// VIETSURE ENGLISH - JITSI CUSTOM CONFIG';
+            const markerIdx = baseConfig.indexOf('// ==========================================\n// VIETSURE ENGLISH');
+            if (markerIdx !== -1) {
+                baseConfig = baseConfig.substring(0, markerIdx).trimEnd();
+            }
+            const updatedConfig = baseConfig + '\n\n' + combinedContent;
+            fs.writeFileSync(dockerConfigJs, updatedConfig, 'utf8');
+            console.log(`🚀 Successfully updated Docker active config: ${dockerConfigJs}`);
+        }
+    }
+} catch (err) {
+    console.warn('⚠️ Could not auto-sync to Docker volume:', err.message);
+}

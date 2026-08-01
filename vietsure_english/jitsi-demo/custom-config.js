@@ -3325,7 +3325,8 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
             const state = window.APP.store.getState();
 
             const participantsState = state['features/base/participants'] || {};
-            const localP = Object.values(participantsState).find(p => p && p.local);
+            const participantsArr = Array.isArray(participantsState) ? participantsState : Object.values(participantsState);
+            const localP = participantsArr.find(p => p && p.local);
             const isTeacher = localP ? localP.role === 'moderator' : true;
 
             if (!isTeacher) return;
@@ -3348,6 +3349,42 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
                     }
                 } catch (err) {
                     console.error('Error sending pin msg:', err);
+                }
+            }
+        } catch (e) {}
+    }, 300);
+})();
+
+// Log Tile View (Grid View) events on Teacher screen & broadcast message to Student (matching setupTeacherPinLogger)
+(function setupTeacherTileViewLogger() {
+    if (typeof window === 'undefined') return;
+
+    let lastTileView = undefined;
+
+    setInterval(() => {
+        try {
+            if (!window.APP || !window.APP.store) return;
+            const state = window.APP.store.getState();
+
+            const isStudent = typeof checkIfStudent === 'function' ? checkIfStudent() : false;
+            if (isStudent) return;
+
+            const isTileView = !!(state['features/video-layout']?.tileViewEnabled ?? state['features/video-layout']?.enabled);
+
+            if (isTileView !== lastTileView) {
+                lastTileView = isTileView;
+                console.log('📌 [GIÁO VIÊN LOG TILE VIEW]:', isTileView);
+
+                try {
+                    if (window.APP?.conference && typeof window.APP.conference.sendTextMessage === 'function') {
+                        window.APP.conference.sendTextMessage('__TILE_VIEW__:' + String(isTileView));
+                        console.log('📡 [GIÁO VIÊN BẮN TÍN HIỆU THÀNH CÔNG]:', '__TILE_VIEW__:' + String(isTileView));
+                    } else if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
+                        window.APP.conference._room.sendTextMessage('__TILE_VIEW__:' + String(isTileView));
+                        console.log('📡 [_room BẮN TÍN HIỆU THÀNH CÔNG]:', '__TILE_VIEW__:' + String(isTileView));
+                    }
+                } catch (err) {
+                    console.error('Error sending tile view msg:', err);
                 }
             }
         } catch (e) {}
