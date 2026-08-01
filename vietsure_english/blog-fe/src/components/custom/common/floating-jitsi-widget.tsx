@@ -744,25 +744,6 @@ export default function FloatingJitsiWidget() {
   const widgetInnerRef = useRef<HTMLDivElement | null>(null);
   const slotRef = useRef<HTMLDivElement | null>(null);
 
-  const handlePiP = async () => {
-    const jitsiEl = containerRef.current;
-    const iframe = apiRef.current?.getIFrame() || jitsiEl?.querySelector('iframe');
-    if (iframe && iframe.contentWindow) {
-      console.log('[PiP] Sending TRIGGER_COMPOSITE_VIDEO_PIP to Jitsi iframe...');
-      iframe.contentWindow.postMessage({
-        type: 'TRIGGER_COMPOSITE_VIDEO_PIP'
-      }, '*');
-
-      if (!isPipActive) {
-        setIsPipActive(true);
-        setMinimized(true);
-      } else {
-        setIsPipActive(false);
-        setMinimized(false);
-      }
-    }
-  };
-
   const widgetSlotRef = useRef<HTMLDivElement | null>(null);
 
   const handlePiP2 = async () => {
@@ -998,21 +979,7 @@ export default function FloatingJitsiWidget() {
                   </button>
                 )}
 
-                {/* PiP Button - chỉ hiện khi KHÔNG ở Grid View */}
-                {!isTileViewActive && (
-                  <button
-                    onClick={handlePiP}
-                    className="p-1.5 rounded-lg text-blue-300 hover:text-blue-100 hover:bg-blue-500/20 transition-colors"
-                    title="Mở Picture-in-Picture"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="2" y="3" width="20" height="14" rx="2" />
-                      <rect x="12" y="10" width="9" height="6" rx="1" fill="currentColor" stroke="none" />
-                    </svg>
-                  </button>
-                )}
-
-                {/* PiP Button 2 */}
+                {/* PiP Button (Document Picture-in-Picture) */}
                 <button
                   onClick={handlePiP2}
                   className="p-1.5 rounded-lg text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 transition-colors"
