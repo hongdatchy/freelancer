@@ -324,7 +324,6 @@ if (typeof window !== 'undefined') {
                     if (!isNaN(parsed)) messageTime = parsed;
                 }
 
-                // If message timestamp is older than student's room join timestamp, mark as history playback
                 const isHistoryMessage = !!(messageTime && window.joinTimestamp && messageTime < (window.joinTimestamp - 2000));
 
                 let msgText = '';
@@ -336,22 +335,57 @@ if (typeof window !== 'undefined') {
                     msgText = text.text;
                 }
 
+                // Centralized System Message Router
                 const isToggleStudentShare = msgText.startsWith('__TOGGLE_STUDENT_SCREENSHARE__:');
                 const isTileViewMsg = msgText.startsWith('__TILE_VIEW__:');
                 const isTeacherPinMsg = msgText.startsWith('__TEACHER_PIN__:');
                 const isPraise = msgText.includes('__PRAISE__');
                 const isWheel = msgText.includes('__WHEEL__');
                 const isDice = msgText.includes('__DICE__') || msgText.includes('__DICE_COUNT__');
-                const isTimer = msgText.includes('__TIMER__') || 
-                                msgText.includes('__CLK__') || 
-                                msgText.includes('TIMER_ACTION');
+                const isTimer = msgText.includes('__TIMER__') || msgText.includes('__CLK__') || msgText.includes('TIMER_ACTION');
 
-                if (isToggleStudentShare) {
+                // DO NOT RE-PROCESS MESSAGES SENT BY MYSELF TO AVOID LOOPS
+                if (isFromMe) {
+                    if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg || isTeacherPinMsg) {
+                        timerMessagesCount++;
+                    } else {
+                        realMessagesCount++;
+                    }
+                    updateBadgeState();
+                    return;
+                }
+
+                if (isTeacherPinMsg) {
+                    timerMessagesCount++;
+                    const pinIdStr = msgText.slice('__TEACHER_PIN__:'.length).trim();
+                    const pinId = (pinIdStr === 'null' || !pinIdStr) ? null : pinIdStr;
+                    console.log('📌 [CENTRAL ROUTER] TEACHER_PIN received:', pinId);
+                    try {
+                        if (window.APP && window.APP.store) {
+                            window.APP.store.dispatch({
+                                type: 'PIN_PARTICIPANT',
+                                participant: { id: pinId }
+                            });
+                        }
+                    } catch (e) {}
+                } else if (isTileViewMsg) {
+                    timerMessagesCount++;
+                    const val = msgText.slice('__TILE_VIEW__:'.length).trim();
+                    const isTile = (val === 'true');
+                    console.log('📌 [CENTRAL ROUTER] TILE_VIEW received:', isTile);
+                    try {
+                        if (window.APP && window.APP.store) {
+                            window.APP.store.dispatch({
+                                type: 'SET_TILE_VIEW',
+                                enabled: isTile
+                            });
+                        }
+                    } catch (e) {}
+                } else if (isToggleStudentShare) {
                     timerMessagesCount++;
                     const val = msgText.slice('__TOGGLE_STUDENT_SCREENSHARE__:'.length).trim();
                     const isAllowed = (val === 'true');
                     window.allowStudentScreenshare = isAllowed;
-                    console.log('📌 [Jitsi] Received __TOGGLE_STUDENT_SCREENSHARE__:', val, 'window.allowStudentScreenshare =', window.allowStudentScreenshare);
 
                     if (!isAllowed) {
                         try {
@@ -362,7 +396,6 @@ if (typeof window !== 'undefined') {
                                     ? tracks.find(t => t && t.local && (t.mediaType === 'desktop' || t.videoType === 'desktop') && !t.muted)
                                     : Object.values(tracks).find((t) => t && t.local && (t.mediaType === 'desktop' || t.videoType === 'desktop') && !t.muted);
                                 if (localDesktop) {
-                                    console.log('📌 [STUDENT] Teacher revoked share permission -> Stopping local desktop share stream!');
                                     if (window.APP.conference && typeof window.APP.conference.toggleScreenSharing === 'function') {
                                         window.APP.conference.toggleScreenSharing(false);
                                     }
@@ -379,15 +412,11 @@ if (typeof window !== 'undefined') {
                     let payload = { index: 0 };
                     if (msgText.startsWith('__PRAISE__:')) {
                         const payloadStr = msgText.slice('__PRAISE__:'.length);
-                        try {
-                            payload = JSON.parse(payloadStr);
-                        } catch (e) {
+                        try { payload = JSON.parse(payloadStr); } catch (e) {
                             const idx = parseInt(payloadStr, 10);
                             payload = { index: isNaN(idx) ? 0 : idx };
                         }
                     }
-                    console.log('[Jitsi custom-config] __PRAISE__ payload received:', payload);
-
                     window.praiseStarMap = window.praiseStarMap || {};
                     if (payload.reset) {
                         window.praiseStarMap = {};
@@ -396,11 +425,7 @@ if (typeof window !== 'undefined') {
                     } else if (payload.studentName) {
                         window.praiseStarMap[payload.studentName] = (window.praiseStarMap[payload.studentName] || 0) + 1;
                     }
-
-                    if (typeof updateStarBadgesInJitsiUI === 'function') {
-                        updateStarBadgesInJitsiUI();
-                    }
-
+                    if (typeof updateStarBadgesInJitsiUI === 'function') updateStarBadgesInJitsiUI();
                     if (!isFromMe && !payload.reset && !isHistoryMessage) {
                         window.parent.postMessage({ type: 'PLAY_PRAISE', payload }, '*');
                     }
@@ -410,7 +435,6 @@ if (typeof window !== 'undefined') {
                         const payloadStr = msgText.slice('__DICE__:'.length);
                         try {
                             const payload = JSON.parse(payloadStr);
-                            console.log('[Jitsi custom-config] __DICE__ payload received:', payload);
                             window.parent.postMessage({ type: 'DICE_ACTION', payload }, '*');
                         } catch (e) {
                             if (payloadStr === 'OPEN' || payloadStr === 'CLOSE') {
@@ -432,8 +456,11 @@ if (typeof window !== 'undefined') {
                             window.parent.postMessage({ type: 'WHEEL_ACTION', payload }, '*');
                         } catch (e) {}
                     }
-                } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg || isTeacherPinMsg) {
+                } else if (isTimer) {
                     timerMessagesCount++;
+                    if (!isHistoryMessage) {
+                        window.parent.postMessage({ type: 'TOGGLE_TIMER' }, '*');
+                    }
                 } else {
                     realMessagesCount++;
                 }

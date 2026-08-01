@@ -159,11 +159,22 @@ const createToolbarToolsButton = (doc) => {
         }
     });
 
+    const sendDirectXMPP = (msg) => {
+        try {
+            if (window.APP?.conference && typeof window.APP.conference.sendTextMessage === 'function') {
+                window.APP.conference.sendTextMessage(msg);
+            } else if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
+                window.APP.conference._room.sendTextMessage(msg);
+            }
+        } catch (err) {}
+    };
+
     const timerBtn = btnWrapper.querySelector('#tool-item-timer');
     if (timerBtn) {
         timerBtn.addEventListener('click', (e) => {
             e.preventDefault(); e.stopPropagation(); menu.style.display = 'none';
             window.parent.postMessage({ type: 'TOGGLE_TIMER' }, '*');
+            sendDirectXMPP('__TIMER__:TOGGLE');
         });
     }
 
@@ -172,6 +183,8 @@ const createToolbarToolsButton = (doc) => {
         praiseBtn.addEventListener('click', (e) => {
             e.preventDefault(); e.stopPropagation(); menu.style.display = 'none';
             window.parent.postMessage({ type: 'TRIGGER_PRAISE' }, '*');
+            const randIndex = Math.floor(Math.random() * 5);
+            sendDirectXMPP(`__PRAISE__:${randIndex}`);
         });
     }
 
@@ -180,6 +193,7 @@ const createToolbarToolsButton = (doc) => {
         diceBtn.addEventListener('click', (e) => {
             e.preventDefault(); e.stopPropagation(); menu.style.display = 'none';
             window.parent.postMessage({ type: 'TRIGGER_DICE' }, '*');
+            sendDirectXMPP('__DICE__:OPEN');
         });
     }
 
@@ -188,6 +202,7 @@ const createToolbarToolsButton = (doc) => {
         wheelBtn.addEventListener('click', (e) => {
             e.preventDefault(); e.stopPropagation(); menu.style.display = 'none';
             window.parent.postMessage({ type: 'TRIGGER_WHEEL' }, '*');
+            sendDirectXMPP('__WHEEL__:OPEN');
         });
     }
     
