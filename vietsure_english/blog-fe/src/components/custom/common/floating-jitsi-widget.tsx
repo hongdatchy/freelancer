@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import useJitsiStore from '@/state-manager/jitsi-store';
 import useUserLoginStore from '@/state-manager/user-login-store';
 import TimerWidget from '@/components/custom/common/timer-widget';
@@ -33,6 +34,8 @@ export default function FloatingJitsiWidget() {
   const [isDragging, setIsDragging] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const teacherExitPopoverRef = useRef<HTMLDivElement | null>(null);
+  const [isPipActive, setIsPipActive] = useState(false);
+  const [pipWinBody, setPipWinBody] = useState<Element | null>(null);
 
   useEffect(() => {
     if (!showExitConfirm) return;
@@ -607,7 +610,7 @@ export default function FloatingJitsiWidget() {
         setApiReady(false);
       }
     };
-  }, [isOpen, roomName]);
+  }, [isOpen, roomName, isPipActive]);
 
   // Lock Jitsi filmstrip width to 310px if widget width > 1100px when resizing finishes or restores
   useEffect(() => {
@@ -738,7 +741,6 @@ export default function FloatingJitsiWidget() {
   }, [isDragging]);
 
   // ── Document Picture-in-Picture ──────────────────────────────────────────
-  const [isPipActive, setIsPipActive] = useState(false);
   const pipWindowRef = useRef<any>(null);
   const outerDivRef = useRef<HTMLDivElement | null>(null);
   const widgetInnerRef = useRef<HTMLDivElement | null>(null);
@@ -759,11 +761,10 @@ export default function FloatingJitsiWidget() {
         pipWindowRef.current.close();
       } catch (e) {}
       pipWindowRef.current = null;
+      setPipWinBody(null);
+      setIsPipActive(false);
       return;
     }
-
-    const targetWidget = outerDivRef.current;
-    if (!targetWidget) return;
 
     try {
       const pipWin = await (window as any).documentPictureInPicture.requestWindow({
@@ -779,22 +780,15 @@ export default function FloatingJitsiWidget() {
       });
 
       pipWin.document.title = `Vietsure English - Lớp: ${roomName}`;
-      pipWin.document.body.style.cssText = 'margin: 0; padding: 0; overflow: hidden; background: #1d285c; height: 100vh; width: 100vw; display: flex; flex-direction: column;';
+      pipWin.document.body.style.cssText = 'margin: 0; padding: 0; overflow: hidden; background: #1d285c; height: 100vh; width: 100vw;';
 
-      const originalStyle = targetWidget.getAttribute('style') || '';
-
-      // Move the entire floating widget DOM element directly into the Document PiP window
-      pipWin.document.body.appendChild(targetWidget);
-      targetWidget.style.cssText = 'width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; margin: 0; border-radius: 0; border: none; flex: 1; display: flex; flex-direction: column; z-index: 999999;';
-
+      // Use React Portal — React renders directly into PiP window's DOM
+      setPipWinBody(pipWin.document.body);
       setIsPipActive(true);
 
       pipWin.addEventListener('pagehide', () => {
-        if (widgetSlotRef.current && targetWidget) {
-          widgetSlotRef.current.appendChild(targetWidget);
-          targetWidget.setAttribute('style', originalStyle);
-        }
         pipWindowRef.current = null;
+        setPipWinBody(null);
         setIsPipActive(false);
       });
 
@@ -870,23 +864,34 @@ export default function FloatingJitsiWidget() {
 
   if (!isOpen || !roomName) return null;
 
-  return (
-    <div ref={widgetSlotRef}>
-      {/* Main page widget */}
-      <div
-        ref={outerDivRef}
-        style={{
-          position: 'fixed',
-          display: isMinimized ? 'none' : undefined,
-          bottom: 24,
-          right: 24,
-          width: `${size.width}px`,
-          height: `${size.height}px`,
-          zIndex: 9999,
-        }}
-        className="bg-gradient-to-b from-white to-[#F0F7FF] rounded-2xl overflow-hidden shadow-2xl border border-blue-200/50 flex flex-col"
-        onMouseDown={undefined}
-      >
+  const outerDivStyle = pipWinBody ? {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    zIndex: 999999,
+  } : {
+    position: 'fixed' as const,
+    display: isMinimized ? 'none' : undefined,
+    bottom: 24,
+    right: 24,
+    width: `${size.width}px`,
+    height: `${size.height}px`,
+    zIndex: 9999,
+  };
+
+  const outerDivClassName = pipWinBody
+    ? 'flex flex-col overflow-hidden'
+    : 'bg-gradient-to-b from-white to-[#F0F7FF] rounded-2xl overflow-hidden shadow-2xl border border-blue-200/50 flex flex-col';
+
+  const widgetContent = (
+    <div
+      ref={outerDivRef}
+      style={outerDivStyle}
+      className={outerDivClassName}
+      onMouseDown={undefined}
+    >
         {/* Top-Left Resize Handle */}
         {!isMinimized && !isPipActive && (
           <div
@@ -947,7 +952,7 @@ export default function FloatingJitsiWidget() {
             className="flex-col bg-[#1d285c] flex-1 w-full flex"
           >
             {/* Header Bar */}
-            <div className={`items-center justify-between px-4 py-2.5 bg-[#1d285c] border-b border-white/10 select-none cursor-default ${isPipActive ? 'hidden' : 'flex'}`}>
+            <div className="items-center justify-between px-4 py-2.5 bg-[#1d285c] border-b border-white/10 select-none cursor-default flex">
               <div className="flex items-center gap-2 shrink-0">
                 <img
                   src="/images/Vietsure English_Logo-15.png"
@@ -1085,6 +1090,11 @@ export default function FloatingJitsiWidget() {
           </div>
         </div>
       </div>
+  );
+
+  return (
+    <div ref={widgetSlotRef}>
+      {pipWinBody ? createPortal(widgetContent, pipWinBody) : widgetContent}
     </div>
   );
 }
