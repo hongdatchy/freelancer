@@ -88,6 +88,17 @@ if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.medi
     };
 }
 
+// Catch and handle getUserMedia permission errors safely to prevent Chromium PiP renderer crashes when camera is denied
+if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    const originalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+    navigator.mediaDevices.getUserMedia = function(constraints) {
+        return originalGetUserMedia(constraints).catch(err => {
+            console.warn('🎥 [Jitsi Media] getUserMedia permission error handled safely:', err ? (err.name || err.message || err) : 'Error');
+            return Promise.reject(err || new DOMException('Permission denied', 'NotAllowedError'));
+        });
+    };
+}
+
 // Inject transparency and layout styles directly to the main Jitsi document
 if (typeof document !== 'undefined') {
     const style = document.createElement('style');

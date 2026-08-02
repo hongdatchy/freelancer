@@ -789,6 +789,16 @@ export default function FloatingJitsiWidget() {
       pipWin.document.title = `Vietsure English - Lớp: ${roomName}`;
       pipWin.document.body.style.cssText = 'margin: 0; padding: 0; overflow: hidden; background: #1d285c; height: 100vh; width: 100vw;';
 
+      // Prevent Chromium renderer crashes when camera permission is toggled/denied inside PiP window
+      const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+        const reasonStr = String(event.reason || '');
+        if (reasonStr.includes('NotAllowedError') || reasonStr.includes('Permission denied') || reasonStr.includes('DevicesNotFoundError')) {
+          console.warn('🎥 [PiP Window] Safely prevented camera/mic permission crash:', reasonStr);
+          event.preventDefault();
+        }
+      };
+      pipWin.addEventListener('unhandledrejection', handleUnhandledRejection);
+
       // Forward postMessage events from PiP window to main window preserving event.source for Jitsi External API
       const handlePipMessage = (event: MessageEvent) => {
         if (event.data) {
@@ -811,6 +821,7 @@ export default function FloatingJitsiWidget() {
 
       pipWin.addEventListener('pagehide', () => {
         pipWin.removeEventListener('message', handlePipMessage);
+        pipWin.removeEventListener('unhandledrejection', handleUnhandledRejection);
         pipWindowRef.current = null;
         setPipWinBody(null);
         setIsPipActive(false);
@@ -989,9 +1000,10 @@ export default function FloatingJitsiWidget() {
                 HỆ THỐNG GIÁO DỤC ONLINE <span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span> CHO TRẺ EM TRONG VÀ NGOÀI NƯỚC
               </p>
               <div className="flex items-center gap-1">
-                {/* Fullscreen button */}
-                <button
-                  onClick={toggleFullscreen}
+                {/* Fullscreen button - Hidden in PiP mode */}
+                {!isPipActive && (
+                  <button
+                    onClick={toggleFullscreen}
                     className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
                     title={isFullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}
                   >
@@ -1005,18 +1017,21 @@ export default function FloatingJitsiWidget() {
                       </svg>
                     )}
                   </button>
+                )}
 
-                {/* PiP Button (Document Picture-in-Picture) */}
-                <button
-                  onClick={handlePiP2}
-                  className="p-1.5 rounded-lg text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 transition-colors"
-                  title="Mở Cửa sổ Nổi Meeting (Document Picture-in-Picture)"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="3" width="20" height="14" rx="2" />
-                    <path d="M14 10l5 5M19 10v5h-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
+                {/* PiP Button (Document Picture-in-Picture) - Hidden in PiP mode */}
+                {!isPipActive && (
+                  <button
+                    onClick={handlePiP2}
+                    className="p-1.5 rounded-lg text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 transition-colors"
+                    title="Mở Cửa sổ Nổi Meeting (Document Picture-in-Picture)"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="3" width="20" height="14" rx="2" />
+                      <path d="M14 10l5 5M19 10v5h-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                )}
 
                 {/* Minimize button */}
                 {/* {!isPipActive && (
