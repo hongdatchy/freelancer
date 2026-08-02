@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { usePathname } from 'next/navigation';
 import useJitsiStore from '@/state-manager/jitsi-store';
 import useUserLoginStore from '@/state-manager/user-login-store';
 import TimerWidget from '@/components/custom/common/timer-widget';
@@ -13,6 +14,9 @@ import { getData } from '@/service/api';
 const JITSI_SERVER = process.env.NEXT_PUBLIC_JITSI_SERVER;
 
 export default function FloatingJitsiWidget() {
+  const pathname = usePathname();
+  if (pathname?.startsWith('/classroom')) return null;
+
   const { roomName, isOpen, isMinimized, closeMeeting, setMinimized } = useJitsiStore();
   const { user, jwt, setLogin } = useUserLoginStore();
 
@@ -966,9 +970,8 @@ export default function FloatingJitsiWidget() {
               </p>
               <div className="flex items-center gap-1">
                 {/* Fullscreen button */}
-                {!isPipActive && (
-                  <button
-                    onClick={toggleFullscreen}
+                <button
+                  onClick={toggleFullscreen}
                     className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
                     title={isFullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}
                   >
@@ -982,7 +985,6 @@ export default function FloatingJitsiWidget() {
                       </svg>
                     )}
                   </button>
-                )}
 
                 {/* PiP Button (Document Picture-in-Picture) */}
                 <button
