@@ -590,24 +590,27 @@ export default function FloatingJitsiWidget() {
 
 
 
+    let initTimer: any = null;
+    const startInit = () => {
+      initTimer = setTimeout(() => {
+        initJitsi();
+      }, 150);
+    };
+
     // Load Jitsi API script if not loaded
     if (!window.hasOwnProperty('JitsiMeetExternalAPI')) {
       const script = document.createElement('script');
       script.src = `https://${JITSI_SERVER}/external_api.js`;
       script.async = true;
-      script.onload = () => { initJitsi(); };
+      script.onload = () => { startInit(); };
       script.onerror = () => console.error('Failed to load Jitsi API');
       document.body.appendChild(script);
-      return () => {
-        if (document.body.contains(script)) {
-          document.body.removeChild(script);
-        }
-      };
     } else {
-      initJitsi();
+      startInit();
     }
 
     return () => {
+      if (initTimer) clearTimeout(initTimer);
       if (apiRef.current) {
         apiRef.current.dispose();
         apiRef.current = null;
@@ -786,11 +789,28 @@ export default function FloatingJitsiWidget() {
       pipWin.document.title = `Vietsure English - Lớp: ${roomName}`;
       pipWin.document.body.style.cssText = 'margin: 0; padding: 0; overflow: hidden; background: #1d285c; height: 100vh; width: 100vw;';
 
+      // Forward postMessage events from PiP window to main window preserving event.source for Jitsi External API
+      const handlePipMessage = (event: MessageEvent) => {
+        if (event.data) {
+          try {
+            window.dispatchEvent(new MessageEvent('message', {
+              data: event.data,
+              origin: event.origin,
+              source: event.source,
+            }));
+          } catch (e) {
+            window.postMessage(event.data, '*');
+          }
+        }
+      };
+      pipWin.addEventListener('message', handlePipMessage);
+
       // Use React Portal — React renders directly into PiP window's DOM
       setPipWinBody(pipWin.document.body);
       setIsPipActive(true);
 
       pipWin.addEventListener('pagehide', () => {
+        pipWin.removeEventListener('message', handlePipMessage);
         pipWindowRef.current = null;
         setPipWinBody(null);
         setIsPipActive(false);
