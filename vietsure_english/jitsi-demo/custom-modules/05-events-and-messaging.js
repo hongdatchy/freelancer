@@ -635,5 +635,78 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
     document.addEventListener('mousedown', handleMouseDown, true);
 })();
 
+// Fix Mobile Shared Video Autoplay & Sync Policy for Student (iOS Safari / Android Chrome)
+(function fixMobileSharedVideoAutoplay() {
+    if (typeof window === 'undefined') return;
+
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent || '');
+
+    const unlockAndPlaySharedVideo = () => {
+        try {
+            // HTML5 Video elements
+            const videos = document.querySelectorAll('#sharedVideo video, .shared-video-container video, #videospace video');
+            videos.forEach(v => {
+                if (!v.hasAttribute('playsinline')) {
+                    v.setAttribute('playsinline', 'true');
+                    v.setAttribute('webkit-playsinline', 'true');
+                }
+                if (v.paused && typeof v.play === 'function') {
+                    const p = v.play();
+                    if (p && typeof p.catch === 'function') {
+                        p.catch(() => {});
+                    }
+                }
+            });
+
+            // YouTube Iframes
+            const iframes = document.querySelectorAll('#sharedVideo iframe, #sharedVideoIFrame iframe, iframe[src*="youtube"], iframe[src*="youtu.be"]');
+            iframes.forEach(iframe => {
+                try {
+                    let src = iframe.src || '';
+                    if (src && !src.includes('playsinline=1')) {
+                        iframe.src = src + (src.includes('?') ? '&' : '?') + 'playsinline=1&enablejsapi=1&autoplay=1';
+                    }
+                    if (iframe.contentWindow) {
+                        iframe.contentWindow.postMessage(JSON.stringify({
+                            event: 'command',
+                            func: 'playVideo',
+                            args: []
+                        }), '*');
+                    }
+                } catch (e) {}
+            });
+        } catch (e) {}
+    };
+
+    // Unlock media playback on any mobile touch gesture
+    const handleUserGesture = () => {
+        unlockAndPlaySharedVideo();
+    };
+
+    window.addEventListener('touchstart', handleUserGesture, { capture: true, passive: true });
+    window.addEventListener('touchend', handleUserGesture, { capture: true, passive: true });
+    window.addEventListener('click', handleUserGesture, { capture: true, passive: true });
+
+    // Periodically enforce playsinline and sync playback on mobile devices
+    setInterval(() => {
+        try {
+            const container = document.getElementById('sharedVideo') || document.getElementById('sharedVideoIFrame') || document.querySelector('.shared-video-container');
+            if (container) {
+                const videos = container.querySelectorAll('video');
+                videos.forEach(v => {
+                    if (!v.hasAttribute('playsinline')) {
+                        v.setAttribute('playsinline', 'true');
+                        v.setAttribute('webkit-playsinline', 'true');
+                    }
+                });
+
+                if (isMobile) {
+                    unlockAndPlaySharedVideo();
+                }
+            }
+        } catch (e) {}
+    }, 1500);
+})();
+
 
 
