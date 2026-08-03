@@ -3321,54 +3321,54 @@ if (typeof window !== 'undefined') {
 
 window.praiseStarMap = window.praiseStarMap || {};
 
-// // Sync Praise Stars from Parent Window
-// window.addEventListener('message', (event) => {
-//     if (event && event.data && event.data.type === 'SYNC_PRAISE_SCORES') {
-//         if (event.data.starScores && typeof event.data.starScores === 'object') {
-//             window.praiseStarMap = { ...event.data.starScores };
-//             if (typeof updateStarBadgesInJitsiUI === 'function') {
-//                 updateStarBadgesInJitsiUI();
-//             }
-//         }
-//     }
-// });
+// Sync Praise Stars from Parent Window
+window.addEventListener('message', (event) => {
+    if (event && event.data && event.data.type === 'SYNC_PRAISE_SCORES') {
+        if (event.data.starScores && typeof event.data.starScores === 'object') {
+            window.praiseStarMap = { ...event.data.starScores };
+            if (typeof updateStarBadgesInJitsiUI === 'function') {
+                updateStarBadgesInJitsiUI();
+            }
+        }
+    }
+});
 
-// const updateStarBadgesInJitsiUI = () => {
-//     try {
-//         const starMap = window.praiseStarMap || {};
+const updateStarBadgesInJitsiUI = () => {
+    try {
+        const starMap = window.praiseStarMap || {};
 
-//         const nameEls = document.querySelectorAll('.displayname, #localDisplayName, [id$="DisplayName"], [class*="participant-name"], [class*="display-name"], [data-testid*="display-name"], .videocontainer .displayname-container');
-//         nameEls.forEach(el => {
-//             const rawText = el.getAttribute('data-raw-name') || el.textContent || '';
-//             const cleanName = rawText.replace(/\s*⭐\s*\d+/g, '').trim();
-//             if (!cleanName) return;
+        const nameEls = document.querySelectorAll('.displayname, #localDisplayName, [id$="DisplayName"], [class*="participant-name"], [class*="display-name"], [data-testid*="display-name"], .videocontainer .displayname-container');
+        nameEls.forEach(el => {
+            const rawText = el.getAttribute('data-raw-name') || el.textContent || '';
+            const cleanName = rawText.replace(/\s*⭐\s*\d+/g, '').trim();
+            if (!cleanName) return;
 
-//             if (!el.getAttribute('data-raw-name')) {
-//                 el.setAttribute('data-raw-name', cleanName);
-//             }
+            if (!el.getAttribute('data-raw-name')) {
+                el.setAttribute('data-raw-name', cleanName);
+            }
 
-//             let starCount = 0;
-//             for (let key in starMap) {
-//                 if (cleanName.toLowerCase() === key.toLowerCase() || cleanName.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(cleanName.toLowerCase())) {
-//                     starCount += starMap[key];
-//                 }
-//             }
+            let starCount = 0;
+            for (let key in starMap) {
+                if (cleanName.toLowerCase() === key.toLowerCase() || cleanName.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(cleanName.toLowerCase())) {
+                    starCount += starMap[key];
+                }
+            }
 
-//             if (starCount > 0) {
-//                 const targetText = `${cleanName} ⭐ ${starCount}`;
-//                 if (el.textContent !== targetText) {
-//                     el.textContent = targetText;
-//                 }
-//             } else {
-//                 if (el.textContent !== cleanName) {
-//                     el.textContent = cleanName;
-//                 }
-//             }
-//         });
-//     } catch (e) {}
-// };
+            if (starCount > 0) {
+                const targetText = `${cleanName} ⭐ ${starCount}`;
+                if (el.textContent !== targetText) {
+                    el.textContent = targetText;
+                }
+            } else {
+                if (el.textContent !== cleanName) {
+                    el.textContent = cleanName;
+                }
+            }
+        });
+    } catch (e) {}
+};
 
-// setInterval(updateStarBadgesInJitsiUI, 1000);
+setInterval(updateStarBadgesInJitsiUI, 1000);
 
 // // Student Grid View Rejoin Sync (Pure Grid View Sync - No Whiteboard Pinning)
 // (function setupStudentTileViewRejoinSync() {
