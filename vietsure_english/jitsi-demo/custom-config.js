@@ -3420,6 +3420,7 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
     if (typeof window === 'undefined') return;
 
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent || '');
+    const startedIframes = typeof WeakSet !== 'undefined' ? new WeakSet() : null;
 
     const unlockAndPlaySharedVideo = () => {
         try {
@@ -3441,6 +3442,8 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
             // YouTube Iframes
             const iframes = document.querySelectorAll('#sharedVideo iframe, #sharedVideoIFrame iframe, iframe[src*="youtube"], iframe[src*="youtu.be"]');
             iframes.forEach(iframe => {
+                if (startedIframes && startedIframes.has(iframe)) return;
+                startedIframes && startedIframes.add(iframe);
                 try {
                     let src = iframe.src || '';
                     if (src && !src.includes('playsinline=1')) {
