@@ -682,7 +682,17 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
     };
 
     // Unlock media playback on any mobile touch gesture
+    let _audioCtx = null;
     const handleUserGesture = () => {
+        // Resume AudioContext on gesture (identical to audio-context.ts) - unlocks iOS media permissions
+        try {
+            if (!_audioCtx) {
+                _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (_audioCtx && _audioCtx.state === 'suspended') {
+                _audioCtx.resume().catch(() => {});
+            }
+        } catch (e) {}
         unlockAndPlaySharedVideo();
     };
 
