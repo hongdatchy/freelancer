@@ -231,11 +231,16 @@ if (typeof document !== 'undefined') {
             display: none !important;
         }
 
-        /* Hide participants search input field */
+        /* Hide participants search input field & container safely */
         #participants-search-input,
         #participants-search-input-hidden-description,
-        [class*="inputContainer-search"],
-        .css-1u9eggo-inputContainer-search {
+        [class*="inputContainer-search"] {
+            display: none !important;
+        }
+
+        /* Hide entire breakout room '123' row */
+        .breakout-room-container[data-testid*="123"],
+        .breakout-room-container[aria-label*="123"] {
             display: none !important;
         }
 
