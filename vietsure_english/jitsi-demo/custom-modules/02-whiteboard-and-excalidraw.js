@@ -225,6 +225,10 @@ const injectToolbarIcon = () => {
             docs.forEach(d => {
                 const toolbars = d.querySelectorAll('.shapes-section, .App-toolbar, .App-toolbar-content, [data-testid="toolbar-section"]');
                 toolbars.forEach(tb => tb.style.setProperty('display', 'none', 'important'));
+                
+                const propsPanels = d.querySelectorAll('.App-menu__left, .Island.App-menu__left, [class*="App-menu__left"], .color-picker-container');
+                propsPanels.forEach(panel => panel.style.setProperty('display', 'none', 'important'));
+
                 const penBtn = d.getElementById('custom-pen-toggle-btn');
                 if (penBtn) penBtn.style.setProperty('display', 'flex', 'important');
             });
@@ -1015,6 +1019,10 @@ if (typeof window !== 'undefined') {
                                 tb.style.removeProperty('display');
                                 tb.style.setProperty('display', 'flex', 'important');
                             });
+                            const propsPanels = d.querySelectorAll('.App-menu__left, .Island.App-menu__left, [class*="App-menu__left"], .color-picker-container');
+                            propsPanels.forEach(panel => {
+                                panel.style.removeProperty('display');
+                            });
                             const btn = d.getElementById('custom-pen-toggle-btn');
                             if (btn) {
                                 btn.style.setProperty('display', 'none', 'important');
@@ -1033,6 +1041,10 @@ if (typeof window !== 'undefined') {
                 } else {
                     toggleBtn.style.removeProperty('display');
                     toggleBtn.style.setProperty('display', 'flex', 'important');
+
+                    // Ensure properties panel / color picker is kept hidden when toolbar is closed
+                    const propsPanels = doc.querySelectorAll('.App-menu__left, .Island.App-menu__left, [class*="App-menu__left"], .color-picker-container');
+                    propsPanels.forEach(panel => panel.style.setProperty('display', 'none', 'important'));
                 }
             });
         } catch (e) {}
