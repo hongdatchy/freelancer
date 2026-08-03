@@ -337,8 +337,47 @@ if (typeof window !== 'undefined') {
     let lastVideoWidth = 0;
     let lastVideoHeight = 0;
 
+    const sanitizeFreedraw = () => {
+        try {
+            const api = findExcalidrawAPI();
+            if (!api || typeof api.getSceneElements !== 'function') return;
+
+            const appState = typeof api.getAppState === 'function' ? api.getAppState() : null;
+            if (appState && appState.editingElement && appState.editingElement.type === 'freedraw') {
+                appState.editingElement.simulatePressure = false;
+                appState.editingElement.pressures = [];
+            }
+
+            const elements = api.getSceneElements();
+            if (!Array.isArray(elements) || elements.length === 0) return;
+
+            let changed = false;
+            elements.forEach(el => {
+                if (el && el.type === 'freedraw') {
+                    if (el.simulatePressure !== false || (el.pressures && el.pressures.length > 0)) {
+                        el.simulatePressure = false;
+                        el.pressures = [];
+                        changed = true;
+                    }
+                }
+            });
+
+            if (changed && typeof api.updateScene === 'function') {
+                api.updateScene({ elements: [...elements] });
+            }
+        } catch (e) {}
+    };
+
+    if (typeof window !== 'undefined') {
+        window.addEventListener('pointermove', sanitizeFreedraw, true);
+        window.addEventListener('pointerup', sanitizeFreedraw, true);
+        window.addEventListener('mousemove', sanitizeFreedraw, true);
+        window.addEventListener('mouseup', sanitizeFreedraw, true);
+    }
+
     setInterval(() => {
         try {
+            sanitizeFreedraw();
             const api = findExcalidrawAPI();
             if (!api) return;
 
@@ -346,14 +385,19 @@ if (typeof window !== 'undefined') {
             if (!container) return;
 
             const appState = typeof api.getAppState === 'function' ? api.getAppState() : null;
-            if (appState && appState.activeTool) {
-                const toolType = typeof appState.activeTool === 'string' ? appState.activeTool : appState.activeTool.type;
-                if (toolType === 'hand') {
-                    api.updateScene({
-                        appState: {
-                            activeTool: typeof appState.activeTool === 'string' ? 'selection' : { type: 'selection' }
-                        }
-                    });
+            if (appState) {
+                const updates = {};
+                if (appState.simulatePressure !== false) {
+                    updates.simulatePressure = false;
+                }
+                if (appState.activeTool) {
+                    const toolType = typeof appState.activeTool === 'string' ? appState.activeTool : appState.activeTool.type;
+                    if (toolType === 'hand') {
+                        updates.activeTool = typeof appState.activeTool === 'string' ? 'selection' : { type: 'selection' };
+                    }
+                }
+                if (Object.keys(updates).length > 0) {
+                    api.updateScene({ appState: updates });
                 }
             }
 
@@ -468,6 +512,15 @@ if (typeof window !== 'undefined') {
             });
 
             docs.forEach(doc => {
+                if (!doc.hasAttachedFreedrawSanitizer) {
+                    doc.hasAttachedFreedrawSanitizer = true;
+                    try {
+                        doc.addEventListener('pointermove', sanitizeFreedraw, true);
+                        doc.addEventListener('pointerup', sanitizeFreedraw, true);
+                        doc.addEventListener('mousemove', sanitizeFreedraw, true);
+                        doc.addEventListener('mouseup', sanitizeFreedraw, true);
+                    } catch (e) {}
+                }
                 if (!doc.getElementById('custom-hide-hand-tool-css')) {
                     const style = doc.createElement('style');
                     style.id = 'custom-hide-hand-tool-css';
@@ -483,14 +536,6 @@ if (typeof window !== 'undefined') {
                         }
                         .zoom-actions, .zoom-controls, .excalidraw-scrollbars, .Scrollbar {
                             display: none !important;
-                        }
-                        /* Force standard arrow mouse cursor instead of crosshair '+' */
-                        .excalidraw,
-                        .excalidraw-container,
-                        .excalidraw__canvas,
-                        .excalidraw__canvas-wrapper,
-                        .excalidraw canvas {
-                            cursor: default !important;
                         }
                     `;
                     doc.head.appendChild(style);
