@@ -484,6 +484,14 @@ if (typeof window !== 'undefined') {
                         .zoom-actions, .zoom-controls, .excalidraw-scrollbars, .Scrollbar {
                             display: none !important;
                         }
+                        /* Force standard arrow mouse cursor instead of crosshair '+' */
+                        .excalidraw,
+                        .excalidraw-container,
+                        .excalidraw__canvas,
+                        .excalidraw__canvas-wrapper,
+                        .excalidraw canvas {
+                            cursor: default !important;
+                        }
                     `;
                     doc.head.appendChild(style);
                 }

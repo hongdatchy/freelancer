@@ -135,6 +135,15 @@ if (typeof document !== 'undefined') {
         .excalidraw .Scrollbar {
             display: none !important;
         }
+
+        /* Force standard arrow mouse cursor instead of crosshair '+' on Excalidraw canvas */
+        .excalidraw,
+        .excalidraw-container,
+        .excalidraw__canvas,
+        .excalidraw__canvas-wrapper,
+        .excalidraw canvas {
+            cursor: default !important;
+        }
         
         /* Hide hand tool button through all possible element patterns */
         [data-testid="toolbar-hand"],
