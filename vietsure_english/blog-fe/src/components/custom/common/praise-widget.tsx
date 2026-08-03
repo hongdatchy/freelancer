@@ -34,14 +34,18 @@ export const triggerPraiseAnimation = (param?: any, apiRef?: any) => {
   }
 
 
-  const targetParent = document.fullscreenElement || document.body;
+  // Target Document (detect Document Picture-in-Picture window if active)
+  const pipWin = (window as any).documentPictureInPicture?.window;
+  const targetDoc = (pipWin && !pipWin.closed) ? pipWin.document : document;
+
+  const targetParent = targetDoc.fullscreenElement || targetDoc.body;
   const containerId = 'custom-celebration-container';
-  let container = document.getElementById(containerId);
+  let container = targetDoc.getElementById(containerId);
   if (!container || !targetParent.contains(container)) {
     if (container && container.parentNode) {
       container.parentNode.removeChild(container);
     }
-    container = document.createElement('div');
+    container = targetDoc.createElement('div');
     container.id = containerId;
     container.style.cssText = `
       position: fixed;
@@ -55,8 +59,8 @@ export const triggerPraiseAnimation = (param?: any, apiRef?: any) => {
 
   // Inject animation keyframes stylesheet if not present
   const styleId = 'custom-celebration-style';
-  if (!document.getElementById(styleId)) {
-    const style = document.createElement('style');
+  if (!targetDoc.getElementById(styleId)) {
+    const style = targetDoc.createElement('style');
     style.id = styleId;
     style.textContent = `
       @keyframes floatUpSingle {
@@ -102,7 +106,7 @@ export const triggerPraiseAnimation = (param?: any, apiRef?: any) => {
         white-space: nowrap;
       }
     `;
-    document.head.appendChild(style);
+    targetDoc.head.appendChild(style);
   }
 
   // Mascot penguin characters to spawn
@@ -117,18 +121,18 @@ export const triggerPraiseAnimation = (param?: any, apiRef?: any) => {
   const imgPath = penguinImages[mascotIdx % penguinImages.length];
 
   // Spawn wrapper element with banner + mascot image
-  const wrapper = document.createElement('div');
+  const wrapper = targetDoc.createElement('div');
   wrapper.className = 'praise-wrapper-single';
 
   if (studentName || isAll) {
-    const banner = document.createElement('div');
+    const banner = targetDoc.createElement('div');
     banner.className = 'praise-banner-single';
     const text = isAll ? '🌟 KHEN THƯỞNG CẢ LỚP (+1 ⭐)' : `⭐ KHEN THƯỞNG ${studentName.toUpperCase()} (+1 ⭐)`;
     banner.innerHTML = text;
     wrapper.appendChild(banner);
   }
 
-  const img = document.createElement('img');
+  const img = targetDoc.createElement('img');
   img.src = imgPath;
   img.style.width = '240px';
   img.style.height = 'auto';
@@ -140,7 +144,7 @@ export const triggerPraiseAnimation = (param?: any, apiRef?: any) => {
     if (wrapper && wrapper.parentNode) {
       wrapper.parentNode.removeChild(wrapper);
     }
-    const currentContainer = document.getElementById(containerId);
+    const currentContainer = targetDoc.getElementById(containerId);
     if (currentContainer && currentContainer.childNodes.length === 0 && currentContainer.parentNode) {
       currentContainer.parentNode.removeChild(currentContainer);
     }

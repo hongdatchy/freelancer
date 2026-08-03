@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { usePathname } from 'next/navigation';
 import useJitsiStore from '@/state-manager/jitsi-store';
 import useUserLoginStore from '@/state-manager/user-login-store';
 import TimerWidget from '@/components/custom/common/timer-widget';
@@ -12,6 +14,9 @@ import { getData } from '@/service/api';
 const JITSI_SERVER = process.env.NEXT_PUBLIC_JITSI_SERVER;
 
 export default function FloatingJitsiWidget() {
+  const pathname = usePathname();
+  if (pathname?.startsWith('/classroom')) return null;
+
   const { roomName, isOpen, isMinimized, closeMeeting, setMinimized } = useJitsiStore();
   const { user, jwt, setLogin } = useUserLoginStore();
 
@@ -33,6 +38,8 @@ export default function FloatingJitsiWidget() {
   const [isDragging, setIsDragging] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const teacherExitPopoverRef = useRef<HTMLDivElement | null>(null);
+  const [isPipActive, setIsPipActive] = useState(false);
+  const [pipWinBody, setPipWinBody] = useState<Element | null>(null);
 
   useEffect(() => {
     if (!showExitConfirm) return;
@@ -580,31 +587,34 @@ export default function FloatingJitsiWidget() {
 
 
 
+    let initTimer: any = null;
+    const startInit = () => {
+      initTimer = setTimeout(() => {
+        initJitsi();
+      }, 150);
+    };
+
     // Load Jitsi API script if not loaded
     if (!window.hasOwnProperty('JitsiMeetExternalAPI')) {
       const script = document.createElement('script');
       script.src = `https://${JITSI_SERVER}/external_api.js`;
       script.async = true;
-      script.onload = () => { initJitsi(); };
+      script.onload = () => { startInit(); };
       script.onerror = () => console.error('Failed to load Jitsi API');
       document.body.appendChild(script);
-      return () => {
-        if (document.body.contains(script)) {
-          document.body.removeChild(script);
-        }
-      };
     } else {
-      initJitsi();
+      startInit();
     }
 
     return () => {
+      if (initTimer) clearTimeout(initTimer);
       if (apiRef.current) {
         apiRef.current.dispose();
         apiRef.current = null;
         setApiReady(false);
       }
     };
-  }, [isOpen, roomName]);
+  }, [isOpen, roomName, isPipActive]);
 
   // Lock Jitsi filmstrip width to 310px if widget width > 1100px when resizing finishes or restores
   useEffect(() => {
@@ -735,7 +745,6 @@ export default function FloatingJitsiWidget() {
   }, [isDragging]);
 
   // ── Document Picture-in-Picture ──────────────────────────────────────────
-  const [isPipActive, setIsPipActive] = useState(false);
   const pipWindowRef = useRef<any>(null);
   const outerDivRef = useRef<HTMLDivElement | null>(null);
   const widgetInnerRef = useRef<HTMLDivElement | null>(null);
@@ -756,11 +765,10 @@ export default function FloatingJitsiWidget() {
         pipWindowRef.current.close();
       } catch (e) {}
       pipWindowRef.current = null;
+      setPipWinBody(null);
+      setIsPipActive(false);
       return;
     }
-
-    const targetWidget = outerDivRef.current;
-    if (!targetWidget) return;
 
     try {
       const pipWin = await (window as any).documentPictureInPicture.requestWindow({
@@ -776,22 +784,43 @@ export default function FloatingJitsiWidget() {
       });
 
       pipWin.document.title = `Vietsure English - Lớp: ${roomName}`;
-      pipWin.document.body.style.cssText = 'margin: 0; padding: 0; overflow: hidden; background: #1d285c; height: 100vh; width: 100vw; display: flex; flex-direction: column;';
+      pipWin.document.body.style.cssText = 'margin: 0; padding: 0; overflow: hidden; background: #1d285c; height: 100vh; width: 100vw;';
 
-      const originalStyle = targetWidget.getAttribute('style') || '';
+      // Prevent Chromium renderer crashes when camera permission is toggled/denied inside PiP window
+      const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+        const reasonStr = String(event.reason || '');
+        if (reasonStr.includes('NotAllowedError') || reasonStr.includes('Permission denied') || reasonStr.includes('DevicesNotFoundError')) {
+          console.warn('🎥 [PiP Window] Safely prevented camera/mic permission crash:', reasonStr);
+          event.preventDefault();
+        }
+      };
+      pipWin.addEventListener('unhandledrejection', handleUnhandledRejection);
 
-      // Move the entire floating widget DOM element directly into the Document PiP window
-      pipWin.document.body.appendChild(targetWidget);
-      targetWidget.style.cssText = 'width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; margin: 0; border-radius: 0; border: none; flex: 1; display: flex; flex-direction: column; z-index: 999999;';
+      // Forward postMessage events from PiP window to main window preserving event.source for Jitsi External API
+      const handlePipMessage = (event: MessageEvent) => {
+        if (event.data) {
+          try {
+            window.dispatchEvent(new MessageEvent('message', {
+              data: event.data,
+              origin: event.origin,
+              source: event.source,
+            }));
+          } catch (e) {
+            window.postMessage(event.data, '*');
+          }
+        }
+      };
+      pipWin.addEventListener('message', handlePipMessage);
 
+      // Use React Portal — React renders directly into PiP window's DOM
+      setPipWinBody(pipWin.document.body);
       setIsPipActive(true);
 
       pipWin.addEventListener('pagehide', () => {
-        if (widgetSlotRef.current && targetWidget) {
-          widgetSlotRef.current.appendChild(targetWidget);
-          targetWidget.setAttribute('style', originalStyle);
-        }
+        pipWin.removeEventListener('message', handlePipMessage);
+        pipWin.removeEventListener('unhandledrejection', handleUnhandledRejection);
         pipWindowRef.current = null;
+        setPipWinBody(null);
         setIsPipActive(false);
       });
 
@@ -867,23 +896,34 @@ export default function FloatingJitsiWidget() {
 
   if (!isOpen || !roomName) return null;
 
-  return (
-    <div ref={widgetSlotRef}>
-      {/* Main page widget */}
-      <div
-        ref={outerDivRef}
-        style={{
-          position: 'fixed',
-          display: isMinimized ? 'none' : undefined,
-          bottom: 24,
-          right: 24,
-          width: `${size.width}px`,
-          height: `${size.height}px`,
-          zIndex: 9999,
-        }}
-        className="bg-gradient-to-b from-white to-[#F0F7FF] rounded-2xl overflow-hidden shadow-2xl border border-blue-200/50 flex flex-col"
-        onMouseDown={undefined}
-      >
+  const outerDivStyle = pipWinBody ? {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    zIndex: 999999,
+  } : {
+    position: 'fixed' as const,
+    display: isMinimized ? 'none' : undefined,
+    bottom: 24,
+    right: 24,
+    width: `${size.width}px`,
+    height: `${size.height}px`,
+    zIndex: 9999,
+  };
+
+  const outerDivClassName = pipWinBody
+    ? 'flex flex-col overflow-hidden'
+    : 'bg-gradient-to-b from-white to-[#F0F7FF] rounded-2xl overflow-hidden shadow-2xl border border-blue-200/50 flex flex-col';
+
+  const widgetContent = (
+    <div
+      ref={outerDivRef}
+      style={outerDivStyle}
+      className={outerDivClassName}
+      onMouseDown={undefined}
+    >
         {/* Top-Left Resize Handle */}
         {!isMinimized && !isPipActive && (
           <div
@@ -944,7 +984,7 @@ export default function FloatingJitsiWidget() {
             className="flex-col bg-[#1d285c] flex-1 w-full flex"
           >
             {/* Header Bar */}
-            <div className={`items-center justify-between px-4 py-2.5 bg-[#1d285c] border-b border-white/10 select-none cursor-default ${isPipActive ? 'hidden' : 'flex'}`}>
+            <div className="items-center justify-between px-4 py-2.5 bg-[#1d285c] border-b border-white/10 select-none cursor-default flex">
               <div className="flex items-center gap-2 shrink-0">
                 <img
                   src="/images/Vietsure English_Logo-15.png"
@@ -957,7 +997,7 @@ export default function FloatingJitsiWidget() {
                 HỆ THỐNG GIÁO DỤC ONLINE <span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span> CHO TRẺ EM TRONG VÀ NGOÀI NƯỚC
               </p>
               <div className="flex items-center gap-1">
-                {/* Fullscreen button */}
+                {/* Fullscreen button - Hidden in PiP mode */}
                 {!isPipActive && (
                   <button
                     onClick={toggleFullscreen}
@@ -976,17 +1016,19 @@ export default function FloatingJitsiWidget() {
                   </button>
                 )}
 
-                {/* PiP Button (Document Picture-in-Picture) */}
-                <button
-                  onClick={handlePiP2}
-                  className="p-1.5 rounded-lg text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 transition-colors"
-                  title="Mở Cửa sổ Nổi Meeting (Document Picture-in-Picture)"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="3" width="20" height="14" rx="2" />
-                    <path d="M14 10l5 5M19 10v5h-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
+                {/* PiP Button (Document Picture-in-Picture) - Hidden in PiP mode */}
+                {!isPipActive && (
+                  <button
+                    onClick={handlePiP2}
+                    className="p-1.5 rounded-lg text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 transition-colors"
+                    title="Mở Cửa sổ Nổi Meeting (Document Picture-in-Picture)"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="3" width="20" height="14" rx="2" />
+                      <path d="M14 10l5 5M19 10v5h-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                )}
 
                 {/* Minimize button */}
                 {/* {!isPipActive && (
@@ -1082,6 +1124,11 @@ export default function FloatingJitsiWidget() {
           </div>
         </div>
       </div>
+  );
+
+  return (
+    <div ref={widgetSlotRef}>
+      {pipWinBody ? createPortal(widgetContent, pipWinBody) : widgetContent}
     </div>
   );
 }
@@ -1126,14 +1173,18 @@ const triggerPraiseAnimation = (param?: any, apiRef?: any) => {
   }
 
 
-  const targetParent = document.fullscreenElement || document.body;
+  // Target Document (detect Document Picture-in-Picture window if active)
+  const pipWin = (window as any).documentPictureInPicture?.window;
+  const targetDoc = (pipWin && !pipWin.closed) ? pipWin.document : document;
+
+  const targetParent = targetDoc.fullscreenElement || targetDoc.body;
   const containerId = 'custom-celebration-container';
-  let container = document.getElementById(containerId);
+  let container = targetDoc.getElementById(containerId);
   if (!container || !targetParent.contains(container)) {
     if (container && container.parentNode) {
       container.parentNode.removeChild(container);
     }
-    container = document.createElement('div');
+    container = targetDoc.createElement('div');
     container.id = containerId;
     container.style.cssText = `
       position: fixed;
@@ -1147,8 +1198,8 @@ const triggerPraiseAnimation = (param?: any, apiRef?: any) => {
 
   // Inject animation keyframes stylesheet if not present
   const styleId = 'custom-celebration-style';
-  if (!document.getElementById(styleId)) {
-    const style = document.createElement('style');
+  if (!targetDoc.getElementById(styleId)) {
+    const style = targetDoc.createElement('style');
     style.id = styleId;
     style.textContent = `
       @keyframes floatUpSingle {
@@ -1194,7 +1245,7 @@ const triggerPraiseAnimation = (param?: any, apiRef?: any) => {
         white-space: nowrap;
       }
     `;
-    document.head.appendChild(style);
+    targetDoc.head.appendChild(style);
   }
 
   // Mascot penguin characters to spawn
@@ -1209,18 +1260,18 @@ const triggerPraiseAnimation = (param?: any, apiRef?: any) => {
   const imgPath = penguinImages[mascotIdx % penguinImages.length];
 
   // Spawn wrapper element with banner + mascot image
-  const wrapper = document.createElement('div');
+  const wrapper = targetDoc.createElement('div');
   wrapper.className = 'praise-wrapper-single';
 
   if (studentName || isAll) {
-    const banner = document.createElement('div');
+    const banner = targetDoc.createElement('div');
     banner.className = 'praise-banner-single';
     const text = isAll ? '🌟 KHEN THƯỞNG CẢ LỚP (+1 ⭐)' : `⭐ KHEN THƯỞNG ${studentName.toUpperCase()} (+1 ⭐)`;
     banner.innerHTML = text;
     wrapper.appendChild(banner);
   }
 
-  const img = document.createElement('img');
+  const img = targetDoc.createElement('img');
   img.src = imgPath;
   img.style.width = '240px';
   img.style.height = 'auto';
@@ -1232,7 +1283,7 @@ const triggerPraiseAnimation = (param?: any, apiRef?: any) => {
     if (wrapper && wrapper.parentNode) {
       wrapper.parentNode.removeChild(wrapper);
     }
-    const currentContainer = document.getElementById(containerId);
+    const currentContainer = targetDoc.getElementById(containerId);
     if (currentContainer && currentContainer.childNodes.length === 0 && currentContainer.parentNode) {
       currentContainer.parentNode.removeChild(currentContainer);
     }

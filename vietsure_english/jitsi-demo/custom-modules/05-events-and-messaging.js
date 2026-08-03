@@ -568,164 +568,86 @@ if (typeof window !== 'undefined') {
 
 window.praiseStarMap = window.praiseStarMap || {};
 
-// Sync Praise Stars from Parent Window
-window.addEventListener('message', (event) => {
-    if (event && event.data && event.data.type === 'SYNC_PRAISE_SCORES') {
-        if (event.data.starScores && typeof event.data.starScores === 'object') {
-            window.praiseStarMap = { ...event.data.starScores };
-            if (typeof updateStarBadgesInJitsiUI === 'function') {
-                updateStarBadgesInJitsiUI();
-            }
-        }
-    }
-});
+// // Sync Praise Stars from Parent Window
+// window.addEventListener('message', (event) => {
+//     if (event && event.data && event.data.type === 'SYNC_PRAISE_SCORES') {
+//         if (event.data.starScores && typeof event.data.starScores === 'object') {
+//             window.praiseStarMap = { ...event.data.starScores };
+//             if (typeof updateStarBadgesInJitsiUI === 'function') {
+//                 updateStarBadgesInJitsiUI();
+//             }
+//         }
+//     }
+// });
 
-const updateStarBadgesInJitsiUI = () => {
-    try {
-        const starMap = window.praiseStarMap || {};
+// const updateStarBadgesInJitsiUI = () => {
+//     try {
+//         const starMap = window.praiseStarMap || {};
 
-        const nameEls = document.querySelectorAll('.displayname, #localDisplayName, [id$="DisplayName"], [class*="participant-name"], [class*="display-name"], [data-testid*="display-name"], .videocontainer .displayname-container');
-        nameEls.forEach(el => {
-            const rawText = el.getAttribute('data-raw-name') || el.textContent || '';
-            const cleanName = rawText.replace(/\s*⭐\s*\d+/g, '').trim();
-            if (!cleanName) return;
+//         const nameEls = document.querySelectorAll('.displayname, #localDisplayName, [id$="DisplayName"], [class*="participant-name"], [class*="display-name"], [data-testid*="display-name"], .videocontainer .displayname-container');
+//         nameEls.forEach(el => {
+//             const rawText = el.getAttribute('data-raw-name') || el.textContent || '';
+//             const cleanName = rawText.replace(/\s*⭐\s*\d+/g, '').trim();
+//             if (!cleanName) return;
 
-            if (!el.getAttribute('data-raw-name')) {
-                el.setAttribute('data-raw-name', cleanName);
-            }
+//             if (!el.getAttribute('data-raw-name')) {
+//                 el.setAttribute('data-raw-name', cleanName);
+//             }
 
-            let starCount = 0;
-            for (let key in starMap) {
-                if (cleanName.toLowerCase() === key.toLowerCase() || cleanName.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(cleanName.toLowerCase())) {
-                    starCount += starMap[key];
-                }
-            }
+//             let starCount = 0;
+//             for (let key in starMap) {
+//                 if (cleanName.toLowerCase() === key.toLowerCase() || cleanName.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(cleanName.toLowerCase())) {
+//                     starCount += starMap[key];
+//                 }
+//             }
 
-            if (starCount > 0) {
-                const targetText = `${cleanName} ⭐ ${starCount}`;
-                if (el.textContent !== targetText) {
-                    el.textContent = targetText;
-                }
-            } else {
-                if (el.textContent !== cleanName) {
-                    el.textContent = cleanName;
-                }
-            }
-        });
-    } catch (e) {}
-};
+//             if (starCount > 0) {
+//                 const targetText = `${cleanName} ⭐ ${starCount}`;
+//                 if (el.textContent !== targetText) {
+//                     el.textContent = targetText;
+//                 }
+//             } else {
+//                 if (el.textContent !== cleanName) {
+//                     el.textContent = cleanName;
+//                 }
+//             }
+//         });
+//     } catch (e) {}
+// };
 
-setInterval(updateStarBadgesInJitsiUI, 1000);
+// setInterval(updateStarBadgesInJitsiUI, 1000);
 
-// Student Grid View Rejoin Sync (Pure Grid View Sync - No Whiteboard Pinning)
-(function setupStudentTileViewRejoinSync() {
-    if (typeof window === 'undefined') return;
+// // Student Grid View Rejoin Sync (Pure Grid View Sync - No Whiteboard Pinning)
+// (function setupStudentTileViewRejoinSync() {
+//     if (typeof window === 'undefined') return;
 
-    setInterval(() => {
-        try {
-            if (!window.APP || !window.APP.store) return;
-            const state = window.APP.store.getState();
-            const rawRoomName = (state['features/base/conference']?.room || '').toLowerCase();
-            if (!rawRoomName) return;
+//     setInterval(() => {
+//         try {
+//             if (!window.APP || !window.APP.store) return;
+//             const state = window.APP.store.getState();
+//             const rawRoomName = (state['features/base/conference']?.room || '').toLowerCase();
+//             if (!rawRoomName) return;
 
-            const mainRoomName = rawRoomName.split(/[-_]?breakout/i)[0].split(/[-_]?subroom/i)[0] || 'default';
+//             const mainRoomName = rawRoomName.split(/[-_]?breakout/i)[0].split(/[-_]?subroom/i)[0] || 'default';
 
-            const participantsState = state['features/base/participants'] || {};
-            const localP = Object.values(participantsState).find(p => p && p.local);
-            const isStudent = localP ? localP.role !== 'moderator' : false;
+//             const participantsState = state['features/base/participants'] || {};
+//             const localP = Object.values(participantsState).find(p => p && p.local);
+//             const isStudent = localP ? localP.role !== 'moderator' : false;
 
-            if (!isStudent) return;
+//             if (!isStudent) return;
 
-            const savedTileView = localStorage.getItem('teacher_tile_view_' + mainRoomName);
-            const syncKey = `${mainRoomName}_${savedTileView}_${state['features/base/conference']?.room || ''}`;
+//             const savedTileView = localStorage.getItem('teacher_tile_view_' + mainRoomName);
+//             const syncKey = `${mainRoomName}_${savedTileView}_${state['features/base/conference']?.room || ''}`;
 
-            if (savedTileView !== null && window.hasSyncedTileViewState !== syncKey) {
-                window.hasSyncedTileViewState = syncKey;
-                const isTile = savedTileView === 'true';
-                console.log('📌 [HỌC VIÊN - REJOIN/SWITCH] Khôi phục Grid View:', isTile);
-                window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: isTile });
-            }
-        } catch (e) {}
-    }, 800);
-})();
-
-// Log pin events on Teacher screen & broadcast message to Student
-(function setupTeacherPinLogger() {
-    if (typeof window === 'undefined') return;
-
-    let lastPinnedId = undefined;
-
-    setInterval(() => {
-        try {
-            if (!window.APP || !window.APP.store) return;
-            const state = window.APP.store.getState();
-
-            const participantsState = state['features/base/participants'] || {};
-            const participantsArr = Array.isArray(participantsState) ? participantsState : Object.values(participantsState);
-            const localP = participantsArr.find(p => p && p.local);
-            const isTeacher = localP ? localP.role === 'moderator' : true;
-
-            if (!isTeacher) return;
-
-            const pinnedId = state['features/large-video']?.participantId ?? null;
-
-            if (pinnedId !== lastPinnedId) {
-                lastPinnedId = pinnedId;
-                console.log('📌 [GIÁO VIÊN LOG GHIM]:', pinnedId);
-
-                try {
-                    if (window.APP?.conference && typeof window.APP.conference.sendTextMessage === 'function') {
-                        window.APP.conference.sendTextMessage('__TEACHER_PIN__:' + (pinnedId ? String(pinnedId) : 'null'));
-                        console.log('📡 [GIÁO VIÊN BẮN TÍN HIỆU THÀNH CÔNG]:', '__TEACHER_PIN__:' + (pinnedId ? String(pinnedId) : 'null'));
-                    } else if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
-                        window.APP.conference._room.sendTextMessage('__TEACHER_PIN__:' + (pinnedId ? String(pinnedId) : 'null'));
-                        console.log('📡 [_room BẮN TÍN HIỆU THÀNH CÔNG]:', '__TEACHER_PIN__:' + (pinnedId ? String(pinnedId) : 'null'));
-                    } else {
-                        console.warn('⚠️ [GIÁO VIÊN] Chưa sẵn sàng sendTextMessage');
-                    }
-                } catch (err) {
-                    console.error('Error sending pin msg:', err);
-                }
-            }
-        } catch (e) {}
-    }, 300);
-})();
-
-// Log Tile View (Grid View) events on Teacher screen & broadcast message to Student (matching setupTeacherPinLogger)
-(function setupTeacherTileViewLogger() {
-    if (typeof window === 'undefined') return;
-
-    let lastTileView = undefined;
-
-    setInterval(() => {
-        try {
-            if (!window.APP || !window.APP.store) return;
-            const state = window.APP.store.getState();
-
-            const isStudent = typeof checkIfStudent === 'function' ? checkIfStudent() : false;
-            if (isStudent) return;
-
-            const isTileView = !!(state['features/video-layout']?.tileViewEnabled ?? state['features/video-layout']?.enabled);
-
-            if (isTileView !== lastTileView) {
-                lastTileView = isTileView;
-                console.log('📌 [GIÁO VIÊN LOG TILE VIEW]:', isTileView);
-
-                try {
-                    if (window.APP?.conference && typeof window.APP.conference.sendTextMessage === 'function') {
-                        window.APP.conference.sendTextMessage('__TILE_VIEW__:' + String(isTileView));
-                        console.log('📡 [GIÁO VIÊN BẮN TÍN HIỆU THÀNH CÔNG]:', '__TILE_VIEW__:' + String(isTileView));
-                    } else if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
-                        window.APP.conference._room.sendTextMessage('__TILE_VIEW__:' + String(isTileView));
-                        console.log('📡 [_room BẮN TÍN HIỆU THÀNH CÔNG]:', '__TILE_VIEW__:' + String(isTileView));
-                    }
-                } catch (err) {
-                    console.error('Error sending tile view msg:', err);
-                }
-            }
-        } catch (e) {}
-    }, 300);
-})();
+//             if (savedTileView !== null && window.hasSyncedTileViewState !== syncKey) {
+//                 window.hasSyncedTileViewState = syncKey;
+//                 const isTile = savedTileView === 'true';
+//                 console.log('📌 [HỌC VIÊN - REJOIN/SWITCH] Khôi phục Grid View:', isTile);
+//                 window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: isTile });
+//             }
+//         } catch (e) {}
+//     }, 800);
+// })();
 
 // Notify parent window whenever user clicks inside Jitsi iframe (to close external popups/menus)
 (function setupJitsiClickBroadcaster() {
