@@ -231,6 +231,14 @@ if (typeof document !== 'undefined') {
             display: none !important;
         }
 
+        /* Hide participants search input field */
+        #participants-search-input,
+        #participants-search-input-hidden-description,
+        [class*="inputContainer-search"],
+        .css-1u9eggo-inputContainer-search {
+            display: none !important;
+        }
+
         /* Custom Tooltip Popup on Hover (Matches Jitsi Native Tooltip Style Exactly) */
         .custom-tooltip-popup {
             position: absolute !important;
