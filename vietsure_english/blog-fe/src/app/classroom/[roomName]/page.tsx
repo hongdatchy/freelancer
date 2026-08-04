@@ -283,7 +283,7 @@ export default function ClassroomPage() {
           'microphone', 'camera', 'closedcaptions',
           'fodeviceselection', 'chat',
           'settings', 'raisehand', 'filmstrip',
-          'download', 'help', 'desktop', 'whiteboard'
+          'download', 'help', 'desktop', 'whiteboard', 'sharedvideo'
         ],
       },
       interfaceConfigOverwrite: {
