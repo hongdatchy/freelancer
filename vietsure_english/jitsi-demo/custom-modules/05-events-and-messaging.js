@@ -637,8 +637,3 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
         } catch (e) {}
     });
 })();
-
-
-
-
-

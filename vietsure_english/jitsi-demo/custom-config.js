@@ -3709,8 +3709,3 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
     });
 })();
 
-
-
-
-
-

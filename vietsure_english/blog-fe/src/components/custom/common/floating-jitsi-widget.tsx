@@ -40,6 +40,7 @@ export default function FloatingJitsiWidget() {
   const teacherExitPopoverRef = useRef<HTMLDivElement | null>(null);
   const [isPipActive, setIsPipActive] = useState(false);
   const [pipWinBody, setPipWinBody] = useState<Element | null>(null);
+  const [showRec, setShowRec] = useState(false);
 
   useEffect(() => {
     if (!showExitConfirm) return;
@@ -54,6 +55,15 @@ export default function FloatingJitsiWidget() {
     window.addEventListener('mousedown', handleOutsideClick);
     return () => window.removeEventListener('mousedown', handleOutsideClick);
   }, [showExitConfirm]);
+
+  // REC indicator: reset và đếm lại 3s mỗi khi isOpen bật lên (mỗi lần mở meeting mới)
+  useEffect(() => {
+    if (!isOpen) return;
+    setShowRec(false);
+    const t = setTimeout(() => setShowRec(true), 5000);
+    return () => clearTimeout(t);
+  }, [isOpen]);
+
   const dragStartRef = useRef({ x: 0, y: 0 });
 
   // Custom resizing state (NW-resize dragging from top-left) - Landscape default (width > height)
@@ -995,6 +1005,13 @@ export default function FloatingJitsiWidget() {
                   className="h-6 w-auto object-contain"
                 />
                 <p className="text-white/60 text-[10px]">| Phòng: {roomName}{currentSubRoomName ? ` > ${currentSubRoomName}` : ''}</p>
+                {/* REC indicator — hiện sau 3s, reset mỗi lần mở meeting mới */}
+                {showRec && (
+                  <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-full px-2.5 py-0.5 ml-1">
+                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_6px_2px_rgba(239,68,68,0.6)]" />
+                    <span className="text-white text-[11px] font-bold tracking-widest">REC</span>
+                  </div>
+                )}
               </div>
               <p className="hidden sm:block text-white/95 text-[11px] md:text-xs font-black tracking-wider uppercase text-center flex-1 mx-4 truncate">
                 HỆ THỐNG GIÁO DỤC ONLINE <span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span> CHO TRẺ EM TRONG VÀ NGOÀI NƯỚC
