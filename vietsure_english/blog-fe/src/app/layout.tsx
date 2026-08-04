@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Nunito, Outfit } from 'next/font/google';
 import './globals.css';
 import Header from '@/layout/header';
@@ -28,6 +28,13 @@ const nunito = Nunito({
 
 
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export const metadata: Metadata = {
   title: 'Vietsure English - Tiếng Anh phản xạ online chuẩn Quốc tế',
   description: 'Vietsure English - Tiếng Anh phản xạ online chuẩn Quốc tế',
@@ -46,7 +53,6 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" 
           rel="stylesheet" 
         />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
       </head>
       <body className={`${nunito.className} antialiased`}>
         <BreadcrumbProvider>
