@@ -672,9 +672,13 @@ if (typeof window !== "undefined") {
           const customWbBtn = doc.getElementById(
             "custom-unpin-whiteboard-menu-item",
           );
-          const nativeWbBtns = doc.querySelectorAll(
-            '[data-testid="toolbox-whiteboard"], .toolbox-button[aria-label*="Whiteboard"], .toolbox-button[aria-label*="Bảng trắng"], .toolbox-button[aria-label*="Ẩn bảng"], .toolbox-button[aria-label*="Hiện bảng"]',
-          );
+          const _tbContainer = doc.querySelector('.toolbox-content-items');
+          const nativeWbBtns = _tbContainer
+            ? Array.from(_tbContainer.children).filter(el =>
+                (el.getAttribute('data-testid') || '').toLowerCase().includes('whiteboard') ||
+                (el.querySelector('[data-testid*="whiteboard"]') !== null)
+              )
+            : [];
 
           // Check if Teacher locally is sharing screen
           const isTeacherSharingScreen = isActionActive(doc, shareBtn, (s) =>
@@ -772,18 +776,18 @@ if (typeof window !== "undefined") {
             });
           };
 
-          const wbGroup = [customWbBtn, ...Array.from(nativeWbBtns)];
+          const wbGroup = [...Array.from(nativeWbBtns)];
 
           if (isTeacherSharingScreen) {
-            // 1. Giáo viên tự Share màn hình -> Hiện nút Share của GV (để bấm dừng), Ẩn các nút khác
+            // 1. Giáo viên tự Share màn hình -> Hiện nút Share của GV và cả nút Quyền Share
             setSlotDisplay(shareBtn, true);
+            setSlotDisplay(ctrlBtn, true);
             setSlotDisplay(videoBtn, false);
-            setSlotDisplay(ctrlBtn, false);
             setSlotDisplay(wbGroup, false);
           } else if (isStudentSharingScreen) {
-            // 2. Học viên đang Share màn hình -> Hiện nút Quyền Share của GV (để GV bấm khóa/dừng), Ẩn các nút khác
+            // 2. Học viên đang Share màn hình -> Hiện nút Quyền Share của GV và cả nút Share của GV
             setSlotDisplay(ctrlBtn, true);
-            setSlotDisplay(shareBtn, false);
+            setSlotDisplay(shareBtn, true);
             setSlotDisplay(videoBtn, false);
             setSlotDisplay(wbGroup, false);
           } else if (isSharingVideo) {
@@ -799,9 +803,9 @@ if (typeof window !== "undefined") {
             setSlotDisplay(videoBtn, false);
             setSlotDisplay(ctrlBtn, false);
           } else if (isCtrlActive) {
-            // 5. Đang mở quyền Share cho HS -> Hiện nút Quyền Share, Ẩn các nút khác
+            // 5. Đang mở quyền Share cho HS -> Hiện nút Quyền Share và cả nút Share GV
             setSlotDisplay(ctrlBtn, true);
-            setSlotDisplay(shareBtn, false);
+            setSlotDisplay(shareBtn, true);
             setSlotDisplay(videoBtn, false);
             setSlotDisplay(wbGroup, false);
           } else {
@@ -924,6 +928,12 @@ const setupToolbarButtonLabels = (doc) => {
         combined.includes("tùy chọn")
       )
         labelText = "Cài đặt";
+      else if (
+        combined.includes("whiteboard") ||
+        combined.includes("bảng trắng") ||
+        combined.includes("ẩn bảng")
+      )
+        labelText = "Bảng trắng";
       else if (
         combined.includes("overflow") ||
         combined.includes("more") ||
