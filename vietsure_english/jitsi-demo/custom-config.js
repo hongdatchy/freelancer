@@ -3607,7 +3607,7 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
     document.addEventListener('mousedown', handleMouseDown, true);
 })();
 
-// Student Mobile Shared Video Autoplay Muted & Tap to Unmute Sync
+// Student Mobile Shared Video Autoplay Muted & Tap to Unmute Sync (YT.Player Interceptor)
 (function setupMobileAutoplayMuteSync() {
     if (typeof window === 'undefined') return;
 
@@ -3619,6 +3619,57 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
     let isAutoplayMutedActive = false;
     let clickListenerAttached = false;
 
+    // Wrap/Intercept window.YT.Player constructor
+    const wrapYTPlayer = (YT) => {
+        if (YT.Player.isWrapped) return;
+        
+        const OriginalPlayer = YT.Player;
+        YT.Player = function(id, options) {
+            console.log('📱 [YT Player Interceptor] Intercepted new YT.Player creation. Options:', options);
+            
+            // Check if user is student
+            let isStudent = false;
+            if (window.location.hash && window.location.hash.includes('config.isStudent=true')) {
+                isStudent = true;
+            } else if (typeof config !== 'undefined' && typeof config.isStudent !== 'undefined') {
+                isStudent = !!config.isStudent;
+            }
+            if (!isStudent && document.body && document.body.classList.contains('is-student')) {
+                isStudent = true;
+            }
+
+            if (isStudent && options) {
+                if (!options.playerVars) {
+                    options.playerVars = {};
+                }
+                console.log('📱 [YT Player Interceptor] Forcing muted autoplay options for mobile student...');
+                options.playerVars.mute = 1;
+                options.playerVars.autoplay = 1;
+                options.playerVars.playsinline = 1;
+            }
+            
+            const instance = new OriginalPlayer(id, options);
+            
+            if (isStudent) {
+                window.customActiveYoutubePlayerInstance = instance;
+            }
+            
+            return instance;
+        };
+        
+        YT.Player.prototype = OriginalPlayer.prototype;
+        YT.Player.isWrapped = true;
+        console.log('✅ [YT Player Interceptor] YouTube Player constructor successfully wrapped.');
+    };
+
+    // Monitor for window.YT to load
+    const interceptInterval = setInterval(() => {
+        if (window.YT && window.YT.Player) {
+            wrapYTPlayer(window.YT);
+            clearInterval(interceptInterval);
+        }
+    }, 100);
+
     const removeUnmuteBanner = () => {
         const banner = document.getElementById('custom-mobile-unmute-banner');
         if (banner && banner.parentNode) {
@@ -3626,27 +3677,41 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
         }
     };
 
-    const unmuteMedia = (youtubeIframe) => {
+    const unmuteMedia = () => {
         try {
-            console.log('📱 [Mobile Autoplay] Unmuting video via postMessage...');
-            youtubeIframe.contentWindow.postMessage(JSON.stringify({
-                event: 'command',
-                func: 'unMute',
-                args: ''
-            }), '*');
-            youtubeIframe.contentWindow.postMessage(JSON.stringify({
-                event: 'command',
-                func: 'playVideo',
-                args: ''
-            }), '*');
+            const player = window.customActiveYoutubePlayerInstance;
+            if (player && typeof player.unMute === 'function') {
+                console.log('📱 [Mobile Autoplay] Unmuting player instance directly...');
+                player.unMute();
+                if (typeof player.playVideo === 'function') {
+                    player.playVideo();
+                }
+            } else {
+                console.warn('📱 [Mobile Autoplay] Player instance not found, falling back to iframe postMessage...');
+                const youtubeIframe = document.getElementById('sharedVideoIFrame') || 
+                                      document.querySelector('iframe[src*="youtube"]') || 
+                                      document.querySelector('iframe[src*="youtu"]');
+                if (youtubeIframe && youtubeIframe.contentWindow) {
+                    youtubeIframe.contentWindow.postMessage(JSON.stringify({
+                        event: 'command',
+                        func: 'unMute',
+                        args: ''
+                    }), '*');
+                    youtubeIframe.contentWindow.postMessage(JSON.stringify({
+                        event: 'command',
+                        func: 'playVideo',
+                        args: ''
+                    }), '*');
+                }
+            }
         } catch (e) {
-            console.error('Error sending unmute postMessage:', e);
+            console.error('Error during unmute:', e);
         }
     };
 
+    // Display banner when video is running and handle tap
     setInterval(() => {
         try {
-            // Check if user is student
             let isStudent = false;
             if (window.location.hash && window.location.hash.includes('config.isStudent=true')) {
                 isStudent = true;
@@ -3660,28 +3725,14 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
             if (!isStudent) return;
 
             const youtubeIframe = document.getElementById('sharedVideoIFrame') || 
-                                  document.querySelector('iframe[src*="youtube.com"]') || 
-                                  document.querySelector('iframe[src*="youtu.be"]');
+                                  document.querySelector('iframe[src*="youtube"]') || 
+                                  document.querySelector('iframe[src*="youtu"]');
             
             if (youtubeIframe) {
-                // If this is a new video session
                 if (!isAutoplayMutedActive) {
                     isAutoplayMutedActive = true;
-                    console.log('📱 [Mobile Autoplay] New video detected. Forcing muted URL parameter...');
+                    console.log('📱 [Mobile Autoplay] Video detected. Displaying unmute toast banner...');
                     
-                    try {
-                        const url = new URL(youtubeIframe.src);
-                        if (url.searchParams.get('mute') !== '1') {
-                            url.searchParams.set('mute', '1');
-                            url.searchParams.set('autoplay', '1');
-                            url.searchParams.set('playsinline', '1');
-                            youtubeIframe.src = url.toString();
-                            console.log('📱 [Mobile Autoplay] Forced muted autoplay URL:', youtubeIframe.src);
-                        }
-                    } catch (e) {
-                        console.error('Error modifying iframe src:', e);
-                    }
-
                     // Create & Inject Unmute Banner
                     if (!document.getElementById('custom-mobile-unmute-banner')) {
                         const banner = document.createElement('div');
@@ -3692,16 +3743,32 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
                         document.body.appendChild(banner);
                     }
 
-                    // Attach listener to Jitsi document to catch the tap anywhere
+                    // Attach listener to document to catch tap
                     if (!clickListenerAttached) {
                         clickListenerAttached = true;
                         
                         const handleTapToUnmute = () => {
-                            console.log('📱 [Mobile Autoplay] Tap detected. Activating sound...');
-                            unmuteMedia(youtubeIframe);
+                            console.log('📱 [Mobile Autoplay] Tap detected. Unlocking iOS audio and unmuting...');
+                            
+                            // Unlock iOS audio context
+                            try {
+                                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                                if (AudioContextClass) {
+                                    const ctx = new AudioContextClass();
+                                    const osc = ctx.createOscillator();
+                                    const gain = ctx.createGain();
+                                    gain.gain.value = 0.001;
+                                    osc.connect(gain);
+                                    gain.connect(ctx.destination);
+                                    osc.start(0);
+                                    osc.stop(0.05);
+                                    ctx.resume();
+                                }
+                            } catch (ae) {}
+
+                            unmuteMedia();
                             removeUnmuteBanner();
                             
-                            // Cleanup listeners
                             document.removeEventListener('click', handleTapToUnmute, true);
                             document.removeEventListener('touchstart', handleTapToUnmute, true);
                             clickListenerAttached = false;
@@ -3712,7 +3779,6 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
                     }
                 }
             } else {
-                // If iframe is gone, reset states and clean up banner
                 if (isAutoplayMutedActive) {
                     isAutoplayMutedActive = false;
                     removeUnmuteBanner();
