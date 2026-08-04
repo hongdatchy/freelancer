@@ -558,7 +558,8 @@ export default function ClassroomPage() {
                 value={studentInputName}
                 onChange={(e) => setStudentInputName(e.target.value)}
                 placeholder="Ví dụ: Nguyễn Văn A..."
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] text-slate-800 font-medium text-sm transition-colors"
+                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] text-slate-800 font-medium text-base transition-colors"
+                style={{ fontSize: '16px' }}
                 autoFocus
                 required
               />

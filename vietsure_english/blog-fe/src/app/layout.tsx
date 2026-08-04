@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from 'next';
+import type { Metadata } from 'next';
 import { Nunito, Outfit } from 'next/font/google';
 import './globals.css';
 import Header from '@/layout/header';
@@ -27,13 +27,6 @@ const nunito = Nunito({
 });
 
 
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-};
 
 export const metadata: Metadata = {
   title: 'Vietsure English - Tiếng Anh phản xạ online chuẩn Quốc tế',
