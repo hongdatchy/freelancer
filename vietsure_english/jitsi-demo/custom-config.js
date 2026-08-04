@@ -482,7 +482,7 @@ if (typeof window !== 'undefined') {
                     body.is-student .filmstrip .remote-videos .videocontainer {
                         pointer-events: none !important;
                     }
-                    /* Disable clicking/pausing shared video for students so student cannot pause teacher's video */
+                    /* Disable clicking/pausing shared video for students so student cannot pause teacher's video (Old method commented out)
                     body.is-student #sharedVideo,
                     body.is-student #sharedVideoIFrame,
                     body.is-student #sharedVideoContainer,
@@ -491,6 +491,33 @@ if (typeof window !== 'undefined') {
                     body.is-student iframe[src*="youtube"],
                     body.is-student iframe[src*="youtu.be"] {
                         pointer-events: none !important;
+                    }
+                    */
+
+                    /* On Desktop: always disable clicking/pausing shared video for students */
+                    @media (min-width: 769px) {
+                        body.is-student #sharedVideo,
+                        body.is-student #sharedVideoIFrame,
+                        body.is-student #sharedVideoContainer,
+                        body.is-student .shared-video-container,
+                        body.is-student [id*="sharedVideo"],
+                        body.is-student iframe[src*="youtube"],
+                        body.is-student iframe[src*="youtu.be"] {
+                            pointer-events: none !important;
+                        }
+                    }
+
+                    /* On Mobile: disable clicking/pausing ONLY after the student clicks/focuses the video once (has unlocked-clicked class) */
+                    @media (max-width: 768px) {
+                        body.is-student #sharedVideo.unlocked-clicked,
+                        body.is-student #sharedVideoIFrame.unlocked-clicked,
+                        body.is-student #sharedVideoContainer.unlocked-clicked,
+                        body.is-student .shared-video-container.unlocked-clicked,
+                        body.is-student [id*="sharedVideo"].unlocked-clicked,
+                        body.is-student iframe[src*="youtube"].unlocked-clicked,
+                        body.is-student iframe[src*="youtu.be"].unlocked-clicked {
+                            pointer-events: none !important;
+                        }
                     }
                 `;
                 document.head.appendChild(style);
@@ -3607,8 +3634,8 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
     document.addEventListener('mousedown', handleMouseDown, true);
 })();
 
-// Student Mobile Shared Video Autoplay Muted & Tap to Unmute Sync (YT.Player Interceptor)
-(function setupMobileAutoplayMuteSync() {
+// Student Mobile Shared Video Autoplay: allow first click, then disable pointer events to prevent pause
+(function setupMobileSharedVideoClickLock() {
     if (typeof window === 'undefined') return;
 
     // Detect if mobile (phone or tablet)
@@ -3616,177 +3643,32 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
                      (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
     if (!isMobile) return;
 
-    let isAutoplayMutedActive = false;
-    let clickListenerAttached = false;
-
-    // Wrap/Intercept window.YT.Player constructor
-    const wrapYTPlayer = (YT) => {
-        if (YT.Player.isWrapped) return;
-        
-        const OriginalPlayer = YT.Player;
-        YT.Player = function(id, options) {
-            console.log('📱 [YT Player Interceptor] Intercepted new YT.Player creation. Options:', options);
-            
-            // Check if user is student
-            let isStudent = false;
-            if (window.location.hash && window.location.hash.includes('config.isStudent=true')) {
-                isStudent = true;
-            } else if (typeof config !== 'undefined' && typeof config.isStudent !== 'undefined') {
-                isStudent = !!config.isStudent;
-            }
-            if (!isStudent && document.body && document.body.classList.contains('is-student')) {
-                isStudent = true;
-            }
-
-            if (isStudent && options) {
-                if (!options.playerVars) {
-                    options.playerVars = {};
-                }
-                console.log('📱 [YT Player Interceptor] Forcing muted autoplay options for mobile student...');
-                options.playerVars.mute = 1;
-                options.playerVars.autoplay = 1;
-                options.playerVars.playsinline = 1;
-            }
-            
-            const instance = new OriginalPlayer(id, options);
-            
-            if (isStudent) {
-                window.customActiveYoutubePlayerInstance = instance;
-            }
-            
-            return instance;
-        };
-        
-        YT.Player.prototype = OriginalPlayer.prototype;
-        YT.Player.isWrapped = true;
-        console.log('✅ [YT Player Interceptor] YouTube Player constructor successfully wrapped.');
-    };
-
-    // Monitor for window.YT to load
-    const interceptInterval = setInterval(() => {
-        if (window.YT && window.YT.Player) {
-            wrapYTPlayer(window.YT);
-            clearInterval(interceptInterval);
-        }
-    }, 100);
-
-    const removeUnmuteBanner = () => {
-        const banner = document.getElementById('custom-mobile-unmute-banner');
-        if (banner && banner.parentNode) {
-            banner.parentNode.removeChild(banner);
-        }
-    };
-
-    const unmuteMedia = () => {
+    window.addEventListener('blur', () => {
         try {
-            const player = window.customActiveYoutubePlayerInstance;
-            if (player && typeof player.unMute === 'function') {
-                console.log('📱 [Mobile Autoplay] Unmuting player instance directly...');
-                player.unMute();
-                if (typeof player.playVideo === 'function') {
-                    player.playVideo();
-                }
-            } else {
-                console.warn('📱 [Mobile Autoplay] Player instance not found, falling back to iframe postMessage...');
-                const youtubeIframe = document.getElementById('sharedVideoIFrame') || 
-                                      document.querySelector('iframe[src*="youtube"]') || 
-                                      document.querySelector('iframe[src*="youtu"]');
-                if (youtubeIframe && youtubeIframe.contentWindow) {
-                    youtubeIframe.contentWindow.postMessage(JSON.stringify({
-                        event: 'command',
-                        func: 'unMute',
-                        args: ''
-                    }), '*');
-                    youtubeIframe.contentWindow.postMessage(JSON.stringify({
-                        event: 'command',
-                        func: 'playVideo',
-                        args: ''
-                    }), '*');
-                }
-            }
-        } catch (e) {
-            console.error('Error during unmute:', e);
-        }
-    };
-
-    // Display banner when video is running and handle tap
-    setInterval(() => {
-        try {
-            let isStudent = false;
-            if (window.location.hash && window.location.hash.includes('config.isStudent=true')) {
-                isStudent = true;
-            } else if (typeof config !== 'undefined' && typeof config.isStudent !== 'undefined') {
-                isStudent = !!config.isStudent;
-            }
-            if (!isStudent && document.body && document.body.classList.contains('is-student')) {
-                isStudent = true;
-            }
-
-            if (!isStudent) return;
-
-            const youtubeIframe = document.getElementById('sharedVideoIFrame') || 
-                                  document.querySelector('iframe[src*="youtube"]') || 
-                                  document.querySelector('iframe[src*="youtu"]');
-            
-            if (youtubeIframe) {
-                if (!isAutoplayMutedActive) {
-                    isAutoplayMutedActive = true;
-                    console.log('📱 [Mobile Autoplay] Video detected. Displaying unmute toast banner...');
+            // Find Jitsi's active focused element
+            const activeEl = document.activeElement;
+            if (activeEl && (activeEl.id === 'sharedVideoIFrame' || activeEl.tagName === 'IFRAME' || activeEl.src.includes('youtube'))) {
+                // Find all containers representing the shared video area
+                const container = document.getElementById('sharedVideo') || 
+                                  document.getElementById('sharedVideoContainer') ||
+                                  activeEl.closest('.shared-video-container');
+                
+                if (container && !container.classList.contains('unlocked-clicked')) {
+                    console.log('📱 [Mobile Click Lock] Iframe focused (first click). Locking pointer-events on mobile student screen.');
+                    container.classList.add('unlocked-clicked');
+                    activeEl.classList.add('unlocked-clicked');
                     
-                    // Create & Inject Unmute Banner
-                    if (!document.getElementById('custom-mobile-unmute-banner')) {
-                        const banner = document.createElement('div');
-                        banner.id = 'custom-mobile-unmute-banner';
-                        banner.style.cssText = 'position: fixed; top: 12px; left: 50%; transform: translateX(-50%); background: rgba(255, 107, 0, 0.9); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #FFFFFF; padding: 8px 16px; border-radius: 30px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; z-index: 999999; box-shadow: 0 4px 16px rgba(255, 107, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.2); pointer-events: none; animation: slideDownIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; font-family: system-ui, -apple-system, sans-serif; white-space: nowrap;';
-                        
-                        banner.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: pulseIcon 1.5s infinite;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg><span>Chạm vào màn hình để bật tiếng</span><style>@keyframes slideDownIn { 0% { transform: translate(-50%, -20px); opacity: 0; } 100% { transform: translate(-50%, 0); opacity: 1; } } @keyframes pulseIcon { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }</style>';
-                        document.body.appendChild(banner);
+                    // Also lock any other sibling containers just to be secure
+                    const siblingContainer = document.getElementById('sharedVideoContainer') || document.getElementById('sharedVideo');
+                    if (siblingContainer) {
+                        siblingContainer.classList.add('unlocked-clicked');
                     }
-
-                    // Attach listener to document to catch tap
-                    if (!clickListenerAttached) {
-                        clickListenerAttached = true;
-                        
-                        const handleTapToUnmute = () => {
-                            console.log('📱 [Mobile Autoplay] Tap detected. Unlocking iOS audio and unmuting...');
-                            
-                            // Unlock iOS audio context
-                            try {
-                                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                                if (AudioContextClass) {
-                                    const ctx = new AudioContextClass();
-                                    const osc = ctx.createOscillator();
-                                    const gain = ctx.createGain();
-                                    gain.gain.value = 0.001;
-                                    osc.connect(gain);
-                                    gain.connect(ctx.destination);
-                                    osc.start(0);
-                                    osc.stop(0.05);
-                                    ctx.resume();
-                                }
-                            } catch (ae) {}
-
-                            unmuteMedia();
-                            removeUnmuteBanner();
-                            
-                            document.removeEventListener('click', handleTapToUnmute, true);
-                            document.removeEventListener('touchstart', handleTapToUnmute, true);
-                            clickListenerAttached = false;
-                        };
-
-                        document.addEventListener('click', handleTapToUnmute, true);
-                        document.addEventListener('touchstart', handleTapToUnmute, true);
-                    }
-                }
-            } else {
-                if (isAutoplayMutedActive) {
-                    isAutoplayMutedActive = false;
-                    removeUnmuteBanner();
                 }
             }
         } catch (e) {}
-    }, 1000);
+    });
 })();
+
 
 
 

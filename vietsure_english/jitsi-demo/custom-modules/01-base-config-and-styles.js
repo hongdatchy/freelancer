@@ -474,7 +474,7 @@ if (typeof window !== 'undefined') {
                     body.is-student .filmstrip .remote-videos .videocontainer {
                         pointer-events: none !important;
                     }
-                    /* Disable clicking/pausing shared video for students so student cannot pause teacher's video */
+                    /* Disable clicking/pausing shared video for students so student cannot pause teacher's video (Old method commented out)
                     body.is-student #sharedVideo,
                     body.is-student #sharedVideoIFrame,
                     body.is-student #sharedVideoContainer,
@@ -483,6 +483,33 @@ if (typeof window !== 'undefined') {
                     body.is-student iframe[src*="youtube"],
                     body.is-student iframe[src*="youtu.be"] {
                         pointer-events: none !important;
+                    }
+                    */
+
+                    /* On Desktop: always disable clicking/pausing shared video for students */
+                    @media (min-width: 769px) {
+                        body.is-student #sharedVideo,
+                        body.is-student #sharedVideoIFrame,
+                        body.is-student #sharedVideoContainer,
+                        body.is-student .shared-video-container,
+                        body.is-student [id*="sharedVideo"],
+                        body.is-student iframe[src*="youtube"],
+                        body.is-student iframe[src*="youtu.be"] {
+                            pointer-events: none !important;
+                        }
+                    }
+
+                    /* On Mobile: disable clicking/pausing ONLY after the student clicks/focuses the video once (has unlocked-clicked class) */
+                    @media (max-width: 768px) {
+                        body.is-student #sharedVideo.unlocked-clicked,
+                        body.is-student #sharedVideoIFrame.unlocked-clicked,
+                        body.is-student #sharedVideoContainer.unlocked-clicked,
+                        body.is-student .shared-video-container.unlocked-clicked,
+                        body.is-student [id*="sharedVideo"].unlocked-clicked,
+                        body.is-student iframe[src*="youtube"].unlocked-clicked,
+                        body.is-student iframe[src*="youtu.be"].unlocked-clicked {
+                            pointer-events: none !important;
+                        }
                     }
                 `;
                 document.head.appendChild(style);
