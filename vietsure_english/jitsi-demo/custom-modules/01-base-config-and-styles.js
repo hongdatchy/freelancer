@@ -276,7 +276,7 @@ if (typeof document !== 'undefined') {
             background-color: rgba(255, 255, 255, 0.15) !important;
         }
 
-        /* Persistent text labels strictly ordered below each toolbar button icon */
+        /* Persistent text labels strictly ordered below each toolbar button icon
         .custom-toolbar-label {
             display: block !important;
             order: 999 !important;
@@ -290,6 +290,24 @@ if (typeof document !== 'undefined') {
             font-weight: 500 !important;
             pointer-events: none !important;
             user-select: none !important;
+        }
+        */
+
+        /* Safe persistent text labels under Jitsi toolbar buttons using CSS pseudo-elements */
+        .toolbox-content-items > div[data-label]::after {
+            content: attr(data-label) !important;
+            display: block !important;
+            font-size: 10px !important;
+            line-height: 11px !important;
+            color: rgba(255, 255, 255, 0.85) !important;
+            text-align: center !important;
+            margin-top: 1px !important;
+            white-space: nowrap !important;
+            font-family: -apple-system, BlinkMacSystemFont, open_sanslight, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+            font-weight: 500 !important;
+            pointer-events: none !important;
+            user-select: none !important;
+            order: 999 !important;
         }
 
         /* Style our custom Jitsi toolbar clock button to match standard Jitsi buttons */

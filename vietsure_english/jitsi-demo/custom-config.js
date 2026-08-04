@@ -284,7 +284,7 @@ if (typeof document !== 'undefined') {
             background-color: rgba(255, 255, 255, 0.15) !important;
         }
 
-        /* Persistent text labels strictly ordered below each toolbar button icon */
+        /* Persistent text labels strictly ordered below each toolbar button icon
         .custom-toolbar-label {
             display: block !important;
             order: 999 !important;
@@ -298,6 +298,24 @@ if (typeof document !== 'undefined') {
             font-weight: 500 !important;
             pointer-events: none !important;
             user-select: none !important;
+        }
+        */
+
+        /* Safe persistent text labels under Jitsi toolbar buttons using CSS pseudo-elements */
+        .toolbox-content-items > div[data-label]::after {
+            content: attr(data-label) !important;
+            display: block !important;
+            font-size: 10px !important;
+            line-height: 11px !important;
+            color: rgba(255, 255, 255, 0.85) !important;
+            text-align: center !important;
+            margin-top: 1px !important;
+            white-space: nowrap !important;
+            font-family: -apple-system, BlinkMacSystemFont, open_sanslight, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+            font-weight: 500 !important;
+            pointer-events: none !important;
+            user-select: none !important;
+            order: 999 !important;
         }
 
         /* Style our custom Jitsi toolbar clock button to match standard Jitsi buttons */
@@ -2406,6 +2424,8 @@ const setupToolbarButtonLabels = (doc) => {
         }
 
         if (labelText) {
+            // Old method commented out:
+            /*
             let labelEl = item.querySelector('.custom-toolbar-label');
             if (!labelEl) {
                 labelEl = doc.createElement('span');
@@ -2415,6 +2435,12 @@ const setupToolbarButtonLabels = (doc) => {
             }
             if (labelEl.textContent !== labelText) {
                 labelEl.textContent = labelText;
+            }
+            */
+
+            // Safe new method using CSS attr(data-label):
+            if (item.getAttribute('data-label') !== labelText) {
+                item.setAttribute('data-label', labelText);
             }
         }
     }
@@ -3415,91 +3441,6 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
     document.addEventListener('mousedown', handleMouseDown, true);
 })();
 
-// Fix Mobile Shared Video Autoplay & Sync Policy for Student (iOS Safari / Android Chrome)
-(function fixMobileSharedVideoAutoplay() {
-    if (typeof window === 'undefined') return;
-
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent || '');
-    const startedIframes = typeof WeakSet !== 'undefined' ? new WeakSet() : null;
-
-    const unlockAndPlaySharedVideo = () => {
-        try {
-            // HTML5 Video elements
-            const videos = document.querySelectorAll('#sharedVideo video, .shared-video-container video, #videospace video');
-            videos.forEach(v => {
-                if (!v.hasAttribute('playsinline')) {
-                    v.setAttribute('playsinline', 'true');
-                    v.setAttribute('webkit-playsinline', 'true');
-                }
-                if (v.paused && typeof v.play === 'function') {
-                    const p = v.play();
-                    if (p && typeof p.catch === 'function') {
-                        p.catch(() => {});
-                    }
-                }
-            });
-
-            // YouTube Iframes
-            const iframes = document.querySelectorAll('#sharedVideo iframe, #sharedVideoIFrame iframe, iframe[src*="youtube"], iframe[src*="youtu.be"]');
-            iframes.forEach(iframe => {
-                if (startedIframes && startedIframes.has(iframe)) return;
-                startedIframes && startedIframes.add(iframe);
-                try {
-                    let src = iframe.src || '';
-                    if (src && !src.includes('playsinline=1')) {
-                        iframe.src = src + (src.includes('?') ? '&' : '?') + 'playsinline=1&enablejsapi=1&autoplay=1';
-                    }
-                    if (iframe.contentWindow) {
-                        iframe.contentWindow.postMessage(JSON.stringify({
-                            event: 'command',
-                            func: 'playVideo',
-                            args: []
-                        }), '*');
-                    }
-                } catch (e) {}
-            });
-        } catch (e) {}
-    };
-
-    // Unlock media playback on any mobile touch gesture
-    let _audioCtx = null;
-    const handleUserGesture = () => {
-        // Resume AudioContext on gesture (identical to audio-context.ts) - unlocks iOS media permissions
-        try {
-            if (!_audioCtx) {
-                _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (_audioCtx && _audioCtx.state === 'suspended') {
-                _audioCtx.resume().catch(() => {});
-            }
-        } catch (e) {}
-        unlockAndPlaySharedVideo();
-    };
-
-    window.addEventListener('touchstart', handleUserGesture, { capture: true, passive: true });
-    window.addEventListener('touchend', handleUserGesture, { capture: true, passive: true });
-    window.addEventListener('click', handleUserGesture, { capture: true, passive: true });
-
-    // Periodically enforce playsinline and sync playback on mobile devices
-    setInterval(() => {
-        try {
-            const container = document.getElementById('sharedVideo') || document.getElementById('sharedVideoIFrame') || document.querySelector('.shared-video-container');
-            if (container) {
-                const videos = container.querySelectorAll('video');
-                videos.forEach(v => {
-                    if (!v.hasAttribute('playsinline')) {
-                        v.setAttribute('playsinline', 'true');
-                        v.setAttribute('webkit-playsinline', 'true');
-                    }
-                });
-
-                if (isMobile) {
-                    unlockAndPlaySharedVideo();
-                }
-            }
-        } catch (e) {}
-    }, 1500);
-})();
 
 
 
