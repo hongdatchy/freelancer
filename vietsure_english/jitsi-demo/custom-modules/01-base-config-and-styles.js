@@ -10,6 +10,28 @@ config.settingsSections = ['devices', 'moderator', 'profile', 'calendar', 'sound
 config.disableSelfViewSettings = true;
 config.disabledSounds = ['INCOMING_MSG_SOUND_ID', 'OUTGOING_MSG_SOUND_ID'];
 
+// Helper to robustly check if the current participant is a student (non-moderator)
+window.checkIfStudent = () => {
+    try {
+        if (typeof window !== 'undefined' && window.APP && window.APP.store) {
+            const state = window.APP.store.getState();
+            const participants = state['features/base/participants'];
+            let localParticipant = null;
+            if (Array.isArray(participants)) {
+                localParticipant = participants.find(p => p && p.local);
+            } else if (participants && typeof participants === 'object') {
+                localParticipant = Object.values(participants).find(p => p && p.local);
+            }
+            if (localParticipant && localParticipant.role) {
+                return localParticipant.role !== 'moderator';
+            }
+        }
+    } catch (e) {}
+
+    // Default to true (student) if Jitsi store is not ready yet
+    return true;
+};
+
 // Block Jitsi chat incoming/outgoing message sound files
 (function blockJitsiChatSounds() {
     if (typeof window === 'undefined') return;
@@ -71,7 +93,7 @@ config.disabledSounds = ['INCOMING_MSG_SOUND_ID', 'OUTGOING_MSG_SOUND_ID'];
 if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
     const originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
     navigator.mediaDevices.getDisplayMedia = function(constraints) {
-        const isStudent = typeof checkIfStudent === 'function' ? checkIfStudent() : false;
+        const isStudent = typeof checkIfStudent === 'function' ? checkIfStudent() : true;
         if (isStudent && !window.allowStudentScreenshare) {
             console.warn('⛔ [Jitsi Security] Blocked getDisplayMedia call on Student screen because allowStudentScreenshare is false.');
             return Promise.reject(new DOMException('Permission denied', 'NotAllowedError'));
@@ -516,14 +538,7 @@ if (typeof window !== 'undefined') {
                 console.log("🎨 Applied bright layout background theme.");
             }
 
-            let isStudent = typeof checkIfStudent === 'function' ? checkIfStudent() : false;
-            if (!isStudent) {
-                if (window.location.hash && window.location.hash.includes('config.isStudent=true')) {
-                    isStudent = true;
-                } else if (typeof config !== 'undefined' && typeof config.isStudent !== 'undefined') {
-                    isStudent = !!config.isStudent;
-                }
-            }
+            const isStudent = typeof checkIfStudent === 'function' ? checkIfStudent() : true;
 
             if (document.body) {
                 if (isStudent) {

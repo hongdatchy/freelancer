@@ -590,9 +590,8 @@ if (typeof window !== 'undefined') {
                 const localP = Object.values(participantsState).find(p => p && p.local);
                 if (localP) {
                     isStudent = localP.role !== 'moderator';
-                }
-                if (!isStudent && typeof config !== 'undefined' && typeof config.isStudent !== 'undefined') {
-                    isStudent = !!config.isStudent;
+                } else {
+                    isStudent = typeof checkIfStudent === 'function' ? checkIfStudent() : true;
                 }
                 
                 if (isStudent) {

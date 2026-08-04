@@ -29,38 +29,7 @@ const createToolbarClockButton = (doc) => {
   return btnWrapper;
 };
 
-// Helper to robustly check if the current participant is a student
-const checkIfStudent = () => {
-  if (typeof window !== "undefined" && window.location.hash) {
-    if (window.location.hash.includes("config.isStudent=true")) {
-      return true;
-    }
-    if (window.location.hash.includes("config.isStudent=false")) {
-      return false;
-    }
-  }
 
-  try {
-    if (typeof window !== "undefined" && window.APP && window.APP.store) {
-      const state = window.APP.store.getState();
-      const localParticipant = state["features/base/participants"]?.find(
-        (p) => p.local,
-      );
-      if (localParticipant) {
-        return localParticipant.role !== "moderator";
-      }
-    }
-  } catch (e) {}
-
-  if (
-    typeof config !== "undefined" &&
-    typeof config.isStudent !== "undefined"
-  ) {
-    return !!config.isStudent;
-  }
-
-  return true;
-};
 
 const findCameraWrapper = (doc) => {
   const toolbarContainer = doc.querySelector(".toolbox-content-items");
@@ -653,7 +622,7 @@ if (typeof window !== "undefined") {
     updateTeacherShareBtnUI(doc, window.isStudentShareAllowedByTeacher);
   };
 
-  const updateTeacherShareBtnUI = (doc, isAllowed) => {git 
+  const updateTeacherShareBtnUI = (doc, isAllowed) => { 
     const btnWrapper = doc.getElementById("custom-teacher-share-control-btn");
     if (!btnWrapper) return;
     const btn = btnWrapper.querySelector(".toolbox-button");

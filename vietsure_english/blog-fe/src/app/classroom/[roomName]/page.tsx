@@ -46,6 +46,9 @@ export default function ClassroomPage() {
   const shouldEndConferenceOnMainJoinRef = useRef<boolean>(false);
   const isTileViewEnabledRef = useRef<boolean>(false);
   const exitPopoverRef = useRef<HTMLDivElement | null>(null);
+  const [isModerator, setIsModerator] = useState(false);
+  const [showHostTransferList, setShowHostTransferList] = useState(false);
+  const localUserIdRef = useRef<string>('');
 
   useEffect(() => {
     if (!showExitConfirm) return;
@@ -54,6 +57,7 @@ export default function ClassroomPage() {
         const btn = (e.target as HTMLElement).closest('button');
         if (!btn || (!btn.getAttribute('title')?.includes('Thoát') && !btn.closest('[title*="Thoát"]'))) {
           setShowExitConfirm(false);
+          setShowHostTransferList(false);
         }
       }
     };
@@ -68,6 +72,25 @@ export default function ClassroomPage() {
     setTimeout(() => {
       setToastMessage(prev => (prev === msg ? null : prev));
     }, 4000);
+  };
+
+  const getStudentList = () => {
+    if (!apiRef.current) return [];
+    try {
+      const participants = apiRef.current.getParticipantsInfo() || [];
+      return participants
+        .filter((p: any) => {
+          const displayName = p.formattedDisplayName || p.displayName || '';
+          if (displayName.includes('(me)')) return false;
+          return true;
+        })
+        .map((p: any) => ({
+          id: p.participantId || p.id,
+          name: (p.formattedDisplayName || p.displayName || 'Thành viên').replace(/\s*⭐\s*\d+/g, '').trim(),
+        }));
+    } catch (e) {
+      return [];
+    }
   };
 
   const toggleFullscreen = () => {
@@ -255,11 +278,12 @@ export default function ClassroomPage() {
         disableSelfViewSettings: true,
         disabledSounds: ['INCOMING_MSG_SOUND_ID', 'OUTGOING_MSG_SOUND_ID'],
         isStudent: true,
+        whiteboard: { enabled: true },
         toolbarButtons: [
           'microphone', 'camera', 'closedcaptions',
           'fodeviceselection', 'chat',
           'settings', 'raisehand', 'filmstrip',
-          'download', 'help', 'desktop'
+          'download', 'help', 'desktop', 'whiteboard'
         ],
       },
       interfaceConfigOverwrite: {
@@ -270,8 +294,11 @@ export default function ClassroomPage() {
       },
     });
 
-    apiRef.current.addEventListener('videoConferenceJoined', () => {
+    apiRef.current.addEventListener('videoConferenceJoined', (event: any) => {
       setApiReady(true);
+      if (event && event.id) {
+        localUserIdRef.current = event.id;
+      }
 
       // Set the default filmstrip width to 360px on join if screen width > 1100px
       if (window.innerWidth > 1100) {
@@ -405,6 +432,15 @@ export default function ClassroomPage() {
       }
     });
 
+    apiRef.current.addEventListener('participantRoleChanged', (event: any) => {
+      console.log('📌 [HỌC VIÊN] Role changed:', event);
+      if (event.id === localUserIdRef.current) {
+        const isMod = event.role === 'moderator';
+        setIsModerator(isMod);
+        console.log('🎉 [HỌC VIÊN] Quyền Moderator của bạn:', isMod);
+      }
+    });
+
     // Listen for hangup
     apiRef.current.addEventListener('readyToClose', () => {
       router.back();
@@ -435,14 +471,18 @@ export default function ClassroomPage() {
       } else if (event.data.type === 'WHEEL_ACTION') {
         console.log('[Student] WHEEL_ACTION received:', event.data.payload);
         window.dispatchEvent(new CustomEvent('sync-wheel-action', { detail: event.data.payload }));
+      } else if (event.data.type === 'TRIGGER_WHEEL') {
+        console.log('[Student] TRIGGER_WHEEL received, dispatching toggle-wheel-widget');
+        window.dispatchEvent(new CustomEvent('toggle-wheel-widget'));
       } else if (event.data.type === 'DICE_ACTION') {
         console.log('[Student] DICE_ACTION received:', event.data.payload);
         window.dispatchEvent(new CustomEvent('sync-dice-action', { detail: event.data.payload }));
+      } else if (event.data.type === 'TRIGGER_DICE') {
+        console.log('[Student] TRIGGER_DICE received, dispatching toggle-dice-widget');
+        window.dispatchEvent(new CustomEvent('toggle-dice-widget'));
       } else if (event.data.type === 'TRIGGER_PRAISE') {
-        if (apiRef.current) {
-          const randIndex = Math.floor(Math.random() * 5);
-          apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${randIndex}`);
-        }
+        console.log('[Student] TRIGGER_PRAISE received, dispatching toggle-praise-widget');
+        window.dispatchEvent(new CustomEvent('toggle-praise-widget'));
       } else if (event.data.type === 'PLAY_PRAISE') {
         const payload = event.data.payload || { mascotIdx: 0 };
         console.log('[Student] PLAY_PRAISE message received with payload:', payload);
@@ -576,7 +616,10 @@ export default function ClassroomPage() {
 
 
             <button
-              onClick={() => setShowExitConfirm(prev => !prev)}
+              onClick={() => {
+                setShowExitConfirm(prev => !prev);
+                setShowHostTransferList(false);
+              }}
               className="p-2 bg-[#FF4D4D] hover:bg-[#E60000] text-white rounded-lg transition-colors shadow-sm flex items-center justify-center"
               title="Thoát cuộc họp"
             >
@@ -604,10 +647,10 @@ export default function ClassroomPage() {
       {/* Jitsi container + student timer overlay */}
       <div className="flex-1 w-full relative">
         <div ref={containerRef} className="w-full h-full" />
-        {!isHost && <TimerWidget apiRef={apiRef} isHost={false} apiReady={apiReady} />}
-        <WheelWidget apiRef={apiRef} isHost={false} apiReady={apiReady} />
-        <DiceWidget apiRef={apiRef} isHost={false} apiReady={apiReady} />
-        <PraiseWidget apiRef={apiRef} isHost={false} apiReady={apiReady} roomName={roomName || 'default'} />
+        <TimerWidget apiRef={apiRef} isHost={isModerator} apiReady={apiReady} />
+        <WheelWidget apiRef={apiRef} isHost={isModerator} apiReady={apiReady} />
+        <DiceWidget apiRef={apiRef} isHost={isModerator} apiReady={apiReady} />
+        <PraiseWidget apiRef={apiRef} isHost={isModerator} apiReady={apiReady} roomName={roomName || 'default'} />
 
         {/* Custom Exit Popover (Matches Jitsi's native look) */}
         {showExitConfirm && (
@@ -616,43 +659,126 @@ export default function ClassroomPage() {
             className="absolute top-[10px] right-[10px] bg-[#141414] p-3 rounded-xl flex flex-col items-center shadow-[0_4px_16px_rgba(0,0,0,0.5)] border border-white/10 w-[260px] z-[99999]"
             style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
           >
-            {isInBreakoutRoom && (
-              <button
-                onClick={() => {
-                  setShowExitConfirm(false);
-                  try {
-                    const iframe = apiRef.current?.getIFrame();
-                    if (iframe && iframe.contentWindow) {
-                      iframe.contentWindow.postMessage({ type: 'LEAVE_BREAKOUT_ROOM', mainRoomName: roomName }, '*');
-                    }
-                    try {
-                      apiRef.current?.executeCommand('joinBreakoutRoom', '');
-                    } catch (e) {}
-                  } catch (e) {
-                    console.error('Failed to leave breakout room:', e);
-                  }
-                }}
-                className="w-full bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
-              >
-                Rời phòng nhỏ về phòng chính
-              </button>
+            {isModerator ? (
+              // Moderator exit menu (same as teacher)
+              showHostTransferList ? (
+                <div className="w-full flex flex-col items-center">
+                  <div className="text-white font-bold text-[13px] mb-2.5 w-full text-center border-b border-white/10 pb-2">
+                    Chọn người nhận quyền Host
+                  </div>
+                  <div className="w-full max-h-[180px] overflow-y-auto flex flex-col gap-1.5 mb-2 pr-1 custom-scrollbar">
+                    {getStudentList().length === 0 ? (
+                      <div className="text-white/50 text-[12px] py-4 text-center">
+                        Không có thành viên khác trong phòng
+                      </div>
+                    ) : (
+                      getStudentList().map((student: any) => (
+                        <button
+                          key={student.id}
+                          onClick={() => {
+                            try {
+                              apiRef.current?.executeCommand('grantModerator', student.id);
+                            } catch (err) {
+                              console.error('Failed to grant moderator:', err);
+                            }
+                            setShowExitConfirm(false);
+                            setShowHostTransferList(false);
+                            setTimeout(() => {
+                              apiRef.current?.executeCommand('hangup');
+                            }, 500);
+                          }}
+                          className="w-full bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-3 rounded-lg text-[13px] text-left truncate transition-colors"
+                        >
+                          👤 {student.name}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setShowHostTransferList(false)}
+                    className="w-full bg-white/5 hover:bg-white/10 text-white font-semibold py-2 px-4 rounded-lg text-[13px] text-center transition-colors"
+                  >
+                    Quay lại
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      setShowExitConfirm(false);
+                      apiRef.current?.executeCommand('endConference');
+                    }}
+                    className="w-full bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
+                  >
+                    Kết thúc cuộc gọi theo nhóm
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowExitConfirm(false);
+                      apiRef.current?.executeCommand('hangup');
+                    }}
+                    className="w-full bg-[#E0E0E0] hover:bg-[#c9c9c9] text-[#040404] font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
+                  >
+                    Rời khỏi cuộc họp
+                  </button>
+                  <button
+                    onClick={() => setShowHostTransferList(true)}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
+                  >
+                    Thoát và nhượng quyền Host
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowExitConfirm(false);
+                      setShowHostTransferList(false);
+                    }}
+                    className="w-full bg-transparent hover:bg-white/10 text-white font-semibold py-2 px-4 rounded-lg text-[13px] text-center mt-1 transition-colors"
+                  >
+                    Hủy
+                  </button>
+                </>
+              )
+            ) : (
+              // Standard student exit menu
+              <>
+                {isInBreakoutRoom && (
+                  <button
+                    onClick={() => {
+                      setShowExitConfirm(false);
+                      try {
+                        const iframe = apiRef.current?.getIFrame();
+                        if (iframe && iframe.contentWindow) {
+                          iframe.contentWindow.postMessage({ type: 'LEAVE_BREAKOUT_ROOM', mainRoomName: roomName }, '*');
+                        }
+                        try {
+                          apiRef.current?.executeCommand('joinBreakoutRoom', '');
+                        } catch (e) {}
+                      } catch (e) {
+                        console.error('Failed to leave breakout room:', e);
+                      }
+                    }}
+                    className="w-full bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
+                  >
+                    Rời phòng nhỏ về phòng chính
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setShowExitConfirm(false);
+                    apiRef.current?.executeCommand('hangup');
+                  }}
+                  className="w-full bg-[#E0E0E0] hover:bg-[#c9c9c9] text-[#040404] font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors"
+                >
+                  Rời khỏi cuộc họp
+                </button>
+                <button
+                  onClick={() => setShowExitConfirm(false)}
+                  className="w-full bg-transparent hover:bg-white/10 text-white font-semibold py-2 px-4 rounded-lg text-[13px] text-center mt-1 transition-colors"
+                >
+                  Hủy
+                </button>
+              </>
             )}
-            <button
-              onClick={() => {
-                setShowExitConfirm(false);
-                apiRef.current?.executeCommand('hangup');
-              }}
-              className="w-full bg-[#E0E0E0] hover:bg-[#c9c9c9] text-[#040404] font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors"
-            >
-              Rời khỏi cuộc họp
-            </button>
-            
-            <button
-              onClick={() => setShowExitConfirm(false)}
-              className="w-full bg-transparent hover:bg-white/10 text-white font-semibold py-2 px-4 rounded-lg text-[13px] text-center mt-1 transition-colors"
-            >
-              Hủy
-            </button>
             
             {/* Arrow pointing up */}
             <div className="absolute bottom-full right-[20px] w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[8px] border-b-[#141414]"></div>
