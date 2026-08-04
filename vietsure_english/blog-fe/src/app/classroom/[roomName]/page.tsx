@@ -443,12 +443,12 @@ export default function ClassroomPage() {
 
     // Listen for hangup
     apiRef.current.addEventListener('readyToClose', () => {
-      router.back();
+      window.location.href = '/';
     });
 
     const handleConferenceEndedMessage = (e: MessageEvent) => {
       if (e.data && e.data.type === 'JITSI_CONFERENCE_ENDED') {
-        router.back();
+        window.location.href = '/';
       }
     };
     window.addEventListener('message', handleConferenceEndedMessage);
@@ -501,7 +501,7 @@ export default function ClassroomPage() {
           apiRef.current?.executeCommand('hangup');
         } catch (e) {}
         setTimeout(() => {
-          router.back();
+          window.location.href = '/';
         }, 200);
       }
     };
