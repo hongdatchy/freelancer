@@ -541,6 +541,17 @@ if (typeof window !== 'undefined') {
                     doc.head.appendChild(style);
                 }
 
+                if (!doc.getElementById('custom-excalidraw-cursor-css')) {
+                    const cursorStyle = doc.createElement('style');
+                    cursorStyle.id = 'custom-excalidraw-cursor-css';
+                    cursorStyle.textContent = `
+                        .excalidraw canvas {
+                            cursor: default !important;
+                        }
+                    `;
+                    doc.head.appendChild(cursorStyle);
+                }
+
                 const buttons = doc.querySelectorAll('button, label, input, .ToolIcon_type_radio, [data-testid]');
                 buttons.forEach(el => {
                     const title = String(el.title || el.getAttribute('aria-label') || '').toLowerCase();
