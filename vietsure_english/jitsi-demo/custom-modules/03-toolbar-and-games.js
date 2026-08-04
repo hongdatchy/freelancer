@@ -653,7 +653,7 @@ if (typeof window !== "undefined") {
     updateTeacherShareBtnUI(doc, window.isStudentShareAllowedByTeacher);
   };
 
-  const updateTeacherShareBtnUI = (doc, isAllowed) => {
+  const updateTeacherShareBtnUI = (doc, isAllowed) => {git 
     const btnWrapper = doc.getElementById("custom-teacher-share-control-btn");
     if (!btnWrapper) return;
     const btn = btnWrapper.querySelector(".toolbox-button");

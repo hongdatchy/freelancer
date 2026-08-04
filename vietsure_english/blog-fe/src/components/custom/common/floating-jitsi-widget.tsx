@@ -41,6 +41,7 @@ export default function FloatingJitsiWidget() {
   const [isPipActive, setIsPipActive] = useState(false);
   const [pipWinBody, setPipWinBody] = useState<Element | null>(null);
   const [showRec, setShowRec] = useState(false);
+  const [showHostTransferList, setShowHostTransferList] = useState(false);
 
   useEffect(() => {
     if (!showExitConfirm) return;
@@ -49,6 +50,7 @@ export default function FloatingJitsiWidget() {
         const btn = (e.target as HTMLElement).closest('button');
         if (!btn || (!btn.getAttribute('title')?.includes('Thoát') && !btn.closest('[title*="Thoát"]'))) {
           setShowExitConfirm(false);
+          setShowHostTransferList(false);
         }
       }
     };
@@ -1073,7 +1075,10 @@ export default function FloatingJitsiWidget() {
                 )} */}
                 {/* Custom Exit Button */}
                 <button
-                  onClick={() => setShowExitConfirm(prev => !prev)}
+                  onClick={() => {
+                    setShowExitConfirm(prev => !prev);
+                    setShowHostTransferList(false);
+                  }}
                   className="p-1.5 bg-[#FF4D4D] hover:bg-[#E60000] text-white rounded-lg transition-colors shadow-sm flex items-center justify-center no-drag"
                   title="Thoát cuộc họp"
                 >
@@ -1098,43 +1103,94 @@ export default function FloatingJitsiWidget() {
                   className="absolute top-[10px] right-[10px] bg-[#141414] p-3 rounded-xl flex flex-col items-center shadow-[0_4px_16px_rgba(0,0,0,0.5)] border border-white/10 w-[260px] z-[99999] no-drag"
                   style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
                 >
-                  <>
-                    <button
-                      onClick={() => {
-                        setShowExitConfirm(false);
-                        if (isInBreakoutRoom) {
-                          shouldEndConferenceOnMainJoinRef.current = true;
-                          try {
-                            const iframe = apiRef.current?.getIFrame();
-                            if (iframe && iframe.contentWindow) {
-                              iframe.contentWindow.postMessage({ type: 'LEAVE_BREAKOUT_ROOM', mainRoomName: roomName }, '*');
-                            }
-                            apiRef.current?.executeCommand('joinBreakoutRoom', '');
-                          } catch (e) { }
-                        } else {
-                          apiRef.current?.executeCommand('endConference');
-                        }
-                      }}
-                      className="w-full bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
-                    >
-                      Kết thúc cuộc gọi theo nhóm
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowExitConfirm(false);
-                        apiRef.current?.executeCommand('hangup');
-                      }}
-                      className="w-full bg-[#E0E0E0] hover:bg-[#c9c9c9] text-[#040404] font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors"
-                    >
-                      Rời khỏi cuộc họp
-                    </button>
-                  </>
-                  <button
-                    onClick={() => setShowExitConfirm(false)}
-                    className="w-full bg-transparent hover:bg-white/10 text-white font-semibold py-2 px-4 rounded-lg text-[13px] text-center mt-1 transition-colors"
-                  >
-                    Hủy
-                  </button>
+                  {showHostTransferList ? (
+                    <div className="w-full flex flex-col items-center">
+                      <div className="text-white font-bold text-[13px] mb-2.5 w-full text-center border-b border-white/10 pb-2">
+                        Chọn người nhận quyền Host
+                      </div>
+                      <div className="w-full max-h-[180px] overflow-y-auto flex flex-col gap-1.5 mb-2 pr-1 custom-scrollbar">
+                        {getStudentList().length === 0 ? (
+                          <div className="text-white/50 text-[12px] py-4 text-center">
+                            Không có thành viên khác trong phòng
+                          </div>
+                        ) : (
+                          getStudentList().map((student: any) => (
+                            <button
+                              key={student.id}
+                              onClick={() => {
+                                try {
+                                  apiRef.current?.executeCommand('grantModerator', student.id);
+                                } catch (err) {
+                                  console.error('Failed to grant moderator:', err);
+                                }
+                                setShowExitConfirm(false);
+                                setShowHostTransferList(false);
+                                setTimeout(() => {
+                                  apiRef.current?.executeCommand('hangup');
+                                }, 500);
+                              }}
+                              className="w-full bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-3 rounded-lg text-[13px] text-left truncate transition-colors"
+                            >
+                              👤 {student.name}
+                            </button>
+                          ))
+                        )}
+                      </div>
+                      <button
+                        onClick={() => setShowHostTransferList(false)}
+                        className="w-full bg-white/5 hover:bg-white/10 text-white font-semibold py-2 px-4 rounded-lg text-[13px] text-center transition-colors"
+                      >
+                        Quay lại
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          setShowExitConfirm(false);
+                          if (isInBreakoutRoom) {
+                            shouldEndConferenceOnMainJoinRef.current = true;
+                            try {
+                              const iframe = apiRef.current?.getIFrame();
+                              if (iframe && iframe.contentWindow) {
+                                iframe.contentWindow.postMessage({ type: 'LEAVE_BREAKOUT_ROOM', mainRoomName: roomName }, '*');
+                              }
+                              apiRef.current?.executeCommand('joinBreakoutRoom', '');
+                            } catch (e) { }
+                          } else {
+                            apiRef.current?.executeCommand('endConference');
+                          }
+                        }}
+                        className="w-full bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
+                      >
+                        Kết thúc cuộc gọi theo nhóm
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowExitConfirm(false);
+                          apiRef.current?.executeCommand('hangup');
+                        }}
+                        className="w-full bg-[#E0E0E0] hover:bg-[#c9c9c9] text-[#040404] font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
+                      >
+                        Rời khỏi cuộc họp
+                      </button>
+                      <button
+                        onClick={() => setShowHostTransferList(true)}
+                        className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
+                      >
+                        Thoát và nhượng quyền Host
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowExitConfirm(false);
+                          setShowHostTransferList(false);
+                        }}
+                        className="w-full bg-transparent hover:bg-white/10 text-white font-semibold py-2 px-4 rounded-lg text-[13px] text-center mt-1 transition-colors"
+                      >
+                        Hủy
+                      </button>
+                    </>
+                  )}
 
                   {/* Arrow pointing up */}
                   <div className="absolute bottom-full right-[20px] w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[8px] border-b-[#141414]"></div>
