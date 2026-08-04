@@ -578,3 +578,43 @@ if (typeof window !== 'undefined') {
     };
     setInterval(hideFilmstripDistractions, 1000);
 }
+
+// Block student double-tap (mobile) and double-click (desktop) on large video to prevent unpin
+(function blockStudentLargeVideoUnpin() {
+    if (typeof window === 'undefined') return;
+
+    const isStudentNow = () => document.body && document.body.classList.contains('is-student');
+
+    const isLargeVideoArea = (target) => {
+        if (!target || typeof target.closest !== 'function') return false;
+        return !!(
+            target.closest('#largeVideoContainer') ||
+            target.closest('.large-video-wrapper') ||
+            target.closest('#largeVideo') ||
+            target.closest('#largeVideoBackgroundContainer')
+        );
+    };
+
+    // Block double-click (desktop)
+    document.addEventListener('dblclick', (e) => {
+        if (!isStudentNow()) return;
+        if (!isLargeVideoArea(e.target)) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        console.log('[Student Lock] Blocked double-click unpin on large video');
+    }, true);
+
+    // Block double-tap (mobile) — detect 2 taps < 400ms
+    let lastTapTime = 0;
+    document.addEventListener('touchend', (e) => {
+        if (!isStudentNow()) return;
+        if (!isLargeVideoArea(e.target)) return;
+        const now = Date.now();
+        if (now - lastTapTime < 400) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            console.log('[Student Lock] Blocked double-tap unpin on large video');
+        }
+        lastTapTime = now;
+    }, true);
+})();
