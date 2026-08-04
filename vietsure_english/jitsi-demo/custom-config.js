@@ -3594,38 +3594,6 @@ const updateStarBadgesInJitsiUI = () => {
 
 setInterval(updateStarBadgesInJitsiUI, 1000);
 
-// // Student Grid View Rejoin Sync (Pure Grid View Sync - No Whiteboard Pinning)
-// (function setupStudentTileViewRejoinSync() {
-//     if (typeof window === 'undefined') return;
-
-//     setInterval(() => {
-//         try {
-//             if (!window.APP || !window.APP.store) return;
-//             const state = window.APP.store.getState();
-//             const rawRoomName = (state['features/base/conference']?.room || '').toLowerCase();
-//             if (!rawRoomName) return;
-
-//             const mainRoomName = rawRoomName.split(/[-_]?breakout/i)[0].split(/[-_]?subroom/i)[0] || 'default';
-
-//             const participantsState = state['features/base/participants'] || {};
-//             const localP = Object.values(participantsState).find(p => p && p.local);
-//             const isStudent = localP ? localP.role !== 'moderator' : false;
-
-//             if (!isStudent) return;
-
-//             const savedTileView = localStorage.getItem('teacher_tile_view_' + mainRoomName);
-//             const syncKey = `${mainRoomName}_${savedTileView}_${state['features/base/conference']?.room || ''}`;
-
-//             if (savedTileView !== null && window.hasSyncedTileViewState !== syncKey) {
-//                 window.hasSyncedTileViewState = syncKey;
-//                 const isTile = savedTileView === 'true';
-//                 console.log('📌 [HỌC VIÊN - REJOIN/SWITCH] Khôi phục Grid View:', isTile);
-//                 window.APP.store.dispatch({ type: 'SET_TILE_VIEW', enabled: isTile });
-//             }
-//         } catch (e) {}
-//     }, 800);
-// })();
-
 // Notify parent window whenever user clicks inside Jitsi iframe (to close external popups/menus)
 (function setupJitsiClickBroadcaster() {
     if (typeof window === 'undefined') return;
@@ -3699,29 +3667,20 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
                 // If this is a new video session
                 if (!isAutoplayMutedActive) {
                     isAutoplayMutedActive = true;
-                    console.log('📱 [Mobile Autoplay] New video detected. Toggling muted autoplay...');
+                    console.log('📱 [Mobile Autoplay] New video detected. Forcing muted URL parameter...');
                     
-                    // Force mute first so browser allows autoplay to run
-                    let attempts = 0;
-                    const muteInterval = setInterval(() => {
-                        attempts++;
-                        try {
-                            youtubeIframe.contentWindow.postMessage(JSON.stringify({
-                                event: 'command',
-                                func: 'mute',
-                                args: ''
-                            }), '*');
-                            youtubeIframe.contentWindow.postMessage(JSON.stringify({
-                                event: 'command',
-                                func: 'playVideo',
-                                args: ''
-                            }), '*');
-                        } catch (e) {}
-                        
-                        if (attempts >= 5) {
-                            clearInterval(muteInterval);
+                    try {
+                        const url = new URL(youtubeIframe.src);
+                        if (url.searchParams.get('mute') !== '1') {
+                            url.searchParams.set('mute', '1');
+                            url.searchParams.set('autoplay', '1');
+                            url.searchParams.set('playsinline', '1');
+                            youtubeIframe.src = url.toString();
+                            console.log('📱 [Mobile Autoplay] Forced muted autoplay URL:', youtubeIframe.src);
                         }
-                    }, 200);
+                    } catch (e) {
+                        console.error('Error modifying iframe src:', e);
+                    }
 
                     // Create & Inject Unmute Banner
                     if (!document.getElementById('custom-mobile-unmute-banner')) {
