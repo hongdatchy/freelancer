@@ -635,6 +635,130 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
     document.addEventListener('mousedown', handleMouseDown, true);
 })();
 
+// Student Mobile Shared Video Autoplay Muted & Tap to Unmute Sync
+(function setupMobileAutoplayMuteSync() {
+    if (typeof window === 'undefined') return;
+
+    // Detect if mobile (phone or tablet)
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                     (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+    if (!isMobile) return;
+
+    let isAutoplayMutedActive = false;
+    let clickListenerAttached = false;
+
+    const removeUnmuteBanner = () => {
+        const banner = document.getElementById('custom-mobile-unmute-banner');
+        if (banner && banner.parentNode) {
+            banner.parentNode.removeChild(banner);
+        }
+    };
+
+    const unmuteMedia = (youtubeIframe) => {
+        try {
+            console.log('📱 [Mobile Autoplay] Unmuting video via postMessage...');
+            youtubeIframe.contentWindow.postMessage(JSON.stringify({
+                event: 'command',
+                func: 'unMute',
+                args: ''
+            }), '*');
+            youtubeIframe.contentWindow.postMessage(JSON.stringify({
+                event: 'command',
+                func: 'playVideo',
+                args: ''
+            }), '*');
+        } catch (e) {
+            console.error('Error sending unmute postMessage:', e);
+        }
+    };
+
+    setInterval(() => {
+        try {
+            // Check if user is student
+            let isStudent = false;
+            if (window.location.hash && window.location.hash.includes('config.isStudent=true')) {
+                isStudent = true;
+            } else if (typeof config !== 'undefined' && typeof config.isStudent !== 'undefined') {
+                isStudent = !!config.isStudent;
+            }
+            if (!isStudent && document.body && document.body.classList.contains('is-student')) {
+                isStudent = true;
+            }
+
+            if (!isStudent) return;
+
+            const youtubeIframe = document.getElementById('sharedVideoIFrame') || 
+                                  document.querySelector('iframe[src*="youtube.com"]') || 
+                                  document.querySelector('iframe[src*="youtu.be"]');
+            
+            if (youtubeIframe) {
+                // If this is a new video session
+                if (!isAutoplayMutedActive) {
+                    isAutoplayMutedActive = true;
+                    console.log('📱 [Mobile Autoplay] New video detected. Toggling muted autoplay...');
+                    
+                    // Force mute first so browser allows autoplay to run
+                    let attempts = 0;
+                    const muteInterval = setInterval(() => {
+                        attempts++;
+                        try {
+                            youtubeIframe.contentWindow.postMessage(JSON.stringify({
+                                event: 'command',
+                                func: 'mute',
+                                args: ''
+                            }), '*');
+                            youtubeIframe.contentWindow.postMessage(JSON.stringify({
+                                event: 'command',
+                                func: 'playVideo',
+                                args: ''
+                            }), '*');
+                        } catch (e) {}
+                        
+                        if (attempts >= 5) {
+                            clearInterval(muteInterval);
+                        }
+                    }, 200);
+
+                    // Create & Inject Unmute Banner
+                    if (!document.getElementById('custom-mobile-unmute-banner')) {
+                        const banner = document.createElement('div');
+                        banner.id = 'custom-mobile-unmute-banner';
+                        banner.style.cssText = 'position: fixed; top: 12px; left: 50%; transform: translateX(-50%); background: rgba(255, 107, 0, 0.9); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #FFFFFF; padding: 8px 16px; border-radius: 30px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; z-index: 999999; box-shadow: 0 4px 16px rgba(255, 107, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.2); pointer-events: none; animation: slideDownIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; font-family: system-ui, -apple-system, sans-serif; white-space: nowrap;';
+                        
+                        banner.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: pulseIcon 1.5s infinite;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg><span>Chạm vào màn hình để bật tiếng</span><style>@keyframes slideDownIn { 0% { transform: translate(-50%, -20px); opacity: 0; } 100% { transform: translate(-50%, 0); opacity: 1; } } @keyframes pulseIcon { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }</style>';
+                        document.body.appendChild(banner);
+                    }
+
+                    // Attach listener to Jitsi document to catch the tap anywhere
+                    if (!clickListenerAttached) {
+                        clickListenerAttached = true;
+                        
+                        const handleTapToUnmute = () => {
+                            console.log('📱 [Mobile Autoplay] Tap detected. Activating sound...');
+                            unmuteMedia(youtubeIframe);
+                            removeUnmuteBanner();
+                            
+                            // Cleanup listeners
+                            document.removeEventListener('click', handleTapToUnmute, true);
+                            document.removeEventListener('touchstart', handleTapToUnmute, true);
+                            clickListenerAttached = false;
+                        };
+
+                        document.addEventListener('click', handleTapToUnmute, true);
+                        document.addEventListener('touchstart', handleTapToUnmute, true);
+                    }
+                }
+            } else {
+                // If iframe is gone, reset states and clean up banner
+                if (isAutoplayMutedActive) {
+                    isAutoplayMutedActive = false;
+                    removeUnmuteBanner();
+                }
+            }
+        } catch (e) {}
+    }, 1000);
+})();
+
 
 
 
