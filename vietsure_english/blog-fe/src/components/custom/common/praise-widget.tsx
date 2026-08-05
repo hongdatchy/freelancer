@@ -151,8 +151,17 @@ export const triggerPraiseAnimation = (param?: any, apiRef?: any) => {
   }, 2800);
 };
 
+const MASCOT_IMAGES = [
+  '/images/phan-khich-nang-dong.png',
+  '/images/hao-hung-san-sang.png',
+  '/images/bo-ngo-to-mo.png',
+  '/images/character-penguin.png',
+  '/images/tap-trung-quyet-liet.png',
+];
+
 export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: PraiseWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [pendingPraise, setPendingPraise] = useState<{ studentName?: string; isAll?: boolean } | null>(null);
   const starScoresKey = `praiseStars_${roomName || 'default'}`;
   const [starScores, setStarScores] = useState<Record<string, number>>(() => {
     try {
@@ -286,26 +295,25 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
     }
   };
 
-  const handleSendPraise = (opts: { studentName?: string; studentId?: string; isAll?: boolean }) => {
-    const randIndex = Math.floor(Math.random() * 5);
+  const handleSendPraise = (opts: { studentName?: string; isAll?: boolean }, mascotIdx: number) => {
     const students = getStudentList();
 
     if (opts.isAll) {
       const newScores = { ...starScores };
       students.forEach((s: any) => { newScores[s.name] = (newScores[s.name] || 0) + 1; });
 
-      const payload = { isAll: true, mascotIdx: randIndex, allScores: newScores };
+      const payload = { isAll: true, mascotIdx, allScores: newScores };
       if (apiRef.current) {
         apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${JSON.stringify(payload)}`);
       }
 
-      triggerPraiseAnimation({ isAll: true, mascotIdx: randIndex }, apiRef);
+      triggerPraiseAnimation({ isAll: true, mascotIdx }, apiRef);
       setStarScores(newScores);
       try { localStorage.setItem(starScoresKey, JSON.stringify(newScores)); } catch {}
 
     } else if (opts.studentName) {
       const newScores = { ...starScores, [opts.studentName]: (starScores[opts.studentName] || 0) + 1 };
-      const payload = { studentName: opts.studentName, mascotIdx: randIndex, allScores: newScores };
+      const payload = { studentName: opts.studentName, mascotIdx, allScores: newScores };
       if (apiRef.current) {
         apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${JSON.stringify(payload)}`);
       }
@@ -314,6 +322,7 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
       try { localStorage.setItem(starScoresKey, JSON.stringify(newScores)); } catch {}
     }
 
+    setPendingPraise(null);
     setIsOpen(false);
   };
 
@@ -364,9 +373,50 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
         Chọn học viên để tặng Ngôi sao khen thưởng ⭐
       </p>
 
+      {/* Mascot picker panel */}
+      {pendingPraise && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <button
+              onClick={() => setPendingPraise(null)}
+              style={{ background: 'none', border: 'none', color: '#a78bfa', fontSize: 18, cursor: 'pointer', padding: 0 }}
+            >←</button>
+            <p style={{ margin: 0, fontSize: 13, color: '#c7d2fe', fontWeight: 700 }}>
+              {pendingPraise.isAll ? '🌟 Khen cả lớp — Chọn nhân vật:' : `⭐ Khen ${pendingPraise.studentName} — Chọn nhân vật:`}
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {MASCOT_IMAGES.map((src, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleSendPraise(pendingPraise, idx)}
+                style={{
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '2px solid rgba(167,139,250,0.3)',
+                  borderRadius: 14,
+                  padding: 8,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                  width: 80,
+                  height: 80,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.borderColor = '#a78bfa'; e.currentTarget.style.background = 'rgba(167,139,250,0.2)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.3)'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
+              >
+                <img src={src} alt={`mascot-${idx}`} style={{ width: 58, height: 58, objectFit: 'contain' }} />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Praise All button */}
+      {!pendingPraise && (
       <button
-        onClick={() => handleSendPraise({ isAll: true })}
+        onClick={() => setPendingPraise({ isAll: true })}
         style={{
           width: '100%',
           padding: '12px 16px',
@@ -387,8 +437,10 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
       >
         <span>🌟 Khen Thưởng Cả Lớp (+1 ⭐)</span>
       </button>
+      )}
 
       {/* Student list */}
+      {!pendingPraise && (
       <div style={{ maxHeight: 220, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, paddingRight: 4 }}>
         {getStudentList().map((student: any, idx: number) => {
           const stars = starScores[student.name] || 0;
@@ -413,7 +465,7 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
                 </span>
               </div>
               <button
-                onClick={() => handleSendPraise({ studentName: student.name })}
+                onClick={() => setPendingPraise({ studentName: student.name })}
                 style={{
                   background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
                   border: 'none',
@@ -437,6 +489,7 @@ export default function PraiseWidget({ apiRef, isHost, apiReady, roomName }: Pra
           </div>
         )}
       </div>
+      )}
 
       {/* Reset Scores Button */}
       <button
