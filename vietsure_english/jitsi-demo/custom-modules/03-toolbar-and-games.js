@@ -674,10 +674,16 @@ if (typeof window !== "undefined") {
           );
           const _tbContainer = doc.querySelector('.toolbox-content-items');
           const nativeWbBtns = _tbContainer
-            ? Array.from(_tbContainer.children).filter(el =>
-                (el.getAttribute('data-testid') || '').toLowerCase().includes('whiteboard') ||
-                (el.querySelector('[data-testid*="whiteboard"]') !== null)
-              )
+            ? Array.from(_tbContainer.children).filter(el => {
+                const text = (
+                  (el.getAttribute('data-testid') || '') + ' ' +
+                  (el.getAttribute('aria-label') || '') + ' ' +
+                  (el.getAttribute('data-label') || '') + ' ' +
+                  (el.getAttribute('title') || '') + ' ' +
+                  (el.innerHTML || '')
+                ).toLowerCase();
+                return text.includes('whiteboard') || text.includes('bảng') || text.includes('bang');
+              })
             : [];
 
           // Check if Teacher locally is sharing screen
@@ -816,7 +822,24 @@ if (typeof window !== "undefined") {
             setSlotDisplay(wbGroup, true);
           }
         } else {
-          // Student view: Hide share screen button by default
+          // Student view: Hide share screen, whiteboard & shared video buttons by default
+          const nativeWbBtns = _tbContainer
+            ? Array.from(_tbContainer.children).filter(el => {
+                const text = (
+                  (el.getAttribute('data-testid') || '') + ' ' +
+                  (el.getAttribute('aria-label') || '') + ' ' +
+                  (el.getAttribute('data-label') || '') + ' ' +
+                  (el.getAttribute('title') || '') + ' ' +
+                  (el.innerHTML || '')
+                ).toLowerCase();
+                return text.includes('whiteboard') || text.includes('bảng') || text.includes('bang');
+              })
+            : [];
+          nativeWbBtns.forEach(btn => btn.style.setProperty("display", "none", "important"));
+          
+          const customWbBtn = doc.getElementById("custom-unpin-whiteboard-menu-item");
+          if (customWbBtn) customWbBtn.style.setProperty("display", "none", "important");
+
           const shareWrapper = findShareScreenWrapper(doc);
           if (shareWrapper) {
             if (!window.allowStudentScreenshare) {

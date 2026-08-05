@@ -183,22 +183,22 @@ if (typeof document !== 'undefined') {
         }
 
         /* Hide whiteboard and shared video buttons in student's toolbar (on documentElement or body) */
-        .is-student [data-testid="toolbox-whiteboard"],
-        .is-student [data-testid="toolbox-shared-video"],
-        .is-student .toolbox-button[aria-label*="Whiteboard"],
-        .is-student .toolbox-button[aria-label*="Bảng trắng"],
-        .is-student .toolbox-button[aria-label*="Ẩn bảng"],
-        .is-student .toolbox-button[aria-label*="Hiện bảng"],
-        .is-student .toolbox-button[aria-label*="Video"],
-        .is-student .toolbox-button[aria-label*="video"],
-        .is-student button[title*="Whiteboard"],
-        .is-student button[title*="Bảng trắng"],
-        .is-student button[title*="Ẩn bảng"],
-        .is-student button[title*="Hiện bảng"],
-        .is-student button[title*="Video"],
-        .is-student button[title*="video"],
-        .is-student [aria-label="Video"],
-        .is-student [aria-label="video"] {
+        .is-student [data-testid*="whiteboard" i],
+        .is-student [data-testid*="shared-video" i],
+        .is-student [aria-label*="whiteboard" i],
+        .is-student [aria-label*="bảng" i],
+        .is-student [aria-label*="bang" i],
+        .is-student [data-label*="whiteboard" i],
+        .is-student [data-label*="bảng" i],
+        .is-student [data-label*="bang" i],
+        .is-student [title*="whiteboard" i],
+        .is-student [title*="bảng" i],
+        .is-student [title*="bang" i],
+        .is-student .toolbox-button[aria-label*="whiteboard" i],
+        .is-student .toolbox-button[aria-label*="bảng" i],
+        .is-student .toolbox-button[data-label*="bảng" i],
+        .is-student .toolbox-button[aria-label*="video" i],
+        .is-student [aria-label*="video" i] {
             display: none !important;
         }
 
@@ -597,6 +597,49 @@ if (typeof window !== 'undefined') {
     };
     setInterval(hideFilmstripDistractions, 1000);
 }
+
+// Instant MutationObserver to filter out system notifications at 0ms before render while preserving chat
+(function setupInstantNotificationObserver() {
+    if (typeof window === 'undefined') return;
+
+    const filterNotificationElement = (el) => {
+        if (!el || el.nodeType !== 1) return;
+        const text = (el.innerText || el.textContent || '').toLowerCase();
+        const isChat = text.includes('tin nhắn') || text.includes('chat') || el.querySelector('[class*="chat"]') !== null || el.querySelector('[class*="message"]') !== null;
+        if (!isChat) {
+            el.style.setProperty('display', 'none', 'important');
+        }
+    };
+
+    const attachObserver = () => {
+        const container = document.getElementById('notifications-container') || document.querySelector('.notifications-container');
+        if (!container) return false;
+        
+        if (container._hasInstantObserver) return true;
+        container._hasInstantObserver = true;
+
+        container.querySelectorAll(':scope > div, .notification').forEach(filterNotificationElement);
+
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === 1) {
+                        filterNotificationElement(node);
+                    }
+                });
+            });
+        });
+
+        observer.observe(container, { childList: true, subtree: true });
+        return true;
+    };
+
+    const timer = setInterval(() => {
+        if (attachObserver()) {
+            clearInterval(timer);
+        }
+    }, 200);
+})();
 
 // Block student double-tap (mobile) and double-click (desktop) on large video to prevent unpin
 (function blockStudentLargeVideoUnpin() {
