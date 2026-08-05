@@ -2429,6 +2429,7 @@ if (typeof window !== "undefined") {
 
       docs.forEach((doc) => {
         const isStudent = checkIfStudent();
+        const _tbContainer = doc.querySelector('.toolbox-content-items');
         if (!isStudent) {
           injectTeacherShareControlBtn(doc);
 
@@ -2441,7 +2442,6 @@ if (typeof window !== "undefined") {
           const customWbBtn = doc.getElementById(
             "custom-unpin-whiteboard-menu-item",
           );
-          const _tbContainer = doc.querySelector('.toolbox-content-items');
           const nativeWbBtns = _tbContainer
             ? Array.from(_tbContainer.children).filter(el => {
                 const text = (
@@ -2635,12 +2635,81 @@ if (typeof window !== "undefined") {
 
         // Auto-show text labels under every toolbar button without hover
         setupToolbarButtonLabels(doc);
+        
+        // Inject custom "Yêu cầu bật camera" button under native "Yêu cầu bật tiếng" in context menu
+        injectAskToStartVideoBtn(doc);
       });
     } catch (e) {}
   }, 300);
 })();
 
 // Automatically show persistent text labels under each Jitsi toolbar button
+// Inject custom "Yêu cầu bật camera" button right under native "Yêu cầu bật tiếng" / "Ask to unmute"
+const injectAskToStartVideoBtn = (doc = document) => {
+  try {
+    const isStudent = typeof checkIfStudent === 'function' ? checkIfStudent() : false;
+    if (isStudent) return;
+
+    // Find the native unmute item by data-testid, aria-label, or text
+    const unmuteItem = doc.querySelector('[data-testid*="unmute-audio"], [aria-label="Yêu cầu bật tiếng"], [aria-label*="bật tiếng" i]') ||
+      Array.from(doc.querySelectorAll('[role="button"], [role="menuitem"], div[class*="contextMenuItem"]')).find(el => {
+        const text = (el.textContent || el.getAttribute('aria-label') || '').toLowerCase();
+        return text.includes('bật tiếng') || text.includes('unmute');
+      });
+
+    if (!unmuteItem) return;
+
+    const parent = unmuteItem.parentNode;
+    if (!parent || parent.querySelector('#custom-ask-enable-camera-item')) return;
+
+    // Extract exact classes from native unmute item
+    const iconContainer = unmuteItem.querySelector('.jitsi-icon') || unmuteItem.querySelector('[class*="contextMenuItemIcon"]');
+    const iconClass = iconContainer ? iconContainer.className : 'jitsi-icon jitsi-icon-default css-18jmnfv-contextMenuItemIcon';
+
+    const textContainer = unmuteItem.querySelector('[class*="textContainer"]') || unmuteItem.querySelector('div:nth-child(2)');
+    const textClass = textContainer ? textContainer.className : 'css-1u19cyy-text-textContainer';
+    const spanClass = (textContainer && textContainer.firstElementChild) ? textContainer.firstElementChild.className : 'css-1h7r6a1-ellipsis';
+
+    const item = doc.createElement('div');
+    item.id = 'custom-ask-enable-camera-item';
+    item.className = unmuteItem.className;
+    item.setAttribute('role', 'button');
+    item.setAttribute('tabindex', '0');
+    item.setAttribute('aria-label', 'Yêu cầu bật camera');
+    item.style.cursor = 'pointer';
+
+    item.innerHTML = `
+      <div class="${iconClass}">
+        <svg aria-hidden="true" height="20" width="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M20.78 3.22a.75.75 0 0 1 0 1.06l-3.37 3.371.005-.004-1.665 1.665V9.31L7.06 18h.002l-1.5 1.5H5.56l-1.28 1.28a.75.75 0 0 1-1.061-1.06l.362-.363A3.001 3.001 0 0 1 1.5 16.5v-9a3 3 0 0 1 3-3h9.75a3 3 0 0 1 2.631 1.558L19.72 3.22a.75.75 0 0 1 1.06 0Zm-5.057 3.996A1.5 1.5 0 0 0 14.25 6H4.5A1.5 1.5 0 0 0 3 7.5v9A1.5 1.5 0 0 0 4.5 18h.44L15.722 7.216Z"></path>
+          <path d="M21 6.75a.75.75 0 0 1 1.5 0v10.474c0 1.246-1.43 1.949-2.416 1.188l-2.834-2.186v.274a3 3 0 0 1-3 3H9A.75.75 0 0 1 9 18h5.25a1.5 1.5 0 0 0 1.5-1.5V12a.75.75 0 0 1 1.5 0v2.331L21 17.224V6.75Z"></path>
+        </svg>
+      </div>
+      <div class="${textClass}">
+        <span class="${spanClass}">Yêu cầu bật camera</span>
+      </div>
+    `;
+
+    item.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('📌 [TEACHER] Clicked Yêu cầu bật camera!');
+      try {
+        if (window.APP?.conference && typeof window.APP.conference.sendTextMessage === 'function') {
+          window.APP.conference.sendTextMessage('__REQUEST_ENABLE_CAMERA__');
+        } else if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
+          window.APP.conference._room.sendTextMessage('__REQUEST_ENABLE_CAMERA__');
+        }
+      } catch (err) {}
+      try {
+        const menuPopover = unmuteItem.closest('[role="menu"], [class*="contextMenu"], [class*="popover"], [class*="Menu"]');
+        if (menuPopover) menuPopover.style.display = 'none';
+      } catch (err) {}
+    };
+
+    parent.insertBefore(item, unmuteItem.nextSibling);
+  } catch (e) {}
+};
 const setupToolbarButtonLabels = (doc) => {
   const toolbarContainer = doc.querySelector(".toolbox-content-items");
   if (!toolbarContainer) return;
@@ -3161,6 +3230,60 @@ const showSharePermissionToast = (isAllowed) => {
     } catch (e) {}
 };
 
+// Trigger Jitsi native notification system via Redux store SHOW_NOTIFICATION
+const showStudentCameraRequestModal = () => {
+    if (typeof window === 'undefined') return;
+
+    const unmuteCamera = () => {
+        try {
+            if (window.APP?.conference && typeof window.APP.conference.muteVideo === 'function') {
+                window.APP.conference.muteVideo(false);
+            }
+        } catch (e) {}
+
+        try {
+            if (window.APP?.conference && typeof window.APP.conference.toggleVideo === 'function') {
+                window.APP.conference.toggleVideo(true);
+            }
+        } catch (e) {}
+
+        try {
+            if (window.APP?.store) {
+                window.APP.store.dispatch({ type: 'SET_VIDEO_MUTED', muted: false, ensureTrack: true });
+            }
+        } catch (e) {}
+
+        try {
+            const camBtn = document.querySelector('[data-testid="toolbox-camera"], .toolbox-button[aria-label*="camera" i], .toolbox-button[aria-label*="video" i], .toolbox-button[aria-label*="bật camera" i]');
+            if (camBtn) camBtn.click();
+        } catch (e) {}
+    };
+
+    try {
+        if (window.APP && window.APP.store) {
+            window.APP.store.dispatch({
+                type: 'SHOW_NOTIFICATION',
+                props: {
+                    titleKey: 'Người điều hành muốn bạn mở camera',
+                    customActionNameKey: ['Bật camera'],
+                    customActionHandler: [() => {
+                        unmuteCamera();
+                        try {
+                            window.APP.store.dispatch({ type: 'HIDE_NOTIFICATION', uid: 'camera-request-notification' });
+                        } catch (e) {}
+                    }],
+                    appearance: 'info',
+                    uid: 'camera-request-notification'
+                },
+                timeout: 15000
+            });
+            return;
+        }
+    } catch (e) {
+        console.error('Error dispatching native notification:', e);
+    }
+};
+
 if (typeof window !== 'undefined') {
     window.addEventListener('message', (event) => {
         if (!event.data) return;
@@ -3305,6 +3428,7 @@ if (typeof window !== 'undefined') {
             text.includes('__TOGGLE_STUDENT_SCREENSHARE__') ||
             text.includes('__TILE_VIEW__') ||
             text.includes('__TEACHER_PIN__') ||
+            text.includes('__REQUEST_ENABLE_CAMERA__') ||
             text.includes('Đang ghi âm') ||
             text.includes('Đang ghi hình') ||
             text.includes('phát trực tiếp') ||
@@ -3320,6 +3444,7 @@ if (typeof window !== 'undefined') {
             html.includes('__TOGGLE_STUDENT_SCREENSHARE__') ||
             html.includes('__TILE_VIEW__') ||
             html.includes('__TEACHER_PIN__') ||
+            html.includes('__REQUEST_ENABLE_CAMERA__') ||
             html.includes('Đang ghi âm') ||
             html.includes('Đang ghi hình') ||
             html.includes('phát trực tiếp') ||
@@ -3454,6 +3579,7 @@ if (typeof window !== 'undefined') {
                 const isToggleStudentShare = msgText.startsWith('__TOGGLE_STUDENT_SCREENSHARE__:');
                 const isTileViewMsg = msgText.startsWith('__TILE_VIEW__:');
                 const isTeacherPinMsg = msgText.startsWith('__TEACHER_PIN__:');
+                const isRequestEnableCamera = msgText.includes('__REQUEST_ENABLE_CAMERA__');
                 const isPraise = msgText.includes('__PRAISE__');
                 const isWheel = msgText.includes('__WHEEL__');
                 const isDice = msgText.includes('__DICE__') || msgText.includes('__DICE_COUNT__');
@@ -3546,6 +3672,12 @@ if (typeof window !== 'undefined') {
                             const payload = JSON.parse(payloadStr);
                             window.parent.postMessage({ type: 'WHEEL_ACTION', payload }, '*');
                         } catch (e) {}
+                    }
+                } else if (isRequestEnableCamera) {
+                    timerMessagesCount++;
+                    const isStudent = (typeof checkIfStudent === 'function' && checkIfStudent()) || !!window.config?.isStudent;
+                    if (isStudent && !isHistoryMessage) {
+                        showStudentCameraRequestModal();
                     }
                 } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg || isTeacherPinMsg) {
                     timerMessagesCount++;

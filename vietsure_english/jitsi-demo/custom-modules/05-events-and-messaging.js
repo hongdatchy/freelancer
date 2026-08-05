@@ -58,6 +58,60 @@ const showSharePermissionToast = (isAllowed) => {
     } catch (e) {}
 };
 
+// Trigger Jitsi native notification system via Redux store SHOW_NOTIFICATION
+const showStudentCameraRequestModal = () => {
+    if (typeof window === 'undefined') return;
+
+    const unmuteCamera = () => {
+        try {
+            if (window.APP?.conference && typeof window.APP.conference.muteVideo === 'function') {
+                window.APP.conference.muteVideo(false);
+            }
+        } catch (e) {}
+
+        try {
+            if (window.APP?.conference && typeof window.APP.conference.toggleVideo === 'function') {
+                window.APP.conference.toggleVideo(true);
+            }
+        } catch (e) {}
+
+        try {
+            if (window.APP?.store) {
+                window.APP.store.dispatch({ type: 'SET_VIDEO_MUTED', muted: false, ensureTrack: true });
+            }
+        } catch (e) {}
+
+        try {
+            const camBtn = document.querySelector('[data-testid="toolbox-camera"], .toolbox-button[aria-label*="camera" i], .toolbox-button[aria-label*="video" i], .toolbox-button[aria-label*="bật camera" i]');
+            if (camBtn) camBtn.click();
+        } catch (e) {}
+    };
+
+    try {
+        if (window.APP && window.APP.store) {
+            window.APP.store.dispatch({
+                type: 'SHOW_NOTIFICATION',
+                props: {
+                    titleKey: 'Người điều hành muốn bạn mở camera',
+                    customActionNameKey: ['Bật camera'],
+                    customActionHandler: [() => {
+                        unmuteCamera();
+                        try {
+                            window.APP.store.dispatch({ type: 'HIDE_NOTIFICATION', uid: 'camera-request-notification' });
+                        } catch (e) {}
+                    }],
+                    appearance: 'info',
+                    uid: 'camera-request-notification'
+                },
+                timeout: 15000
+            });
+            return;
+        }
+    } catch (e) {
+        console.error('Error dispatching native notification:', e);
+    }
+};
+
 if (typeof window !== 'undefined') {
     window.addEventListener('message', (event) => {
         if (!event.data) return;
@@ -202,6 +256,7 @@ if (typeof window !== 'undefined') {
             text.includes('__TOGGLE_STUDENT_SCREENSHARE__') ||
             text.includes('__TILE_VIEW__') ||
             text.includes('__TEACHER_PIN__') ||
+            text.includes('__REQUEST_ENABLE_CAMERA__') ||
             text.includes('Đang ghi âm') ||
             text.includes('Đang ghi hình') ||
             text.includes('phát trực tiếp') ||
@@ -217,6 +272,7 @@ if (typeof window !== 'undefined') {
             html.includes('__TOGGLE_STUDENT_SCREENSHARE__') ||
             html.includes('__TILE_VIEW__') ||
             html.includes('__TEACHER_PIN__') ||
+            html.includes('__REQUEST_ENABLE_CAMERA__') ||
             html.includes('Đang ghi âm') ||
             html.includes('Đang ghi hình') ||
             html.includes('phát trực tiếp') ||
@@ -351,6 +407,7 @@ if (typeof window !== 'undefined') {
                 const isToggleStudentShare = msgText.startsWith('__TOGGLE_STUDENT_SCREENSHARE__:');
                 const isTileViewMsg = msgText.startsWith('__TILE_VIEW__:');
                 const isTeacherPinMsg = msgText.startsWith('__TEACHER_PIN__:');
+                const isRequestEnableCamera = msgText.includes('__REQUEST_ENABLE_CAMERA__');
                 const isPraise = msgText.includes('__PRAISE__');
                 const isWheel = msgText.includes('__WHEEL__');
                 const isDice = msgText.includes('__DICE__') || msgText.includes('__DICE_COUNT__');
@@ -443,6 +500,12 @@ if (typeof window !== 'undefined') {
                             const payload = JSON.parse(payloadStr);
                             window.parent.postMessage({ type: 'WHEEL_ACTION', payload }, '*');
                         } catch (e) {}
+                    }
+                } else if (isRequestEnableCamera) {
+                    timerMessagesCount++;
+                    const isStudent = (typeof checkIfStudent === 'function' && checkIfStudent()) || !!window.config?.isStudent;
+                    if (isStudent && !isHistoryMessage) {
+                        showStudentCameraRequestModal();
                     }
                 } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg || isTeacherPinMsg) {
                     timerMessagesCount++;
