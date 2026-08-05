@@ -519,8 +519,8 @@ if (typeof window !== 'undefined') {
                     }
                     */
 
-                    /* On Desktop: always disable clicking/pausing shared video for students */
-                    @media (min-width: 769px) {
+                    /* On Mouse/Non-Touch Desktop (pointer: fine): always disable clicking/pausing shared video for students */
+                    @media (pointer: fine) {
                         body.is-student #sharedVideo,
                         body.is-student #sharedVideoIFrame,
                         body.is-student #sharedVideoContainer,
@@ -532,8 +532,8 @@ if (typeof window !== 'undefined') {
                         }
                     }
 
-                    /* On Mobile: disable clicking/pausing ONLY after the student clicks/focuses the video once (has unlocked-clicked class) */
-                    @media (max-width: 768px) {
+                    /* On Touch Devices (iPad / Phone / Tablet - pointer: coarse): disable clicking/pausing ONLY after the student clicks/focuses the video once (has unlocked-clicked class) */
+                    @media (pointer: coarse) {
                         body.is-student #sharedVideo.unlocked-clicked,
                         body.is-student #sharedVideoIFrame.unlocked-clicked,
                         body.is-student #sharedVideoContainer.unlocked-clicked,
