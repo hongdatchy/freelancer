@@ -9,6 +9,7 @@ config.startTileView = true;
 config.settingsSections = ['devices', 'moderator', 'profile', 'calendar', 'sounds'];
 config.disableSelfViewSettings = true;
 config.disabledSounds = ['INCOMING_MSG_SOUND_ID', 'OUTGOING_MSG_SOUND_ID'];
+config.dynamicBrandingUrl = '/images/branding.json';
 
 // Helper to robustly check if the current participant is a student (non-moderator)
 window.checkIfStudent = () => {

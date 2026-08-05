@@ -48,6 +48,12 @@ try {
             console.log(`🚀 Successfully updated Docker active config: ${dockerConfigJs}`);
         }
     }
+
+    const { execSync } = require('child_process');
+    execSync('docker exec jitsi-demo-web-1 mkdir -p /usr/share/jitsi-meet/images', { stdio: 'ignore' });
+    execSync(`docker cp "${path.join(modulesDir, 'teacher-background.jpg')}" jitsi-demo-web-1:/usr/share/jitsi-meet/images/teacher-background.jpg`, { stdio: 'ignore' });
+    execSync(`docker cp "${path.join(modulesDir, 'branding.json')}" jitsi-demo-web-1:/usr/share/jitsi-meet/images/branding.json`, { stdio: 'ignore' });
+    console.log('✅ Synced branding.json & teacher-background.jpg into Docker container images directory');
 } catch (err) {
     console.warn('⚠️ Could not auto-sync to Docker volume:', err.message);
 }
