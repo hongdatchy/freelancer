@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useRouter } from 'next/navigation';
 import useUserLoginStore from '@/state-manager/user-login-store';
 import TimerWidget from '@/components/custom/common/timer-widget';
@@ -50,6 +51,90 @@ export default function ClassroomPage() {
   const [isModerator, setIsModerator] = useState(false);
   const [showHostTransferList, setShowHostTransferList] = useState(false);
   const localUserIdRef = useRef<string>('');
+
+  const [isPipActive, setIsPipActive] = useState(false);
+  const [pipWinBody, setPipWinBody] = useState<HTMLElement | null>(null);
+  const pipWindowRef = useRef<any>(null);
+
+  const handlePiP2 = async () => {
+    if (typeof window === 'undefined') return;
+
+    if (!('documentPictureInPicture' in window)) {
+      alert('Trình duyệt của bạn chưa hỗ trợ Document Picture-in-Picture (vui lòng sử dụng Google Chrome hoặc Microsoft Edge 116+)!');
+      return;
+    }
+
+    if (pipWindowRef.current) {
+      try {
+        pipWindowRef.current.close();
+      } catch (e) {}
+      pipWindowRef.current = null;
+      setPipWinBody(null);
+      setIsPipActive(false);
+      return;
+    }
+
+    try {
+      const pipWin = await (window as any).documentPictureInPicture.requestWindow({
+        width: 800,
+        height: 500,
+      });
+      pipWindowRef.current = pipWin;
+
+      const styleElements = document.querySelectorAll('style, link[rel="stylesheet"]');
+      styleElements.forEach((el) => {
+        pipWin.document.head.appendChild(el.cloneNode(true));
+      });
+
+      pipWin.document.title = `Vietsure English - Lớp: ${roomName}`;
+      pipWin.document.body.style.cssText = 'margin: 0; padding: 0; overflow: hidden; background: #1d285c; height: 100vh; width: 100vw;';
+
+      const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+        const reasonStr = String(event.reason || '');
+        if (reasonStr.includes('NotAllowedError') || reasonStr.includes('Permission denied') || reasonStr.includes('DevicesNotFoundError')) {
+          console.warn('🎥 [PiP Window] Safely prevented camera/mic permission crash:', reasonStr);
+          event.preventDefault();
+        }
+      };
+      pipWin.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+      const handlePipMessage = (event: MessageEvent) => {
+        if (event.data) {
+          try {
+            window.dispatchEvent(new MessageEvent('message', {
+              data: event.data,
+              origin: event.origin,
+              source: event.source,
+            }));
+          } catch (e) {
+            window.postMessage(event.data, '*');
+          }
+        }
+      };
+      pipWin.addEventListener('message', handlePipMessage);
+
+      setPipWinBody(pipWin.document.body);
+      setIsPipActive(true);
+
+      setTimeout(() => {
+        initJitsi();
+      }, 250);
+
+      pipWin.addEventListener('pagehide', () => {
+        pipWin.removeEventListener('message', handlePipMessage);
+        pipWin.removeEventListener('unhandledrejection', handleUnhandledRejection);
+        pipWindowRef.current = null;
+        setPipWinBody(null);
+        setIsPipActive(false);
+
+        setTimeout(() => {
+          initJitsi();
+        }, 250);
+      });
+    } catch (err) {
+      console.error('Failed to open Picture-in-Picture window:', err);
+    }
+  };
 
   useEffect(() => {
     if (!showExitConfirm) return;
@@ -262,6 +347,12 @@ export default function ClassroomPage() {
 
   const initJitsi = async () => {
     if (!containerRef.current || !window.JitsiMeetExternalAPI) return;
+    if (apiRef.current) {
+      try {
+        apiRef.current.dispose();
+      } catch (e) {}
+      apiRef.current = null;
+    }
 
     const jitsiRoomJID = `${roomName}_GV_${teacherId}`;
     const displayName = studentInputName.trim() || 'Học viên';
@@ -275,8 +366,12 @@ export default function ClassroomPage() {
       if (savedVideo !== null) startWithVideoMuted = savedVideo === 'true';
     } catch (e) {}
 
-    // Students join as standard guest without JWT token
-    apiRef.current = new window.JitsiMeetExternalAPI(JITSI_SERVER, {
+    let jwtToken = '';
+    try {
+      jwtToken = sessionStorage.getItem(`jitsi_mod_token_${roomName}`) || '';
+    } catch (e) {}
+
+    const options: any = {
       roomName: jitsiRoomJID,
       width: '100%',
       height: '100%',
@@ -310,6 +405,28 @@ export default function ClassroomPage() {
         DEFAULT_BACKGROUND: '#F0F7FF',
         SETTINGS_SECTIONS: ['devices', 'moderator', 'profile', 'calendar', 'sounds'],
       },
+    };
+
+    if (jwtToken) {
+      options.jwt = jwtToken;
+      console.log('🔑 [Student] Joining with Moderator JWT Token!');
+    }
+
+    apiRef.current = new window.JitsiMeetExternalAPI(JITSI_SERVER, options);
+
+    // Listen for Moderator JWT Token from Teacher when granted host
+    apiRef.current.addEventListener('incomingMessage', (event: any) => {
+      const text = event.message || event.text || '';
+      if (text.includes('__GRANT_MODERATOR_TOKEN__:')) {
+        const token = text.split('__GRANT_MODERATOR_TOKEN__:')[1]?.trim();
+        if (token) {
+          console.log('🔑 [Student] Received Moderator JWT Token from Teacher');
+          try {
+            sessionStorage.setItem(`jitsi_mod_token_${roomName}`, token);
+          } catch (e) {}
+          setIsModerator(true);
+        }
+      }
     });
 
     apiRef.current.addEventListener('videoConferenceJoined', (event: any) => {
@@ -327,8 +444,6 @@ export default function ClassroomPage() {
         }, 1000);
       }
 
-
-
       // Ensure Grid View is enabled on join / rejoin
       setTimeout(() => {
         if (apiRef.current && !isTileViewEnabledRef.current) {
@@ -341,6 +456,13 @@ export default function ClassroomPage() {
           type: 'SET_WHITEBOARD_BACKGROUND',
           imageUrl: bgImageRef.current
         }, '*');
+      }
+    });
+
+    apiRef.current.addEventListener('participantRoleChanged', (event: any) => {
+      console.log('[Room] participantRoleChanged:', event);
+      if (event && (event.id === localUserIdRef.current || event.id === 'local')) {
+        setIsModerator(event.role === 'moderator');
       }
     });
 
@@ -611,8 +733,8 @@ export default function ClassroomPage() {
     );
   }
 
-  return (
-    <div className="fixed inset-0 bg-black flex flex-col z-50">
+  const studentWidgetContent = (
+    <div className="fixed inset-0 bg-black flex flex-col z-50" style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Top bar (Hidden when in Fullscreen Mode so video fills 100% mobile screen) */}
       {!isFullscreen && (
         <div className="flex items-center justify-between px-5 py-3 bg-[#1d285c] border-b border-white/10 shrink-0">
@@ -652,6 +774,20 @@ export default function ClassroomPage() {
               </svg>
             </button>
 
+            {/* PiP Button (Document Picture-in-Picture) - Shown when student has Moderator role */}
+            {isModerator && !isPipActive && (
+              <button
+                onClick={handlePiP2}
+                className="p-1.5 rounded-lg text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 transition-colors"
+                title="Mở Cửa sổ Nổi Meeting (Document Picture-in-Picture)"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2" />
+                  <path d="M14 10l5 5M19 10v5h-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            )}
+
 
 
             <button
@@ -684,8 +820,8 @@ export default function ClassroomPage() {
       )}
 
       {/* Jitsi container + student timer overlay */}
-      <div className="flex-1 w-full relative">
-        <div ref={containerRef} className="w-full h-full" />
+      <div className="flex-1 w-full relative" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+        <div ref={containerRef} className="w-full h-full" style={{ width: '100%', height: '100%', flex: 1 }} />
         <TimerWidget apiRef={apiRef} isHost={isModerator} apiReady={apiReady} />
         <WheelWidget apiRef={apiRef} isHost={isModerator} apiReady={apiReady} />
         <DiceWidget apiRef={apiRef} isHost={isModerator} apiReady={apiReady} />
@@ -833,6 +969,12 @@ export default function ClassroomPage() {
         </div>
       )}
     </div>
+  );
+
+  return (
+    <>
+      {pipWinBody ? createPortal(studentWidgetContent, pipWinBody) : studentWidgetContent}
+    </>
   );
 }
 

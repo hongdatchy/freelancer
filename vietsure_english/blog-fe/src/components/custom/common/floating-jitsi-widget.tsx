@@ -262,6 +262,70 @@ export default function FloatingJitsiWidget() {
     setIsPraiseModalOpen(false);
   };
 
+  // Generate JWT Token using Web Crypto API
+  const generateJitsiJWT = async (roomJID?: string, name?: string) => {
+    const header = { alg: "HS256", typ: "JWT" };
+    const now = Math.floor(Date.now() / 1000);
+    const displayName = name || userRef.current?.fullName || userRef.current?.username || 'Giáo viên';
+    const email = userRef.current?.email || '';
+    const avatarRawUrl = userRef.current?.avatar?.formats?.small?.url ||
+      userRef.current?.avatar?.formats?.thumbnail?.url ||
+      userRef.current?.avatar?.url;
+    const avatarURL = avatarRawUrl
+      ? (avatarRawUrl.startsWith('http') ? avatarRawUrl : (process.env.NEXT_PUBLIC_BE_HOST || '') + avatarRawUrl)
+      : '';
+    const sanitizedRoom = decodeURIComponent(roomName || '')
+      .replace(/[^a-zA-Z0-9À-ỹ\-_]/g, '-')
+      .replace(/-+/g, '-');
+    const teacherId = userRef.current?.id || '0';
+    const targetRoomJID = roomJID || `${sanitizedRoom}_GV_${teacherId}`;
+
+    const payload = {
+      context: {
+        user: { name: displayName, email: email, avatar: avatarURL },
+        features: { recording: true, livestreaming: true }
+      },
+      aud: "vietsure_app",
+      iss: "vietsure_app",
+      sub: "meet.jitsi",
+      room: targetRoomJID,
+      iat: now,
+      nbf: now - 60,
+      exp: now + 86400
+    };
+
+    const base64UrlEncode = (obj: any) => {
+      const str = JSON.stringify(obj);
+      const encoded = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+        (match, p1) => String.fromCharCode(parseInt(p1, 16))
+      );
+      return btoa(encoded).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    };
+    const encodedHeader = base64UrlEncode(header);
+    const encodedPayload = base64UrlEncode(payload);
+
+    const secret = "vietsure_secret_key_2026";
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+
+    const signature = await crypto.subtle.sign(
+      "HMAC",
+      key,
+      encoder.encode(`${encodedHeader}.${encodedPayload}`)
+    );
+
+    const encodedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+    return `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
+  };
+
   // Jitsi meeting should be initialized exactly ONCE when the meeting starts
   // and disposed exactly ONCE when closed. We do NOT recreate Jitsi when minimized/maximized.
   useEffect(() => {
@@ -299,58 +363,7 @@ export default function FloatingJitsiWidget() {
       const teacherId = userRef.current?.id || '0';
       const jitsiRoomJID = `${sanitizedRoom}_GV_${teacherId}`;
 
-      // Generate JWT Token using Web Crypto API
-      const generateJitsiJWT = async () => {
-        const header = { alg: "HS256", typ: "JWT" };
-        const now = Math.floor(Date.now() / 1000);
-        const payload = {
-          context: {
-            user: { name: displayName, email: email, avatar: avatarURL },
-            features: { recording: true, livestreaming: true }
-          },
-          aud: "vietsure_app",
-          iss: "vietsure_app",
-          sub: "meet.jitsi",
-          room: jitsiRoomJID,
-          iat: now,
-          nbf: now - 60, // allow 1 min clock skew
-          exp: now + 86400 // 24 hours valid
-        };
-
-        const base64UrlEncode = (obj: any) => {
-          const str = JSON.stringify(obj);
-          // Encode UTF-8 characters safely for btoa
-          const encoded = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
-            (match, p1) => String.fromCharCode(parseInt(p1, 16))
-          );
-          return btoa(encoded).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        };
-        const encodedHeader = base64UrlEncode(header);
-        const encodedPayload = base64UrlEncode(payload);
-
-        const secret = "vietsure_secret_key_2026";
-        const encoder = new TextEncoder();
-        const key = await crypto.subtle.importKey(
-          "raw",
-          encoder.encode(secret),
-          { name: "HMAC", hash: "SHA-256" },
-          false,
-          ["sign"]
-        );
-
-        const signature = await crypto.subtle.sign(
-          "HMAC",
-          key,
-          encoder.encode(`${encodedHeader}.${encodedPayload}`)
-        );
-
-        const encodedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)))
-          .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-
-        return `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
-      };
-
-      const token = await generateJitsiJWT();
+      const token = await generateJitsiJWT(jitsiRoomJID, displayName);
 
       let startWithAudioMuted = false;
       let startWithVideoMuted = false;
@@ -1139,9 +1152,14 @@ export default function FloatingJitsiWidget() {
                           getStudentList().map((student: any) => (
                             <button
                               key={student.id}
-                              onClick={() => {
+                              onClick={async () => {
                                 try {
                                   apiRef.current?.executeCommand('grantModerator', student.id);
+                                  const token = await generateJitsiJWT();
+                                  if (token) {
+                                    apiRef.current?.executeCommand('sendChatMessage', `__GRANT_MODERATOR_TOKEN__:${token}`);
+                                    console.log('🔑 [Teacher] Sent Moderator JWT token to student');
+                                  }
                                 } catch (err) {
                                   console.error('Failed to grant moderator:', err);
                                 }

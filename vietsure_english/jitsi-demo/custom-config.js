@@ -3471,7 +3471,7 @@ if (typeof window !== 'undefined') {
             document.querySelector('[aria-live="polite"]') ||
             document.querySelector('[aria-live="assertive"]');
         if (notifContainer) {
-            const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__TEACHER_PIN__', '__REQUEST_ENABLE_CAMERA__', 'Đang ghi âm', 'Đang ghi hình', 'phát trực tiếp', 'Quyền quản trị viên', 'Lỗi cấp quyền micro', 'Fellow Jitster'];
+            const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__TEACHER_PIN__', '__REQUEST_ENABLE_CAMERA__', '__GRANT_MODERATOR_TOKEN__', 'Đang ghi âm', 'Đang ghi hình', 'phát trực tiếp', 'Quyền quản trị viên', 'Lỗi cấp quyền micro', 'Fellow Jitster'];
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     mutation.addedNodes.forEach((node) => {
@@ -3717,7 +3717,7 @@ if (typeof window !== 'undefined') {
     }
 
     const hideTimerMessages = () => {
-        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__TEACHER_PIN__', '__REQUEST_ENABLE_CAMERA__', 'Đang ghi âm', 'Đang ghi hình', 'phát trực tiếp', 'Quyền quản trị viên', 'Lỗi cấp quyền micro', 'Fellow Jitster'];
+        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__TEACHER_PIN__', '__REQUEST_ENABLE_CAMERA__', '__GRANT_MODERATOR_TOKEN__', 'Đang ghi âm', 'Đang ghi hình', 'phát trực tiếp', 'Quyền quản trị viên', 'Lỗi cấp quyền micro', 'Fellow Jitster'];
 
         const wrappers = document.querySelectorAll('[class*="-chatMessageWrapper"]');
         wrappers.forEach((wrapper) => {
