@@ -230,7 +230,7 @@ if (typeof document !== 'undefined') {
         #filmstripLocalScreenShare,
         #filmstripLocalScreenShareThumbnail,
         #sharedVideoContainer,
-        span.videocontainer[id*="-v0"] {
+        span.videocontainer[id*="-v"] {
             display: none !important;
         }
 
@@ -575,8 +575,8 @@ if (typeof window !== 'undefined') {
                 whiteboard.style.setProperty('display', 'none', 'important');
             }
 
-            // Ẩn span screenshare (id*="-v0")
-            document.querySelectorAll('span.videocontainer[id*="-v0"]').forEach(el => {
+            // Ẩn span screenshare (id*="-v")
+            document.querySelectorAll('span.videocontainer[id*="-v"]').forEach(el => {
                 if (el.style.display !== 'none') {
                     el.style.setProperty('display', 'none', 'important');
                 }

@@ -428,8 +428,8 @@ if (typeof window !== "undefined") {
                 window.isStudentShareAllowedByTeacher
               );
 
-              if (isScreensharing || isStudentShareAllowed) {
-                // Ẩn nút custom khi ĐANG CHIA SẺ MÀN HÌNH hoặc KHI GIÁO VIÊN CẤP QUYỀN SHARE CHO HỌC VIÊN
+              if (isScreensharing || isStudentShareAllowed || checkIfStudent()) {
+                // Ẩn nút custom khi ĐANG CHIA SẺ MÀN HÌNH, KHI GIÁO VIÊN CẤP QUYỀN SHARE, hoặc khi là HỌC VIÊN
                 customItem.style.setProperty("display", "none", "important");
               } else {
                 const dynamicText = isWbPinned ? "Ẩn bảng" : "Bảng trắng";

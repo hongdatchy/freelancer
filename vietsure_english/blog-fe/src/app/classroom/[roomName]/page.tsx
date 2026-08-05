@@ -38,6 +38,7 @@ export default function ClassroomPage() {
   const isHost = false;
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [showRec, setShowRec] = useState(false);
   const [isInBreakoutRoom, setIsInBreakoutRoom] = useState(false);
   const [currentSubRoomName, setCurrentSubRoomName] = useState<string | null>(null);
   const lastPraiseTimeRef = useRef<number>(0);
@@ -64,6 +65,14 @@ export default function ClassroomPage() {
     window.addEventListener('mousedown', handleOutsideClick);
     return () => window.removeEventListener('mousedown', handleOutsideClick);
   }, [showExitConfirm]);
+
+  // REC indicator: hiện sau 5 giây kể từ khi vào phòng
+  useEffect(() => {
+    if (!hasEnteredName) return;
+    setShowRec(false);
+    const t = setTimeout(() => setShowRec(true), 5000);
+    return () => clearTimeout(t);
+  }, [hasEnteredName]);
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -593,6 +602,13 @@ export default function ClassroomPage() {
                 className="h-7 w-auto object-contain"
               />
               <p className="text-white/60 text-xs">| Phòng: {roomName}{currentSubRoomName ? ` > ${currentSubRoomName}` : ''}</p>
+              {/* REC indicator — hiện sau 5s kể từ khi vào phòng */}
+              {showRec && (
+                <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-full px-2.5 py-0.5 ml-1">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_6px_2px_rgba(239,68,68,0.6)]" />
+                  <span className="text-white text-[11px] font-bold tracking-widest">REC</span>
+                </div>
+              )}
             </div>
           </div>
 

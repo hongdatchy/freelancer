@@ -234,13 +234,13 @@ if (typeof document !== 'undefined') {
         }
 
         /* Hide whiteboard, screenshare, and shared video participant tiles safely on filmstrip for both Teacher and Student via CSS */
-        #participant_whiteboard,
-        #filmstripLocalScreenShare,
-        #filmstripLocalScreenShareThumbnail,
-        #sharedVideoContainer,
-        span.videocontainer[id*="-v0"] {
-            display: none !important;
-        }
+        // #participant_whiteboard,
+        // #filmstripLocalScreenShare,
+        // #filmstripLocalScreenShareThumbnail,
+        // #sharedVideoContainer,
+        // span.videocontainer[id*="-v"] {
+        //     display: none !important;
+        // }
 
         /* Hide Jitsi native invite buttons/items */
         .invite-button,
@@ -583,8 +583,8 @@ if (typeof window !== 'undefined') {
                 whiteboard.style.setProperty('display', 'none', 'important');
             }
 
-            // Ẩn span screenshare (id*="-v0")
-            document.querySelectorAll('span.videocontainer[id*="-v0"]').forEach(el => {
+            // Ẩn span screenshare (id*="-v")
+            document.querySelectorAll('span.videocontainer[id*="-v"]').forEach(el => {
                 if (el.style.display !== 'none') {
                     el.style.setProperty('display', 'none', 'important');
                 }
@@ -599,7 +599,7 @@ if (typeof window !== 'undefined') {
             applyBrightTheme();
         } catch (e) {}
     };
-    setInterval(hideFilmstripDistractions, 1000);
+    // setInterval(hideFilmstripDistractions, 1000);
 }
 
 // Block student double-tap (mobile) and double-click (desktop) on large video to prevent unpin
@@ -2192,8 +2192,8 @@ if (typeof window !== "undefined") {
                 window.isStudentShareAllowedByTeacher
               );
 
-              if (isScreensharing || isStudentShareAllowed) {
-                // Ẩn nút custom khi ĐANG CHIA SẺ MÀN HÌNH hoặc KHI GIÁO VIÊN CẤP QUYỀN SHARE CHO HỌC VIÊN
+              if (isScreensharing || isStudentShareAllowed || checkIfStudent()) {
+                // Ẩn nút custom khi ĐANG CHIA SẺ MÀN HÌNH, KHI GIÁO VIÊN CẤP QUYỀN SHARE, hoặc khi là HỌC VIÊN
                 customItem.style.setProperty("display", "none", "important");
               } else {
                 const dynamicText = isWbPinned ? "Ẩn bảng" : "Bảng trắng";
