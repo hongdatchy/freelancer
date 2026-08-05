@@ -266,6 +266,15 @@ export default function ClassroomPage() {
     const jitsiRoomJID = `${roomName}_GV_${teacherId}`;
     const displayName = studentInputName.trim() || 'Học viên';
 
+    let startWithAudioMuted = false;
+    let startWithVideoMuted = false;
+    try {
+      const savedAudio = localStorage.getItem('jitsi_audio_muted');
+      const savedVideo = localStorage.getItem('jitsi_video_muted');
+      if (savedAudio !== null) startWithAudioMuted = savedAudio === 'true';
+      if (savedVideo !== null) startWithVideoMuted = savedVideo === 'true';
+    } catch (e) {}
+
     // Students join as standard guest without JWT token
     apiRef.current = new window.JitsiMeetExternalAPI(JITSI_SERVER, {
       roomName: jitsiRoomJID,
@@ -277,8 +286,8 @@ export default function ClassroomPage() {
         email: '',
       },
       configOverwrite: {
-        startWithAudioMuted: false,
-        startWithVideoMuted: false,
+        startWithAudioMuted,
+        startWithVideoMuted,
         disableDeepLinking: true,
         prejoinPageEnabled: false,
         startTileView: true,
@@ -448,6 +457,19 @@ export default function ClassroomPage() {
         setIsModerator(isMod);
         console.log('🎉 [HỌC VIÊN] Quyền Moderator của bạn:', isMod);
       }
+    });
+
+    // Save audio/video mute state to localStorage
+    apiRef.current.addEventListener('audioMuteStatusChanged', (event: any) => {
+      try {
+        localStorage.setItem('jitsi_audio_muted', String(!!event.muted));
+      } catch (e) {}
+    });
+
+    apiRef.current.addEventListener('videoMuteStatusChanged', (event: any) => {
+      try {
+        localStorage.setItem('jitsi_video_muted', String(!!event.muted));
+      } catch (e) {}
     });
 
     // Listen for hangup
