@@ -598,48 +598,6 @@ if (typeof window !== 'undefined') {
     setInterval(hideFilmstripDistractions, 1000);
 }
 
-// Instant MutationObserver to filter out system notifications at 0ms before render while preserving chat
-(function setupInstantNotificationObserver() {
-    if (typeof window === 'undefined') return;
-
-    const filterNotificationElement = (el) => {
-        if (!el || el.nodeType !== 1) return;
-        const text = (el.innerText || el.textContent || '').toLowerCase();
-        const isChat = text.includes('tin nhắn') || text.includes('chat') || el.querySelector('[class*="chat"]') !== null || el.querySelector('[class*="message"]') !== null;
-        if (!isChat) {
-            el.style.setProperty('display', 'none', 'important');
-        }
-    };
-
-    const attachObserver = () => {
-        const container = document.getElementById('notifications-container') || document.querySelector('.notifications-container');
-        if (!container) return false;
-        
-        if (container._hasInstantObserver) return true;
-        container._hasInstantObserver = true;
-
-        container.querySelectorAll(':scope > div, .notification').forEach(filterNotificationElement);
-
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                mutation.addedNodes.forEach((node) => {
-                    if (node.nodeType === 1) {
-                        filterNotificationElement(node);
-                    }
-                });
-            });
-        });
-
-        observer.observe(container, { childList: true, subtree: true });
-        return true;
-    };
-
-    const timer = setInterval(() => {
-        if (attachObserver()) {
-            clearInterval(timer);
-        }
-    }, 200);
-})();
 
 // Block student double-tap (mobile) and double-click (desktop) on large video to prevent unpin
 (function blockStudentLargeVideoUnpin() {

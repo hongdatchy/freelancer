@@ -606,48 +606,6 @@ if (typeof window !== 'undefined') {
     setInterval(hideFilmstripDistractions, 1000);
 }
 
-// Instant MutationObserver to filter out system notifications at 0ms before render while preserving chat
-(function setupInstantNotificationObserver() {
-    if (typeof window === 'undefined') return;
-
-    const filterNotificationElement = (el) => {
-        if (!el || el.nodeType !== 1) return;
-        const text = (el.innerText || el.textContent || '').toLowerCase();
-        const isChat = text.includes('tin nhắn') || text.includes('chat') || el.querySelector('[class*="chat"]') !== null || el.querySelector('[class*="message"]') !== null;
-        if (!isChat) {
-            el.style.setProperty('display', 'none', 'important');
-        }
-    };
-
-    const attachObserver = () => {
-        const container = document.getElementById('notifications-container') || document.querySelector('.notifications-container');
-        if (!container) return false;
-        
-        if (container._hasInstantObserver) return true;
-        container._hasInstantObserver = true;
-
-        container.querySelectorAll(':scope > div, .notification').forEach(filterNotificationElement);
-
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                mutation.addedNodes.forEach((node) => {
-                    if (node.nodeType === 1) {
-                        filterNotificationElement(node);
-                    }
-                });
-            });
-        });
-
-        observer.observe(container, { childList: true, subtree: true });
-        return true;
-    };
-
-    const timer = setInterval(() => {
-        if (attachObserver()) {
-            clearInterval(timer);
-        }
-    }, 200);
-})();
 
 // Block student double-tap (mobile) and double-click (desktop) on large video to prevent unpin
 (function blockStudentLargeVideoUnpin() {
@@ -3347,6 +3305,12 @@ if (typeof window !== 'undefined') {
             text.includes('__TOGGLE_STUDENT_SCREENSHARE__') ||
             text.includes('__TILE_VIEW__') ||
             text.includes('__TEACHER_PIN__') ||
+            text.includes('Đang ghi âm') ||
+            text.includes('Đang ghi hình') ||
+            text.includes('phát trực tiếp') ||
+            text.includes('Quyền quản trị viên') ||
+            text.includes('Lỗi cấp quyền micro') ||
+            text.includes('Fellow Jitster') ||
             html.includes('__TIMER__') ||
             html.includes('TIMER_ACTION') ||
             html.includes('__CLK__') ||
@@ -3355,7 +3319,13 @@ if (typeof window !== 'undefined') {
             html.includes('__DICE__') ||
             html.includes('__TOGGLE_STUDENT_SCREENSHARE__') ||
             html.includes('__TILE_VIEW__') ||
-            html.includes('__TEACHER_PIN__')
+            html.includes('__TEACHER_PIN__') ||
+            html.includes('Đang ghi âm') ||
+            html.includes('Đang ghi hình') ||
+            html.includes('phát trực tiếp') ||
+            html.includes('Quyền quản trị viên') ||
+            html.includes('Lỗi cấp quyền micro') ||
+            html.includes('Fellow Jitster')
         );
     };
 
@@ -3364,7 +3334,7 @@ if (typeof window !== 'undefined') {
             document.querySelector('[aria-live="polite"]') ||
             document.querySelector('[aria-live="assertive"]');
         if (notifContainer) {
-            const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__TEACHER_PIN__'];
+            const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__TEACHER_PIN__', 'Đang ghi âm', 'Đang ghi hình', 'phát trực tiếp', 'Quyền quản trị viên', 'Lỗi cấp quyền micro', 'Fellow Jitster'];
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     mutation.addedNodes.forEach((node) => {
@@ -3603,7 +3573,7 @@ if (typeof window !== 'undefined') {
     }
 
     const hideTimerMessages = () => {
-        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__TEACHER_PIN__'];
+        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__TEACHER_PIN__', 'Đang ghi âm', 'Đang ghi hình', 'phát trực tiếp', 'Quyền quản trị viên', 'Lỗi cấp quyền micro', 'Fellow Jitster'];
 
         const wrappers = document.querySelectorAll('[class*="-chatMessageWrapper"]');
         wrappers.forEach((wrapper) => {
@@ -3782,4 +3752,47 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
         } catch (e) {}
     });
 })();
+
+// Log pin events on Teacher screen & broadcast message to Student
+(function setupTeacherPinLogger() {
+    if (typeof window === 'undefined') return;
+
+    let lastPinnedId = undefined;
+
+    setInterval(() => {
+        try {
+            if (!window.APP || !window.APP.store) return;
+            const state = window.APP.store.getState();
+
+            const participantsState = state['features/base/participants'] || {};
+            const participantsArr = Array.isArray(participantsState) ? participantsState : Object.values(participantsState);
+            const localP = participantsArr.find(p => p && p.local);
+            const isTeacher = localP ? localP.role === 'moderator' : true;
+
+            if (!isTeacher) return;
+
+            const pinnedId = state['features/large-video']?.participantId ?? null;
+
+            if (pinnedId !== lastPinnedId) {
+                lastPinnedId = pinnedId;
+                console.log('📌 [GIÁO VIÊN LOG GHIM]:', pinnedId);
+
+                try {
+                    if (window.APP?.conference && typeof window.APP.conference.sendTextMessage === 'function') {
+                        window.APP.conference.sendTextMessage('__TEACHER_PIN__:' + (pinnedId ? String(pinnedId) : 'null'));
+                        console.log('📡 [GIÁO VIÊN BẮN TÍN HIỆU THÀNH CÔNG]:', '__TEACHER_PIN__:' + (pinnedId ? String(pinnedId) : 'null'));
+                    } else if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
+                        window.APP.conference._room.sendTextMessage('__TEACHER_PIN__:' + (pinnedId ? String(pinnedId) : 'null'));
+                        console.log('📡 [_room BẮN TÍN HIỆU THÀNH CÔNG]:', '__TEACHER_PIN__:' + (pinnedId ? String(pinnedId) : 'null'));
+                    } else {
+                        console.warn('⚠️ [GIÁO VIÊN] Chưa sẵn sàng sendTextMessage');
+                    }
+                } catch (err) {
+                    console.error('Error sending pin msg:', err);
+                }
+            }
+        } catch (e) {}
+    }, 300);
+})();
+
 
