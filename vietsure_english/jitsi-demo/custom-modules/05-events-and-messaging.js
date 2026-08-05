@@ -99,6 +99,17 @@ const showStudentCameraRequestModal = () => {
                         try {
                             window.APP.store.dispatch({ type: 'HIDE_NOTIFICATION', uid: 'camera-request-notification' });
                         } catch (e) {}
+                        try {
+                            const notifContainer = document.getElementById('notifications-container') || document.body;
+                            const notifs = notifContainer.querySelectorAll('div, [role="alert"], [class*="notification"]');
+                            notifs.forEach(n => {
+                                if (n.textContent && n.textContent.includes('Người điều hành muốn bạn mở camera')) {
+                                    const closeBtn = n.querySelector('button, [aria-label*="Close" i], [aria-label*="Đóng" i]');
+                                    if (closeBtn) closeBtn.click();
+                                    n.style.setProperty('display', 'none', 'important');
+                                }
+                            });
+                        } catch (e) {}
                     }],
                     appearance: 'info',
                     uid: 'camera-request-notification'
@@ -287,7 +298,7 @@ if (typeof window !== 'undefined') {
             document.querySelector('[aria-live="polite"]') ||
             document.querySelector('[aria-live="assertive"]');
         if (notifContainer) {
-            const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__TEACHER_PIN__', 'Đang ghi âm', 'Đang ghi hình', 'phát trực tiếp', 'Quyền quản trị viên', 'Lỗi cấp quyền micro', 'Fellow Jitster'];
+            const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__TEACHER_PIN__', '__REQUEST_ENABLE_CAMERA__', 'Đang ghi âm', 'Đang ghi hình', 'phát trực tiếp', 'Quyền quản trị viên', 'Lỗi cấp quyền micro', 'Fellow Jitster'];
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     mutation.addedNodes.forEach((node) => {
@@ -533,7 +544,7 @@ if (typeof window !== 'undefined') {
     }
 
     const hideTimerMessages = () => {
-        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__TEACHER_PIN__', 'Đang ghi âm', 'Đang ghi hình', 'phát trực tiếp', 'Quyền quản trị viên', 'Lỗi cấp quyền micro', 'Fellow Jitster'];
+        const systemKeywords = ['__TIMER__', 'TIMER_ACTION', '__CLK__', '__PRAISE__', '__WHEEL__', '__DICE__', '__WB__', '__TOGGLE_STUDENT_SCREENSHARE__', '__TILE_VIEW__', '__TEACHER_PIN__', '__REQUEST_ENABLE_CAMERA__', 'Đang ghi âm', 'Đang ghi hình', 'phát trực tiếp', 'Quyền quản trị viên', 'Lỗi cấp quyền micro', 'Fellow Jitster'];
 
         const wrappers = document.querySelectorAll('[class*="-chatMessageWrapper"]');
         wrappers.forEach((wrapper) => {
