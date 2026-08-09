@@ -742,11 +742,14 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
 
             if (!isTeacher) return;
 
-            const pinnedId = state['features/large-video']?.participantId ?? null;
+            const largeVideoState = state['features/large-video'] || {};
+            // Only send pin event if participant was EXPLICITLY PINNED by user click
+            const isExplicitlyPinned = !!largeVideoState.pinned;
+            const pinnedId = isExplicitlyPinned ? (largeVideoState.participantId ?? null) : null;
 
             if (pinnedId !== lastPinnedId) {
                 lastPinnedId = pinnedId;
-                console.log('📌 [GIÁO VIÊN LOG GHIM]:', pinnedId);
+                console.log('📌 [GIÁO VIÊN LOG GHIM CHỦ ĐỘNG]:', pinnedId);
 
                 try {
                     if (window.APP?.conference && typeof window.APP.conference.sendTextMessage === 'function') {
