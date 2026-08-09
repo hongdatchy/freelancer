@@ -724,48 +724,63 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
     });
 })();
 
-// Log pin events on Teacher screen & broadcast message to Student
-(function setupTeacherPinLogger() {
+// Intercept explicit PIN_PARTICIPANT / SELECT_PARTICIPANT Redux action on Teacher screen & broadcast message to Student
+(function setupTeacherPinInterceptor() {
     if (typeof window === 'undefined') return;
 
-    let lastPinnedId = undefined;
+    const initInterceptor = () => {
+        if (!window.APP || !window.APP.store || window.APP.store.hasInterceptedPinAction) return false;
 
-    setInterval(() => {
-        try {
-            if (!window.APP || !window.APP.store) return;
-            const state = window.APP.store.getState();
+        const originalDispatch = window.APP.store.dispatch;
+        window.APP.store.hasInterceptedPinAction = true;
 
-            const participantsState = state['features/base/participants'] || {};
-            const participantsArr = Array.isArray(participantsState) ? participantsState : Object.values(participantsState);
-            const localP = participantsArr.find(p => p && p.local);
-            const isTeacher = localP ? localP.role === 'moderator' : true;
+        window.APP.store.dispatch = function(action) {
+            const result = originalDispatch.apply(this, arguments);
 
-            if (!isTeacher) return;
+            try {
+                if (action && action.type) {
+                    const actionType = String(action.type).toUpperCase();
+                    if (actionType.includes('PIN') || actionType.includes('SELECT_PARTICIPANT') || actionType.includes('LARGE_VIDEO')) {
+                        console.log('📌 [JITSI REDUX ACTION INTERCEPTED]:', action.type, action);
 
-            const largeVideoState = state['features/large-video'] || {};
-            // Only send pin event if participant was EXPLICITLY PINNED by user click
-            const isExplicitlyPinned = !!largeVideoState.pinned;
-            const pinnedId = isExplicitlyPinned ? (largeVideoState.participantId ?? null) : null;
+                        const state = window.APP.store.getState();
+                        const participantsState = state['features/base/participants'] || {};
+                        const participantsArr = Array.isArray(participantsState) ? participantsState : Object.values(participantsState);
+                        const localP = participantsArr.find(p => p && p.local);
+                        const isTeacher = localP ? localP.role === 'moderator' : true;
 
-            if (pinnedId !== lastPinnedId) {
-                lastPinnedId = pinnedId;
-                console.log('📌 [GIÁO VIÊN LOG GHIM CHỦ ĐỘNG]:', pinnedId);
+                        if (isTeacher && (actionType.includes('PIN') || actionType.includes('SELECT_PARTICIPANT'))) {
+                            let targetId = 'null';
+                            if (typeof action.participant === 'string') targetId = action.participant;
+                            else if (action.participant && action.participant.id) targetId = String(action.participant.id);
+                            else if (action.id) targetId = String(action.id);
+                            else if (action.participantId) targetId = String(action.participantId);
 
-                try {
-                    if (window.APP?.conference && typeof window.APP.conference.sendTextMessage === 'function') {
-                        window.APP.conference.sendTextMessage('__TEACHER_PIN__:' + (pinnedId ? String(pinnedId) : 'null'));
-                        console.log('📡 [GIÁO VIÊN BẮN TÍN HIỆU THÀNH CÔNG]:', '__TEACHER_PIN__:' + (pinnedId ? String(pinnedId) : 'null'));
-                    } else if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
-                        window.APP.conference._room.sendTextMessage('__TEACHER_PIN__:' + (pinnedId ? String(pinnedId) : 'null'));
-                        console.log('📡 [_room BẮN TÍN HIỆU THÀNH CÔNG]:', '__TEACHER_PIN__:' + (pinnedId ? String(pinnedId) : 'null'));
-                    } else {
-                        console.warn('⚠️ [GIÁO VIÊN] Chưa sẵn sàng sendTextMessage');
+                            console.log('📌 [GIÁO VIÊN BẤM GHIM THỦ CÔNG]:', targetId);
+
+                            try {
+                                if (window.APP?.conference && typeof window.APP.conference.sendTextMessage === 'function') {
+                                    window.APP.conference.sendTextMessage('__TEACHER_PIN__:' + targetId);
+                                    console.log('📡 [GIÁO VIÊN BẮN TÍN HIỆU THÀNH CÔNG]:', '__TEACHER_PIN__:' + targetId);
+                                } else if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
+                                    window.APP.conference._room.sendTextMessage('__TEACHER_PIN__:' + targetId);
+                                    console.log('📡 [_room BẮN TÍN HIỆU THÀNH CÔNG]:', '__TEACHER_PIN__:' + targetId);
+                                }
+                            } catch (err) {
+                                console.error('Error sending pin msg:', err);
+                            }
+                        }
                     }
-                } catch (err) {
-                    console.error('Error sending pin msg:', err);
                 }
-            }
-        } catch (e) {}
-    }, 300);
+            } catch (e) {}
+
+            return result;
+        };
+        return true;
+    };
+
+    setInterval(initInterceptor, 1000);
 })();
+
+
 
