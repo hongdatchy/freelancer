@@ -2703,13 +2703,40 @@ const injectAskToStartVideoBtn = (doc = document) => {
         e.preventDefault();
         e.stopPropagation();
         console.log('📌 [TEACHER] Clicked Yêu cầu bật camera!');
+
+        let targetId = null;
+
+        // Extract targetId directly from the "Đẩy ra" button ID (ejectlink_7c8f6758)
         try {
-          if (window.APP?.conference && typeof window.APP.conference.sendTextMessage === 'function') {
-            window.APP.conference.sendTextMessage('__REQUEST_ENABLE_CAMERA__');
-          } else if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
-            window.APP.conference._room.sendTextMessage('__REQUEST_ENABLE_CAMERA__');
+          const ejectEl = doc.querySelector('[id*="ejectlink_"]') || doc.querySelector('.kicklink');
+          if (ejectEl && ejectEl.id) {
+            const match = ejectEl.id.match(/ejectlink_([a-zA-Z0-9]+)/);
+            if (match && match[1]) targetId = match[1];
           }
         } catch (err) {}
+
+        if (!targetId) {
+          try {
+            if (window.APP && window.APP.store) {
+              const state = window.APP.store.getState();
+              const menuState = state['features/remote-video-menu'] || {};
+              targetId = menuState.participantId || (menuState.participant && menuState.participant.id);
+            }
+          } catch (err) {}
+        }
+
+        const msg = targetId ? `__REQUEST_ENABLE_CAMERA__:${targetId}` : '__REQUEST_ENABLE_CAMERA__';
+        console.log('📌 [TEACHER] Sending targeted camera request:', msg, '(targetId =', targetId, ')');
+
+        try {
+          if (window.APP?.conference && typeof window.APP.conference.sendTextMessage === 'function') {
+            window.APP.conference.sendTextMessage(msg);
+          } else if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
+            window.APP.conference._room.sendTextMessage(msg);
+          }
+        } catch (err) {
+          console.error('Error sending camera request:', err);
+        }
       };
 
       parent.insertBefore(item, unmuteItem);
@@ -3694,7 +3721,22 @@ if (typeof window !== 'undefined') {
                     timerMessagesCount++;
                     const isStudent = (typeof checkIfStudent === 'function' && checkIfStudent()) || !!window.config?.isStudent;
                     if (isStudent && !isHistoryMessage) {
-                        showStudentCameraRequestModal();
+                        let targetId = null;
+                        if (msgText.includes(':')) {
+                            targetId = msgText.split(':')[1]?.trim();
+                        }
+                        const myId = (typeof APP !== 'undefined' && APP.conference && typeof APP.conference.getMyUserId === 'function') ? APP.conference.getMyUserId() : null;
+                        
+                        if (targetId) {
+                            if (myId && targetId === myId) {
+                                console.log('📌 [STUDENT] Received targeted camera request for me! (targetId:', targetId, ', myId:', myId, ')');
+                                showStudentCameraRequestModal();
+                            } else {
+                                console.log('📌 [STUDENT] Camera request was for targetId:', targetId, '(myId:', myId, ') -> Skipping notification');
+                            }
+                        } else {
+                            console.log('📌 [STUDENT] Broadcast camera request (no targetId) -> Skipping to prevent all students receiving it');
+                        }
                     }
                 } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg || isTeacherPinMsg) {
                     timerMessagesCount++;

@@ -516,7 +516,22 @@ if (typeof window !== 'undefined') {
                     timerMessagesCount++;
                     const isStudent = (typeof checkIfStudent === 'function' && checkIfStudent()) || !!window.config?.isStudent;
                     if (isStudent && !isHistoryMessage) {
-                        showStudentCameraRequestModal();
+                        let targetId = null;
+                        if (msgText.includes(':')) {
+                            targetId = msgText.split(':')[1]?.trim();
+                        }
+                        const myId = (typeof APP !== 'undefined' && APP.conference && typeof APP.conference.getMyUserId === 'function') ? APP.conference.getMyUserId() : null;
+                        
+                        if (targetId) {
+                            if (myId && targetId === myId) {
+                                console.log('📌 [STUDENT] Received targeted camera request for me! (targetId:', targetId, ', myId:', myId, ')');
+                                showStudentCameraRequestModal();
+                            } else {
+                                console.log('📌 [STUDENT] Camera request was for targetId:', targetId, '(myId:', myId, ') -> Skipping notification');
+                            }
+                        } else {
+                            console.log('📌 [STUDENT] Broadcast camera request (no targetId) -> Skipping to prevent all students receiving it');
+                        }
                     }
                 } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg || isTeacherPinMsg) {
                     timerMessagesCount++;
