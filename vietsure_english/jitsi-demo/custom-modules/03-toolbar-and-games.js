@@ -881,17 +881,23 @@ const injectAskToStartVideoBtn = (doc = document) => {
     const isStudent = typeof checkIfStudent === 'function' ? checkIfStudent() : false;
     if (isStudent) return;
 
-    // Find all native unmute items by data-testid, aria-label, or text (excluding group containers)
-    const unmuteItems = Array.from(doc.querySelectorAll('[data-testid*="unmute-audio"], [aria-label="Yêu cầu bật tiếng"], [aria-label*="bật tiếng" i], [role="button"], [role="menuitem"], div[class*="contextMenuItem"]'))
+    // Find native "Tắt tiếng mọi người khác" / "Tắt tiếng những người khác" item
+    const unmuteItems = Array.from(doc.querySelectorAll('[role="button"], [role="menuitem"], div[class*="contextMenuItem"]'))
       .filter(el => {
         if (!el || el.querySelector('[role="button"], [role="menuitem"]') || el.children.length > 2) return false;
         const text = (el.textContent || el.getAttribute('aria-label') || '').toLowerCase();
-        return text.includes('bật tiếng') || text.includes('unmute');
+        return text.includes('tắt tiếng mọi người') || text.includes('tắt tiếng cho mọi người') || text.includes('tắt tiếng những người') || text.includes('mute everyone');
       });
 
     unmuteItems.forEach(unmuteItem => {
-      const popover = unmuteItem.closest('[role="menu"], [class*="contextMenu"], [class*="popover"], [class*="Menu"]');
-      if (popover && popover.querySelector('.custom-ask-enable-camera-item')) return;
+      const popover = unmuteItem.closest('[role="menu"], [class*="contextMenu"], [class*="popover"]');
+      if (popover && popover.querySelector('.custom-ask-enable-camera-item')) {
+        const existingItem = popover.querySelector('.custom-ask-enable-camera-item');
+        if (existingItem && existingItem.style.display === 'none') {
+          existingItem.style.display = '';
+        }
+        return;
+      }
 
       const parent = unmuteItem.parentNode;
       if (!parent || parent.querySelector('.custom-ask-enable-camera-item')) return;
@@ -934,17 +940,9 @@ const injectAskToStartVideoBtn = (doc = document) => {
             window.APP.conference._room.sendTextMessage('__REQUEST_ENABLE_CAMERA__');
           }
         } catch (err) {}
-        try {
-          const menuPopover = item.closest('[role="menu"], [class*="contextMenu"], [class*="popover"], [class*="Menu"]') || unmuteItem.closest('[role="menu"], [class*="contextMenu"], [class*="popover"], [class*="Menu"]');
-          if (menuPopover) menuPopover.style.display = 'none';
-        } catch (err) {}
-        try {
-          doc.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, bubbles: true }));
-          doc.body.click();
-        } catch (err) {}
       };
 
-      parent.insertBefore(item, unmuteItem.nextSibling);
+      parent.insertBefore(item, unmuteItem);
     });
   } catch (e) {}
 };
