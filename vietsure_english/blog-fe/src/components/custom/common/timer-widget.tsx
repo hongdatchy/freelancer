@@ -222,10 +222,18 @@ export default function TimerWidget({
         }
       }
 
-      // Single-instance ticking sound player (fast speed in last 10 seconds of countdown)
-      const isFast = timerMode === 'DOWN' && nextTime <= 10 && nextTime > 0;
-      const isAlarm = timerMode === 'DOWN' && nextTime === 0;
-      playTickSound(isAlarm, isFast);
+      // Ticking sound player: silent when countdown > 10s; warning/alarm sound when countdown <= 10s; keep count up sound
+      if (timerMode === 'DOWN') {
+        if (nextTime <= 10 && nextTime > 0) {
+          playTickSound(false, true);
+        } else if (nextTime === 0) {
+          playTickSound(true, false);
+        } else {
+          stopTickSound();
+        }
+      } else {
+        playTickSound(false, false);
+      }
     }, 1000);
     return () => {
       clearInterval(id);
