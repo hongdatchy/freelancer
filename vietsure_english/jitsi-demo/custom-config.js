@@ -3292,6 +3292,25 @@ const showStudentCameraRequestModal = () => {
         } catch (e) {}
     };
 
+    const dismissModal = () => {
+        try {
+            if (window.APP?.store) {
+                window.APP.store.dispatch({ type: 'HIDE_NOTIFICATION', uid: 'camera-request-notification' });
+            }
+        } catch (e) {}
+        try {
+            const notifContainer = document.getElementById('notifications-container') || document.body;
+            const notifs = notifContainer.querySelectorAll('div, [role="alert"], [class*="notification"]');
+            notifs.forEach(n => {
+                if (n.textContent && n.textContent.includes('Người điều hành muốn bạn mở camera')) {
+                    const closeBtn = n.querySelector('button, [aria-label*="Close" i], [aria-label*="Đóng" i]');
+                    if (closeBtn) closeBtn.click();
+                    n.style.setProperty('display', 'none', 'important');
+                }
+            });
+        } catch (e) {}
+    };
+
     try {
         if (window.APP && window.APP.store) {
             window.APP.store.dispatch({
@@ -3301,26 +3320,18 @@ const showStudentCameraRequestModal = () => {
                     customActionNameKey: ['Bật camera'],
                     customActionHandler: [() => {
                         unmuteCamera();
-                        try {
-                            window.APP.store.dispatch({ type: 'HIDE_NOTIFICATION', uid: 'camera-request-notification' });
-                        } catch (e) {}
-                        try {
-                            const notifContainer = document.getElementById('notifications-container') || document.body;
-                            const notifs = notifContainer.querySelectorAll('div, [role="alert"], [class*="notification"]');
-                            notifs.forEach(n => {
-                                if (n.textContent && n.textContent.includes('Người điều hành muốn bạn mở camera')) {
-                                    const closeBtn = n.querySelector('button, [aria-label*="Close" i], [aria-label*="Đóng" i]');
-                                    if (closeBtn) closeBtn.click();
-                                    n.style.setProperty('display', 'none', 'important');
-                                }
-                            });
-                        } catch (e) {}
+                        dismissModal();
                     }],
                     appearance: 'info',
                     uid: 'camera-request-notification'
                 },
-                timeout: 15000
+                timeout: 3000
             });
+
+            // Auto-dismiss after 3 seconds
+            setTimeout(() => {
+                dismissModal();
+            }, 3000);
             return;
         }
     } catch (e) {
