@@ -49,11 +49,15 @@ try {
         }
     }
 
-    const { execSync } = require('child_process');
-    execSync('docker exec jitsi-demo-web-1 mkdir -p /usr/share/jitsi-meet/images', { stdio: 'ignore' });
-    execSync(`docker cp "${path.join(modulesDir, 'teacher-background.jpg')}" jitsi-demo-web-1:/usr/share/jitsi-meet/images/teacher-background.jpg`, { stdio: 'ignore' });
-    execSync(`docker cp "${path.join(modulesDir, 'branding.json')}" jitsi-demo-web-1:/usr/share/jitsi-meet/images/branding.json`, { stdio: 'ignore' });
-    console.log('✅ Synced branding.json & teacher-background.jpg into Docker container images directory');
+    try {
+        const { execSync } = require('child_process');
+        execSync('docker exec jitsi-demo-web-1 mkdir -p /usr/share/jitsi-meet/images', { stdio: 'ignore' });
+        execSync(`docker cp "${path.join(modulesDir, 'teacher-background.jpg')}" jitsi-demo-web-1:/usr/share/jitsi-meet/images/teacher-background.jpg`, { stdio: 'ignore' });
+        execSync(`docker cp "${path.join(modulesDir, 'branding.json')}" jitsi-demo-web-1:/usr/share/jitsi-meet/images/branding.json`, { stdio: 'ignore' });
+        console.log('✅ Synced branding.json & teacher-background.jpg into Docker container images directory');
+    } catch (e) {
+        console.log('✅ branding.json & teacher-background.jpg are permanently mounted via docker-compose volumes');
+    }
 } catch (err) {
     console.warn('⚠️ Could not auto-sync to Docker volume:', err.message);
 }
