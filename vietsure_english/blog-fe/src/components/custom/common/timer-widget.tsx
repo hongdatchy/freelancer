@@ -191,7 +191,7 @@ export default function TimerWidget({
       let nextTime = 0;
       if (startTsRef.current !== null) {
         if (timerMode === 'DOWN') {
-          const remaining = Math.max(0, initialLimit - Math.round((Date.now() - startTsRef.current) / 1000));
+          const remaining = Math.max(0, initialLimit - Math.floor((Date.now() - startTsRef.current) / 1000));
           setTime(remaining);
           nextTime = remaining;
           if (remaining <= 0) {
@@ -199,7 +199,7 @@ export default function TimerWidget({
             startTsRef.current = null;
           }
         } else {
-          const elapsed = Math.max(0, Math.round((Date.now() - startTsRef.current) / 1000));
+          const elapsed = Math.max(0, Math.floor((Date.now() - startTsRef.current) / 1000));
           setTime(elapsed);
           nextTime = elapsed;
         }
@@ -276,9 +276,9 @@ export default function TimerWidget({
         const limit = payload.initialLimit ?? 300;
         startTsRef.current = ts;
         if (mode === 'DOWN') {
-          setTime(Math.max(0, limit - Math.round((Date.now() - ts) / 1000)));
+          setTime(Math.max(0, limit - Math.floor((Date.now() - ts) / 1000)));
         } else {
-          setTime(Math.max(0, Math.round((Date.now() - ts) / 1000)));
+          setTime(Math.max(0, Math.floor((Date.now() - ts) / 1000)));
         }
         setIsActive(true);
         setIsOpen(true);
