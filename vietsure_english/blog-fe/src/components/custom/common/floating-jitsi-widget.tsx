@@ -1188,6 +1188,17 @@ export default function FloatingJitsiWidget() {
                       <button
                         onClick={() => {
                           setShowExitConfirm(false);
+
+                          // Reset praise scores for all students to 0
+                          setStarScores({});
+                          try {
+                            localStorage.removeItem(starScoresKey);
+                          } catch (e) {}
+                          if (apiRef.current) {
+                            const payload = { reset: true, allScores: {} };
+                            apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${JSON.stringify(payload)}`);
+                          }
+
                           if (isInBreakoutRoom) {
                             shouldEndConferenceOnMainJoinRef.current = true;
                             try {
@@ -1203,7 +1214,7 @@ export default function FloatingJitsiWidget() {
                         }}
                         className="w-full bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
                       >
-                        Kết thúc cuộc gọi theo nhóm
+                        Kết thúc tất cả
                       </button>
                       <button
                         onClick={() => {
