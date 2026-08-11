@@ -782,7 +782,13 @@ if (typeof window !== "undefined") {
             });
           };
 
-          const wbGroup = [...Array.from(nativeWbBtns)];
+          if (nativeWbBtns.length > 1) {
+            nativeWbBtns.slice(1).forEach(btn => {
+              if (btn) btn.style.setProperty("display", "none", "important");
+            });
+          }
+          const primaryWbBtn = nativeWbBtns[0];
+          const wbGroup = primaryWbBtn ? [primaryWbBtn] : [];
 
           if (isTeacherSharingScreen) {
             // 1. Giáo viên tự Share màn hình -> Hiện nút Share của GV và cả nút Quyền Share
