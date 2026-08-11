@@ -208,12 +208,8 @@ const injectToolbarIcon = () => {
             </div>
         `;
 
-        closeBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('[Excalidraw] Red X button clicked -> Hiding drawing toolbar and showing Pen button');
+        window.hideExcalidrawToolbar = function() {
             window.isExcalidrawToolbarVisible = false;
-
             const docs = [document];
             document.querySelectorAll('iframe').forEach(iframe => {
                 try {
@@ -232,6 +228,15 @@ const injectToolbarIcon = () => {
                 const penBtn = d.getElementById('custom-pen-toggle-btn');
                 if (penBtn) penBtn.style.setProperty('display', 'flex', 'important');
             });
+        };
+
+        closeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('[Excalidraw] Red X button clicked -> Hiding drawing toolbar and showing Pen button');
+            if (typeof window.hideExcalidrawToolbar === 'function') {
+                window.hideExcalidrawToolbar();
+            }
         });
 
         if (label && label.nextSibling) {
@@ -242,6 +247,123 @@ const injectToolbarIcon = () => {
     }
     console.log('[Jitsi custom-config] Custom Excalidraw Highlighter & Close buttons injected successfully');
 };
+
+// Helper functions to show/hide ONLY the properties panel (Stroke, Background, Fill, Stroke width)
+if (typeof window !== 'undefined') {
+    window.hideExcalidrawPropertiesPanel = function() {
+        const docs = [document];
+        document.querySelectorAll('iframe').forEach(iframe => {
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                if (iframeDoc) docs.push(iframeDoc);
+            } catch (err) {}
+        });
+
+        docs.forEach(d => {
+            const propsPanels = d.querySelectorAll('.App-menu__left, .Island.App-menu__left, [class*="App-menu__left"], .color-picker-container');
+            propsPanels.forEach(panel => panel.style.setProperty('display', 'none', 'important'));
+        });
+    };
+
+    window.showExcalidrawPropertiesPanel = function() {
+        const docs = [document];
+        document.querySelectorAll('iframe').forEach(iframe => {
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                if (iframeDoc) docs.push(iframeDoc);
+            } catch (err) {}
+        });
+
+        docs.forEach(d => {
+            const propsPanels = d.querySelectorAll('.App-menu__left, .Island.App-menu__left, [class*="App-menu__left"], .color-picker-container');
+            propsPanels.forEach(panel => panel.style.removeProperty('display'));
+        });
+    };
+
+    const attachCanvasPointerListener = (doc) => {
+        if (!doc || doc.hasAttachedCanvasPointerListener) return;
+        doc.hasAttachedCanvasPointerListener = true;
+
+        const handleCanvasPointer = (e) => {
+            const target = e.target;
+            if (!target) return;
+
+            if (typeof target.closest === 'function') {
+                // When clicking ANY tool button on the toolbar, re-show the properties panel!
+                const isToolbar = target.closest('.App-toolbar, .shapes-section, [data-testid="toolbar-section"]');
+                if (isToolbar) {
+                    if (typeof window.showExcalidrawPropertiesPanel === 'function') {
+                        window.showExcalidrawPropertiesPanel();
+                    }
+                    return;
+                }
+
+                // If clicking inside the properties panel itself, keep it visible
+                const isPropertiesPanel = target.closest('.App-menu__left, .Island, .color-picker-container, #custom-pen-toggle-btn');
+                if (isPropertiesPanel) return;
+            }
+
+            // Only hide properties panel when pointerdown happens on actual drawing canvas
+            const isCanvas = target.tagName === 'CANVAS' || (target.className && typeof target.className === 'string' && target.className.includes('excalidraw__canvas'));
+            if (isCanvas) {
+                if (typeof window.hideExcalidrawPropertiesPanel === 'function') {
+                    window.hideExcalidrawPropertiesPanel();
+                }
+            }
+        };
+
+        doc.addEventListener('pointerdown', handleCanvasPointer, true);
+        doc.addEventListener('mousedown', handleCanvasPointer, true);
+        doc.addEventListener('touchstart', handleCanvasPointer, true);
+    };
+
+    setInterval(() => {
+        try {
+            attachCanvasPointerListener(document);
+            document.querySelectorAll('iframe').forEach(iframe => {
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                    if (iframeDoc) attachCanvasPointerListener(iframeDoc);
+                } catch (e) {}
+            });
+        } catch (e) {}
+    }, 500);
+}
+
+// Auto hide toolbar & properties panel when user starts drawing on canvas
+if (typeof window !== 'undefined') {
+    const attachCanvasPointerListener = (doc) => {
+        if (!doc || doc.hasAttachedCanvasPointerListener) return;
+        doc.hasAttachedCanvasPointerListener = true;
+
+        const handleCanvasPointer = (e) => {
+            if (!window.isExcalidrawToolbarVisible) return;
+            const target = e.target;
+            if (target && (target.tagName === 'CANVAS' || (typeof target.closest === 'function' && target.closest('.excalidraw-container')))) {
+                console.log('[Excalidraw] Canvas pointer event detected -> Auto hiding drawing toolbar and options panel');
+                if (typeof window.hideExcalidrawToolbar === 'function') {
+                    window.hideExcalidrawToolbar();
+                }
+            }
+        };
+
+        doc.addEventListener('pointerdown', handleCanvasPointer, true);
+        doc.addEventListener('mousedown', handleCanvasPointer, true);
+        doc.addEventListener('touchstart', handleCanvasPointer, true);
+    };
+
+    setInterval(() => {
+        try {
+            attachCanvasPointerListener(document);
+            document.querySelectorAll('iframe').forEach(iframe => {
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                    if (iframeDoc) attachCanvasPointerListener(iframeDoc);
+                } catch (e) {}
+            });
+        } catch (e) {}
+    }, 500);
+}
 
 // Monitor screen sharing and maintain the video background element behind the canvas
 if (typeof window !== 'undefined') {
