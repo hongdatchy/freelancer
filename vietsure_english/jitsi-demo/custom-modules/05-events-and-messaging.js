@@ -544,7 +544,52 @@ if (typeof window !== 'undefined') {
                             console.log('📌 [STUDENT] Broadcast camera request (no targetId) -> Skipping to prevent all students receiving it');
                         }
                     }
-                } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg || isTeacherPinMsg) {
+                } else if (isTeacherPinMsg) {
+                    timerMessagesCount++;
+                    const rawTargetId = msgText.slice('__TEACHER_PIN__:'.length).trim();
+                    const isStudent = (typeof checkIfStudent === 'function' && checkIfStudent()) || !!window.config?.isStudent;
+
+                    if (isStudent && !isHistoryMessage && window.APP && window.APP.store) {
+                        const isUnpin = (!rawTargetId || rawTargetId === 'null' || rawTargetId === 'undefined');
+                        const targetId = isUnpin ? null : rawTargetId;
+
+                        console.log('📌 [HỌC VIÊN] Nhận tín hiệu __TEACHER_PIN__ từ GV -> targetId:', targetId);
+
+                        if (isUnpin) {
+                            window.APP.store.dispatch({
+                                type: 'PIN_PARTICIPANT',
+                                participant: { id: null }
+                            });
+                            window.APP.store.dispatch({
+                                type: 'SET_TILE_VIEW',
+                                enabled: true
+                            });
+                        } else if (targetId === 'whiteboard') {
+                            console.log('🎨 [HỌC VIÊN] Bật & Ghim Bảng trắng theo Giáo viên!');
+                            window.APP.store.dispatch({
+                                type: 'SET_WHITEBOARD_OPEN',
+                                isOpen: true
+                            });
+                            window.APP.store.dispatch({
+                                type: 'SET_TILE_VIEW',
+                                enabled: false
+                            });
+                            window.APP.store.dispatch({
+                                type: 'PIN_PARTICIPANT',
+                                participant: { id: 'whiteboard' }
+                            });
+                        } else {
+                            window.APP.store.dispatch({
+                                type: 'SET_TILE_VIEW',
+                                enabled: false
+                            });
+                            window.APP.store.dispatch({
+                                type: 'PIN_PARTICIPANT',
+                                participant: { id: targetId }
+                            });
+                        }
+                    }
+                } else if (isPraise || isDice || isWheel || isTimer || isToggleStudentShare || isTileViewMsg) {
                     timerMessagesCount++;
                 } else {
                     realMessagesCount++;

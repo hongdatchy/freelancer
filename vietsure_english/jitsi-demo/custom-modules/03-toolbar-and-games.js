@@ -247,207 +247,7 @@ const injectToolbarToolsButton = () => {
   }
 };
 
-// Document-level delegated click listener for custom Whiteboard Pin/Unpin menu item
-if (
-  typeof window !== "undefined" &&
-  !window.hasBoundCustomUnpinMenuItemClickListener
-) {
-  window.hasBoundCustomUnpinMenuItemClickListener = true;
 
-  document.addEventListener(
-    "click",
-    (e) => {
-      const target = e.target;
-      const customItem =
-        target && target.closest
-          ? target.closest("#custom-unpin-whiteboard-menu-item")
-          : null;
-
-      if (customItem) {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-
-        // Đóng menu popover Jitsi chuẩn React (bằng event click outside để React state đồng bộ isOpen = false)
-        setTimeout(() => {
-          try {
-            document.body.dispatchEvent(
-              new MouseEvent("click", { bubbles: true, cancelable: true }),
-            );
-          } catch (err) {}
-        }, 30);
-
-        if (window.APP && window.APP.store) {
-          const state = window.APP.store.getState();
-          const pinnedId = state["features/large-video"]?.participantId;
-          const isTileView = !!state["features/video-layout"]?.tileViewEnabled;
-          const isWbPinned = pinnedId === "whiteboard" && !isTileView;
-
-          const roomName = (
-            state["features/base/conference"]?.room || ""
-          ).toLowerCase();
-
-          if (isWbPinned) {
-            console.log(
-              "📌 [GIÁO VIÊN] Click Ẩn bảng -> BỎ GHIM BẢNG TRẮNG & BẬT GRID VIEW & BROADCAST",
-            );
-            window.APP.store.dispatch({
-              type: "PIN_PARTICIPANT",
-              participant: { id: null },
-            });
-            window.APP.store.dispatch({
-              type: "SET_TILE_VIEW",
-              enabled: true,
-            });
-            try {
-              if (roomName)
-                localStorage.setItem("teacher_tile_view_" + roomName, "true");
-              if (window.APP?.conference?.sendTextMessage) {
-                window.APP.conference.sendTextMessage("__TILE_VIEW__:true");
-              }
-            } catch (e) {}
-          } else {
-            console.log(
-              "📌 [GIÁO VIÊN] Click Bảng trắng -> GHIM BẢNG TRẮNG làm màn chính & BROADCAST",
-            );
-            window.APP.store.dispatch({
-              type: "SET_TILE_VIEW",
-              enabled: false,
-            });
-            window.APP.store.dispatch({
-              type: "PIN_PARTICIPANT",
-              participant: { id: "whiteboard" },
-            });
-            try {
-              if (roomName)
-                localStorage.setItem("teacher_tile_view_" + roomName, "false");
-              if (window.APP?.conference?.sendTextMessage) {
-                window.APP.conference.sendTextMessage("__TILE_VIEW__:false");
-              }
-            } catch (e) {}
-          }
-        }
-      }
-    },
-    true,
-  );
-}
-
-// Hide native default "Ẩn bảng" / "Bảng trắng" items & inject custom toggle menu item
-if (typeof window !== "undefined") {
-  setInterval(() => {
-    try {
-      if (typeof checkIfStudent === "function" && checkIfStudent()) return;
-
-      const docs = [document];
-      const iframes = document.querySelectorAll("iframe");
-      iframes.forEach((iframe) => {
-        try {
-          const iframeDoc =
-            iframe.contentDocument || iframe.contentWindow?.document;
-          if (iframeDoc) docs.push(iframeDoc);
-        } catch (e) {}
-      });
-
-      docs.forEach((doc) => {
-        // Only process when popover menu is actually open (prevents interfering with initial click to open popover)
-        const isPopoverOpen =
-          !!doc.querySelector('[class*="popover"]') ||
-          !!doc.querySelector('[role="menu"]');
-        if (!isPopoverOpen) return;
-
-        const menuItems = doc.querySelectorAll(
-          '[role="button"], [role="menuitem"]',
-        );
-        menuItems.forEach((item) => {
-          if (item.id === "custom-unpin-whiteboard-menu-item") return;
-
-          const label = item.getAttribute("aria-label") || "";
-          const text = item.textContent || "";
-
-          const isHideAction =
-            label === "Ẩn bảng" ||
-            label === "Hide board" ||
-            label === "Hide whiteboard" ||
-            text.trim() === "Ẩn bảng" ||
-            text.trim() === "Hide board" ||
-            text.trim() === "Hide whiteboard";
-
-          const isShowAction =
-            label === "Bảng trắng" ||
-            label === "Bật bảng" ||
-            label === "Mở bảng" ||
-            label === "Whiteboard" ||
-            text.trim() === "Bảng trắng" ||
-            text.trim() === "Bật bảng" ||
-            text.trim() === "Mở bảng" ||
-            text.trim() === "Whiteboard";
-
-          if (isHideAction || isShowAction) {
-            // 1. Ẩn các nút mặc định của Jitsi
-            item.style.setProperty("display", "none", "important");
-
-            // 2. Chèn nút custom tùy chỉnh vào vị trí đó
-            if (item.parentNode) {
-              let customItem = item.parentNode.querySelector(
-                "#custom-unpin-whiteboard-menu-item",
-              );
-              if (!customItem) {
-                customItem = item.cloneNode(true);
-                customItem.id = "custom-unpin-whiteboard-menu-item";
-                item.parentNode.insertBefore(customItem, item.nextSibling);
-              }
-
-              // Dynamic state calculation
-              let isWbPinned = false;
-              let isScreensharing = false;
-              if (window.APP && window.APP.store) {
-                const state = window.APP.store.getState();
-                const pinnedId = state["features/large-video"]?.participantId;
-                const isTileView =
-                  !!state["features/video-layout"]?.tileViewEnabled;
-                isWbPinned = pinnedId === "whiteboard" && !isTileView;
-
-                // Check screenshare status in Redux store
-                const tracks = state["features/base/tracks"] || [];
-                const hasDesktopTrack = Array.isArray(tracks)
-                  ? tracks.some(
-                      (t) => t && t.mediaType === "desktop" && !t.muted,
-                    )
-                  : Object.values(tracks).some(
-                      (t) => t && t.mediaType === "desktop" && !t.muted,
-                    );
-
-                const isLargeDesktop =
-                  !!state["features/large-video"]?.isScreenSharing;
-                isScreensharing = hasDesktopTrack || isLargeDesktop;
-              }
-
-              const isStudentShareAllowed = !!(
-                window.allowStudentScreenshare ||
-                window.isStudentShareAllowedByTeacher
-              );
-
-              if (isScreensharing || isStudentShareAllowed || checkIfStudent()) {
-                // Ẩn nút custom khi ĐANG CHIA SẺ MÀN HÌNH, KHI GIÁO VIÊN CẤP QUYỀN SHARE, hoặc khi là HỌC VIÊN
-                customItem.style.setProperty("display", "none", "important");
-              } else {
-                const dynamicText = isWbPinned ? "Ẩn bảng" : "Bảng trắng";
-
-                customItem.style.removeProperty("display");
-                customItem.style.display = "";
-                customItem.setAttribute("aria-label", dynamicText);
-                customItem
-                  .querySelectorAll("span")
-                  .forEach((s) => (s.textContent = dynamicText));
-              }
-            }
-          }
-        });
-      });
-    } catch (e) {}
-  }, 200);
-}
 
 // Control Student Screenshare Toggle for Teacher & Hide by default for Student
 (function setupStudentScreenshareToggle() {
@@ -646,6 +446,128 @@ if (typeof window !== "undefined") {
     }
   };
 
+const createTestWhiteboardButton = (doc) => {
+  const btnWrapper = doc.createElement("div");
+  btnWrapper.className = "toolbox-button-wrapper";
+  btnWrapper.id = "custom-test-whiteboard-btn";
+  btnWrapper.style.position = "relative";
+
+  btnWrapper.innerHTML = `
+    <div aria-disabled="false" aria-label="Bảng trắng" class="toolbox-button" tabindex="0" role="button" title="Bảng trắng">
+      <div>
+        <div class="toolbox-icon">
+          <div class="jitsi-icon jitsi-icon-default">
+            <svg aria-hidden="true" height="24" width="24" viewBox="0 0 24 24" style="fill: none !important; stroke: currentColor !important;" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="3" width="18" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="custom-tooltip-popup">Bảng trắng</div>
+  `;
+
+  const iconBtn = btnWrapper.querySelector(".toolbox-button");
+  iconBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (window.APP && window.APP.store) {
+      const state = window.APP.store.getState();
+      const pinnedId = state["features/large-video"]?.participantId;
+      const isTileView = !!state["features/video-layout"]?.tileViewEnabled;
+      const isWbPinned = pinnedId === "whiteboard" && !isTileView;
+
+      if (isWbPinned) {
+        console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Click Ẩn bảng -> BỎ GHIM & BẬT GRID VIEW & BROADCAST");
+        window.APP.store.dispatch({
+          type: "PIN_PARTICIPANT",
+          participant: { id: null },
+        });
+        window.APP.store.dispatch({
+          type: "SET_TILE_VIEW",
+          enabled: true,
+        });
+        try {
+          if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
+            window.APP.conference._room.sendTextMessage("__TEACHER_PIN__:null");
+            console.log("📡 Bắn __TEACHER_PIN__:null thành công!");
+          }
+        } catch (err) {}
+      } else {
+        console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Click Mở/Ghim Bảng -> MỞ & GHIM BẢNG TRẮNG & BROADCAST");
+        window.APP.store.dispatch({
+          type: "SET_WHITEBOARD_OPEN",
+          isOpen: true,
+        });
+        window.APP.store.dispatch({
+          type: "SET_TILE_VIEW",
+          enabled: false,
+        });
+        window.APP.store.dispatch({
+          type: "PIN_PARTICIPANT",
+          participant: { id: "whiteboard" },
+        });
+        try {
+          if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
+            window.APP.conference._room.sendTextMessage("__TEACHER_PIN__:whiteboard");
+            console.log("📡 Bắn __TEACHER_PIN__:whiteboard thành công!");
+          }
+        } catch (err) {}
+      }
+    }
+  });
+
+  return btnWrapper;
+};
+
+const injectTestWhiteboardButton = (doc) => {
+  const isStudent = typeof checkIfStudent === 'function' ? checkIfStudent() : false;
+  let btn = doc.getElementById("custom-test-whiteboard-btn");
+
+  if (isStudent) {
+    if (btn) btn.remove();
+    return;
+  }
+
+  const toolsBtn = doc.getElementById("custom-jitsi-tools-btn");
+  if (toolsBtn && toolsBtn.parentNode) {
+    if (!btn) {
+      btn = createTestWhiteboardButton(doc);
+      toolsBtn.parentNode.insertBefore(btn, toolsBtn.nextSibling);
+    } else if (btn.previousSibling !== toolsBtn) {
+      toolsBtn.parentNode.insertBefore(btn, toolsBtn.nextSibling);
+    }
+  }
+
+  // Dynamic tooltip and toggle style update
+  if (btn && window.APP && window.APP.store) {
+    const state = window.APP.store.getState();
+    const pinnedId = state["features/large-video"]?.participantId;
+    const isTileView = !!state["features/video-layout"]?.tileViewEnabled;
+    const isWbPinned = pinnedId === "whiteboard" && !isTileView;
+
+    const titleText = isWbPinned ? "Ẩn bảng" : "Bảng trắng";
+    const innerBtn = btn.querySelector(".toolbox-button");
+    const tooltip = btn.querySelector(".custom-tooltip-popup");
+
+    if (innerBtn) {
+      innerBtn.setAttribute("aria-label", titleText);
+      innerBtn.setAttribute("title", titleText);
+      if (isWbPinned) {
+        innerBtn.classList.add("toggled");
+      } else {
+        innerBtn.classList.remove("toggled");
+      }
+    }
+    if (tooltip) {
+      tooltip.textContent = titleText;
+    }
+  }
+};
+
   setInterval(() => {
     try {
       const docs = [document];
@@ -663,6 +585,7 @@ if (typeof window !== "undefined") {
         const _tbContainer = doc.querySelector('.toolbox-content-items');
         if (!isStudent) {
           injectTeacherShareControlBtn(doc);
+          injectTestWhiteboardButton(doc);
 
           // 4-Slot (5-button) Mutual Exclusion: Screen Sharing, Shared Video, Student Share Control, Whiteboard group
           const shareBtn = findShareScreenWrapper(doc);

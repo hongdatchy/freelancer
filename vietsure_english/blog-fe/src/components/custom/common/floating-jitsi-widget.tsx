@@ -414,7 +414,7 @@ export default function FloatingJitsiWidget() {
             'mute-everyone', 'mute-video-everyone', 'participants-pane',
             'profile', 'raisehand', 'select-background',
             'settings', 'shareaudio', 'sharedvideo', 'stats',
-            'toggle-camera', 'polls', 'whiteboard', 'tileview', 'desktop'
+            'toggle-camera', 'polls', 'tileview', 'desktop'
           ],
         },
         interfaceConfigOverwrite: {

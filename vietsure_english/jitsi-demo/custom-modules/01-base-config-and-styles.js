@@ -226,14 +226,12 @@ if (typeof document !== 'undefined') {
             margin: 0 !important;
         }
 
-        /* Hide whiteboard, screenshare, and shared video participant tiles safely on filmstrip for both Teacher and Student via CSS */
+        /* Hide whiteboard, screenshare, and shared video participant tiles safely on filmstrip via CSS wildcard selector */
         #participant_whiteboard,
         #filmstripLocalScreenShare,
         #filmstripLocalScreenShareThumbnail,
         #sharedVideoContainer,
-        span.videocontainer[id*="-v0"],
-        span.videocontainer[id*="-v1"],
-        span.videocontainer[id*="-v2"] {
+        span.videocontainer[id*="-v"] {
             display: none !important;
         }
 
@@ -569,24 +567,9 @@ if (typeof window !== 'undefined') {
         };
     }
 
-    // Ẩn tile bảng trắng & màn share bằng JS ngầm cho cả Giáo viên & Học viên
+    // Ensure local video placement and bright theme in filmstrip
     const hideFilmstripDistractions = () => {
         try {
-            // Ẩn span whiteboard
-            const whiteboard = document.getElementById('participant_whiteboard');
-            if (whiteboard && whiteboard.style.display !== 'none') {
-                whiteboard.style.setProperty('display', 'none', 'important');
-            }
-
-            // Ẩn span screenshare (ID chứa -v0, -v1, -v2...)
-            document.querySelectorAll('span.videocontainer').forEach(el => {
-                if (el.id && /-(v\d+)/i.test(el.id)) {
-                    if (el.style.display !== 'none') {
-                        el.style.setProperty('display', 'none', 'important');
-                    }
-                }
-            });
-
             // Nếu có #filmstripLocalVideo, di chuyển an toàn vào đầu container remote-videos
             const localVideo = document.getElementById('filmstripLocalVideo');
             const remoteContainer = document.querySelector('.filmstrip__videos.remote-videos > div');
