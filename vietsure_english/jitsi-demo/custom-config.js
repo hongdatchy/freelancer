@@ -1619,7 +1619,7 @@ if (typeof window !== 'undefined') {
                             transform: scale(0.94) !important;
                         }
 
-                        /* Vertical Left Drawing Toolbar (Desktop & Mobile Compact Modes) */
+                        /* Vertical Left Drawing Toolbar (Desktop & Mobile Compact Modes) - Commented out to revert to top-center horizontal layout
                         .shapes-section,
                         .App-toolbar:has(#custom-highlighter-tool),
                         .App-toolbar:has(#custom-close-drawing-toolbar-btn),
@@ -1680,7 +1680,6 @@ if (typeof window !== 'undefined') {
                             background-color: var(--color-gray-20, #ebebeb) !important;
                         }
 
-                        /* Properties Panel (Stroke / Background / Stroke width) positioned at left: 72px */
                         .App-menu__left:not(:has(#custom-highlighter-tool)),
                         .Island.App-menu__left:not(:has(#custom-highlighter-tool)) {
                             position: fixed !important;
@@ -1703,6 +1702,7 @@ if (typeof window !== 'undefined') {
                         #custom-close-drawing-toolbar-btn {
                             margin: 0 !important;
                         }
+                        */
                     `;
                     doc.head.appendChild(style);
                 }
