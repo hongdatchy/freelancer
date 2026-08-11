@@ -325,6 +325,11 @@ if (typeof window !== 'undefined') {
                     videoEl.requestPictureInPicture()
                         .then(() => {
                             console.log('🎥 [Jitsi] PictureInPicture active!');
+                            try {
+                                if (window.parent && window.parent !== window) {
+                                    window.parent.postMessage({ type: 'PIP_OPENED' }, '*');
+                                }
+                            } catch (e) {}
                         })
                         .catch((err) => {
                             console.error('[Jitsi] Composite Video PiP Error:', err);
@@ -350,4 +355,76 @@ if (typeof window !== 'undefined') {
             }
         }
     });
+
+    // Inject Picture-in-Picture (PiP1) button at Top-Right of Filmstrip (Moderator only - not student)
+    setInterval(() => {
+        try {
+            const isStudent = typeof window.checkIfStudent === 'function' ? window.checkIfStudent() : false;
+            const existingBtn = document.getElementById('custom-filmstrip-pip-btn');
+
+            if (isStudent) {
+                if (existingBtn && existingBtn.parentNode) {
+                    existingBtn.parentNode.removeChild(existingBtn);
+                }
+                return;
+            }
+
+            if (existingBtn) return;
+
+            const filmstripContainer = document.querySelector('#filmstripLocalVideo, .filmstrip, #remoteVideos, .filmstrip__videos, #videoconference_page');
+            if (!filmstripContainer) return;
+
+            const btn = document.createElement('div');
+            btn.id = 'custom-filmstrip-pip-btn';
+            btn.title = 'Mở Cửa sổ Nổi Meeting (Picture-in-Picture)';
+            btn.style.cssText = `
+                position: absolute !important;
+                top: 8px !important;
+                right: 8px !important;
+                width: 34px !important;
+                height: 34px !important;
+                border-radius: 8px !important;
+                background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+                color: #ffffff !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+                cursor: pointer !important;
+                z-index: 999999 !important;
+                border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+            `;
+            btn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2" />
+                    <path d="M14 10l5 5M19 10v5h-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            `;
+
+            btn.addEventListener('mouseenter', () => {
+                btn.style.transform = 'scale(1.08)';
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = 'scale(1)';
+            });
+
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🎥 [Jitsi Filmstrip] PiP button clicked');
+                window.postMessage({ type: 'TRIGGER_COMPOSITE_VIDEO_PIP' }, '*');
+            });
+
+            const targetParent = document.querySelector('.filmstrip') || document.querySelector('#filmstripLocalVideo') || filmstripContainer;
+            const computedPos = window.getComputedStyle(targetParent).position;
+            if (computedPos === 'static') {
+                targetParent.style.position = 'relative';
+            }
+
+            targetParent.appendChild(btn);
+        } catch (e) {
+            console.error('Error injecting filmstrip PiP button:', e);
+        }
+    }, 1000);
 }

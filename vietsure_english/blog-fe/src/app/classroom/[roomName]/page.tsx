@@ -774,8 +774,8 @@ export default function ClassroomPage() {
               </svg>
             </button>
 
-            {/* PiP Button (Document Picture-in-Picture) - Shown when student has Moderator role */}
-            {isModerator && !isPipActive && (
+            {/* PiP Button (Document Picture-in-Picture) - Hidden */}
+            {/* {isModerator && !isPipActive && (
               <button
                 onClick={handlePiP2}
                 className="p-1.5 rounded-lg text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 transition-colors"
@@ -786,7 +786,7 @@ export default function ClassroomPage() {
                   <path d="M14 10l5 5M19 10v5h-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
-            )}
+            )} */}
 
 
 

@@ -882,13 +882,14 @@ export default function FloatingJitsiWidget() {
 
   useEffect(() => {
     const handleWindowMessage = (event: MessageEvent) => {
-      if (event.data && event.data.type === 'PIP_CLOSED') {
-        console.log('[PiP] PIP_CLOSED event received from Jitsi iframe');
-        setIsPipActive(false);
-        setMinimized(false);
-        // Bật Grid View lên → nút PiP tự ẩn, user phải tắt Grid View mới dùng PiP lại được
-        if (apiRef.current) {
-          try { apiRef.current.executeCommand('toggleTileView'); } catch (e) { }
+      if (event.data) {
+        if (event.data.type === 'PIP_CLOSED') {
+          console.log('[PiP] PIP_CLOSED event received from Jitsi iframe');
+          setIsPipActive(false);
+          setMinimized(false);
+        } else if (event.data.type === 'PIP_OPENED') {
+          console.log('[PiP] PIP_OPENED event received from Jitsi iframe');
+          setMinimized(true);
         }
       }
     };
@@ -1074,7 +1075,7 @@ export default function FloatingJitsiWidget() {
                 )}
 
                 {/* PiP Button (Document Picture-in-Picture) - Hidden in PiP mode */}
-                {!isPipActive && (
+                {/* {!isPipActive && (
                   <button
                     onClick={handlePiP2}
                     className="p-1.5 rounded-lg text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 transition-colors"
@@ -1085,7 +1086,7 @@ export default function FloatingJitsiWidget() {
                       <path d="M14 10l5 5M19 10v5h-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </button>
-                )}
+                )} */}
 
                 {/* Minimize button */}
                 {/* {!isPipActive && (
