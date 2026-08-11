@@ -3228,8 +3228,9 @@ if (typeof window !== 'undefined') {
             btn.title = 'Mở Cửa sổ Nổi Meeting (Picture-in-Picture)';
             btn.style.cssText = `
                 position: absolute !important;
-                top: 8px !important;
-                right: 8px !important;
+                top: 14px !important;
+                left: 18px !important;
+                right: auto !important;
                 width: 34px !important;
                 height: 34px !important;
                 border-radius: 8px !important;
