@@ -76,6 +76,23 @@ export function TeacherScheduleView() {
   }, []);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const classroom = urlParams.get('classroom');
+      if (classroom) {
+        try {
+          unlockAudio();
+        } catch (e) {}
+        startMeeting(classroom);
+        
+        // Clean URL
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+  }, [startMeeting]);
+
+  useEffect(() => {
     if (!user?.id) return;
 
     const fetchSchedule = async () => {
@@ -396,13 +413,33 @@ export function TeacherScheduleView() {
                         if (!selectedSlotForView) return;
                         const cleanClass = item!.class_code!.trim().replace(/\s+/g, '_');
                         const roomName = cleanClass;
-                        try {
-                          unlockAudio();
-                        } catch (e) {
-                          console.warn('Failed to unlock AudioContext:', e);
+                        
+                        // Check if this window was already launched with the classroom parameter
+                        // or is explicitly the classroom child window
+                        const isChildWindow = typeof window !== 'undefined' && 
+                          (window.location.search.includes('classroom=') || window.name === 'teacher_classroom_window');
+
+                        if (!isChildWindow) {
+                          const width = 1200;
+                          const height = 800;
+                          const left = (window.screen.width - width) / 2;
+                          const top = (window.screen.height - height) / 2;
+                          
+                          window.open(
+                            `${window.location.origin}/schedule-management?classroom=${roomName}`,
+                            'teacher_classroom_window',
+                            `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+                          );
+                          setSelectedSlotForView(null);
+                        } else {
+                          try {
+                            unlockAudio();
+                          } catch (e) {
+                            console.warn('Failed to unlock AudioContext:', e);
+                          }
+                          setSelectedSlotForView(null);
+                          startMeeting(roomName);
                         }
-                        setSelectedSlotForView(null);
-                        startMeeting(roomName);
                       }}
                       className="w-full py-3 rounded-xl text-sm font-bold bg-[#3F489A] text-white hover:bg-[#2E357F] transition-all shadow-md flex items-center justify-center gap-2"
                     >
