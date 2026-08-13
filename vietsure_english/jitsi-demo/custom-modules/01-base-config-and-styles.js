@@ -203,6 +203,12 @@ if (typeof document !== 'undefined') {
             display: none !important;
         }
 
+        /* Hide native whiteboard button for teacher (custom button used instead, native stays in DOM for programmatic click) */
+        body:not(.is-student) [aria-label="Hiển thị bảng trắng"],
+        body:not(.is-student) [aria-label="Ẩn bảng trắng"] {
+            display: none !important;
+        }
+
         /* Filmstrip Container and Tile Spans Alignment for both Teacher & Student */
         .filmstrip__videos.remote-videos {
             align-items: center !important;

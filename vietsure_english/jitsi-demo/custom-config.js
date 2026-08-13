@@ -211,6 +211,12 @@ if (typeof document !== 'undefined') {
             display: none !important;
         }
 
+        /* Hide native whiteboard button for teacher (custom button used instead, native stays in DOM for programmatic click) */
+        body:not(.is-student) [aria-label="Hiển thị bảng trắng"],
+        body:not(.is-student) [aria-label="Ẩn bảng trắng"] {
+            display: none !important;
+        }
+
         /* Filmstrip Container and Tile Spans Alignment for both Teacher & Student */
         .filmstrip__videos.remote-videos {
             align-items: center !important;
@@ -2351,40 +2357,75 @@ const createTestWhiteboardButton = (doc) => {
 
     if (window.APP && window.APP.store) {
       const state = window.APP.store.getState();
+      const isWbOpen = !!state["features/whiteboard"]?.isOpen;
       const pinnedId = state["features/large-video"]?.participantId;
       const isTileView = !!state["features/video-layout"]?.tileViewEnabled;
       const isWbPinned = pinnedId === "whiteboard" && !isTileView;
 
-      if (isWbPinned) {
+      if (!isWbOpen) {
+        // Lần đầu: Click nút gốc để Jitsi tự khởi tạo phòng vẽ & phát sóng XMPP cho học sinh
+        console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Lần đầu -> Click nút gốc để Jitsi khởi tạo phòng vẽ");
+        // Tìm nút gốc - có thể đang ẩn trong overflow menu
+        let nativeWbBtn = document.querySelector('[aria-label="Hiển thị bảng trắng"]') ||
+                          document.querySelector('[aria-label="Ẩn bảng trắng"]');
+
+        const doClickNative = () => {
+          nativeWbBtn = document.querySelector('[aria-label="Hiển thị bảng trắng"]') ||
+                        document.querySelector('[aria-label="Ẩn bảng trắng"]');
+          if (nativeWbBtn) {
+            nativeWbBtn.click();
+            // Đóng overflow menu nếu đang mở
+            setTimeout(() => {
+              const overflowMenu = document.getElementById('overflow-context-menu');
+              if (overflowMenu) {
+                document.body.click();
+              }
+            }, 100);
+          }
+        };
+
+        if (nativeWbBtn) {
+          doClickNative();
+        } else {
+          // Overflow menu chưa mở -> mở menu trước rồi click
+          const overflowBtn = document.querySelector('[aria-label="Menu thêm"]') ||
+                              document.querySelector('[aria-haspopup="true"][aria-label*="thêm" i]') ||
+                              document.querySelector('.toolbox-button[aria-label*="thêm" i]');
+          if (overflowBtn) {
+            overflowBtn.click();
+            setTimeout(() => doClickNative(), 300);
+          }
+        }
+        // Sau khi Jitsi khởi tạo xong, ghim bảng trắng & tắt tile view
+        setTimeout(() => {
+          console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Sau click gốc -> GHIM BẢNG & BẮN BROADCAST");
+          window.APP.store.dispatch({ type: "SET_TILE_VIEW", enabled: false });
+          window.APP.store.dispatch({ type: "PIN_PARTICIPANT", participant: { id: "whiteboard" } });
+          try {
+            if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
+              window.APP.conference._room.sendTextMessage("__TEACHER_PIN__:whiteboard");
+              console.log("📡 Bắn __TEACHER_PIN__:whiteboard thành công!");
+            }
+          } catch (err) {}
+        }, 800);
+
+      } else if (isWbPinned) {
+        // Bảng đang ghim -> Ẩn bảng
         console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Click Ẩn bảng -> BỎ GHIM & BẬT GRID VIEW & BROADCAST");
-        window.APP.store.dispatch({
-          type: "PIN_PARTICIPANT",
-          participant: { id: null },
-        });
-        window.APP.store.dispatch({
-          type: "SET_TILE_VIEW",
-          enabled: true,
-        });
+        window.APP.store.dispatch({ type: "PIN_PARTICIPANT", participant: { id: null } });
+        window.APP.store.dispatch({ type: "SET_TILE_VIEW", enabled: true });
         try {
           if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
             window.APP.conference._room.sendTextMessage("__TEACHER_PIN__:null");
             console.log("📡 Bắn __TEACHER_PIN__:null thành công!");
           }
         } catch (err) {}
+
       } else {
-        console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Click Mở/Ghim Bảng -> MỞ & GHIM BẢNG TRẮNG & BROADCAST");
-        window.APP.store.dispatch({
-          type: "SET_WHITEBOARD_OPEN",
-          isOpen: true,
-        });
-        window.APP.store.dispatch({
-          type: "SET_TILE_VIEW",
-          enabled: false,
-        });
-        window.APP.store.dispatch({
-          type: "PIN_PARTICIPANT",
-          participant: { id: "whiteboard" },
-        });
+        // Bảng đã mở nhưng chưa ghim -> Ghim lại
+        console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Click Ghim lại Bảng -> GHIM & TẮT GRID VIEW & BROADCAST");
+        window.APP.store.dispatch({ type: "SET_TILE_VIEW", enabled: false });
+        window.APP.store.dispatch({ type: "PIN_PARTICIPANT", participant: { id: "whiteboard" } });
         try {
           if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
             window.APP.conference._room.sendTextMessage("__TEACHER_PIN__:whiteboard");
@@ -2394,6 +2435,7 @@ const createTestWhiteboardButton = (doc) => {
       }
     }
   });
+
 
   return btnWrapper;
 };
