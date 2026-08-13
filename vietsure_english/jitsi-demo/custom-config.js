@@ -240,7 +240,7 @@ if (typeof document !== 'undefined') {
             margin: 0 !important;
         }
 
-        /* Hide whiteboard, screenshare, and shared video participant tiles safely on filmstrip via CSS wildcard selector (Commented out to show them on filmstrip again)
+        /* Hide whiteboard, screenshare, and shared video participant tiles safely on filmstrip via CSS wildcard selector */
         #participant_whiteboard,
         #filmstripLocalScreenShare,
         #filmstripLocalScreenShareThumbnail,
@@ -248,7 +248,6 @@ if (typeof document !== 'undefined') {
         span.videocontainer[id*="-v"] {
             display: none !important;
         }
-        */
 
         /* Hide Jitsi native invite buttons/items */
         .invite-button,
@@ -2463,8 +2462,7 @@ const injectTestWhiteboardButton = (doc) => {
     const isWbOpen = !!state["features/whiteboard"]?.isOpen;
     const isWbPinned = pinnedId === "whiteboard" && !isTileView;
 
-    const titleText = isWbOpen ? "Ẩn bảng" : "Bảng trắng";
-    btn.setAttribute("data-label", titleText);
+    const titleText = "Bảng trắng";
     const innerBtn = btn.querySelector(".toolbox-button");
     const tooltip = btn.querySelector(".custom-tooltip-popup");
 
@@ -2824,7 +2822,7 @@ const setupToolbarButtonLabels = (doc) => {
   const items = toolbarContainer.children;
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
-    if (item.id === "custom-jitsi-divider" || item.id === "custom-test-whiteboard-btn") continue;
+    if (item.id === "custom-jitsi-divider") continue;
 
     let labelText = "";
     if (item.id === "custom-jitsi-tools-btn") {

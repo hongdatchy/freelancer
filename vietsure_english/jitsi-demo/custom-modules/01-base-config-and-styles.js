@@ -232,7 +232,7 @@ if (typeof document !== 'undefined') {
             margin: 0 !important;
         }
 
-        /* Hide whiteboard, screenshare, and shared video participant tiles safely on filmstrip via CSS wildcard selector (Commented out to show them on filmstrip again)
+        /* Hide whiteboard, screenshare, and shared video participant tiles safely on filmstrip via CSS wildcard selector */
         #participant_whiteboard,
         #filmstripLocalScreenShare,
         #filmstripLocalScreenShareThumbnail,
@@ -240,7 +240,6 @@ if (typeof document !== 'undefined') {
         span.videocontainer[id*="-v"] {
             display: none !important;
         }
-        */
 
         /* Hide Jitsi native invite buttons/items */
         .invite-button,
