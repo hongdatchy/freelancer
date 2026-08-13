@@ -32,10 +32,11 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // ===== 2. ĐÃ LOGIN -> CHỈ ĐƯỢC VÀO PROTECTED =====
+  // ===== 2. ĐÃ LOGIN -> CHỈ ĐƯỢC VÀO PROTECTED (Ngoại trừ trang học tập/classroom) =====
   const isPublicRoute = !isProtectedRoute && !url.pathname.startsWith('/login');
+  const isClassroomRoute = url.pathname.startsWith('/classroom') || url.pathname.startsWith('/classroom-teacher');
 
-  if (token && isPublicRoute) {
+  if (token && isPublicRoute && !isClassroomRoute) {
     return NextResponse.redirect(new URL('/elearning', request.url));
   }
 

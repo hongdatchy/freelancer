@@ -1,0 +1,1069 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useParams, useRouter } from 'next/navigation';
+import useUserLoginStore from '@/state-manager/user-login-store';
+import TimerWidget from '@/components/custom/common/timer-widget';
+import WheelWidget from '@/components/custom/common/wheel-widget';
+import DiceWidget from '@/components/custom/common/dice-widget';
+import PraiseWidget from '@/components/custom/common/praise-widget';
+import { getData } from '@/service/api';
+import { playSound, unlockAudio } from '@/lib/audio-context';
+
+const JITSI_SERVER = process.env.NEXT_PUBLIC_JITSI_SERVER;
+
+export default function TeacherClassroomPage() {
+  const params = useParams();
+  const router = useRouter();
+  const roomName = params.roomName as string;
+
+  const [hasHydrated, setHasHydrated] = useState(false);
+  const { user, jwt, setLogin } = useUserLoginStore();
+  const userRef = useRef(user);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+
+  // Set hasHydrated to true once mounted
+  useEffect(() => {
+    setHasHydrated(true);
+  }, []);
+
+  // Redirect to login if not logged in (only after hydration)
+  useEffect(() => {
+    if (!hasHydrated) return;
+    if (!user) {
+      router.push('/login');
+    }
+  }, [user, hasHydrated, router]);
+
+  // Fetch avatar if missing
+  useEffect(() => {
+    if (hasHydrated && user && !user.avatar && user.id) {
+      getData(`api/users/${user.id}?populate=avatar`)
+        .then((fullUser) => {
+          if (fullUser && fullUser.avatar && jwt) {
+            setLogin(jwt, { ...user, avatar: fullUser.avatar });
+          }
+        })
+        .catch(() => { });
+    }
+  }, [user, jwt, setLogin, hasHydrated]);
+
+  const isHost = true;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const apiRef = useRef<any>(null);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const teacherExitPopoverRef = useRef<HTMLDivElement | null>(null);
+  const [isPipActive, setIsPipActive] = useState(false);
+  const [pipWinBody, setPipWinBody] = useState<Element | null>(null);
+  const [showRec, setShowRec] = useState(false);
+  const [showHostTransferList, setShowHostTransferList] = useState(false);
+
+  useEffect(() => {
+    if (!showExitConfirm) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (teacherExitPopoverRef.current && !teacherExitPopoverRef.current.contains(e.target as Node)) {
+        const btn = (e.target as HTMLElement).closest('button');
+        if (!btn || (!btn.getAttribute('title')?.includes('Thoát') && !btn.closest('[title*="Thoát"]'))) {
+          setShowExitConfirm(false);
+          setShowHostTransferList(false);
+        }
+      }
+    };
+    window.addEventListener('mousedown', handleOutsideClick);
+    return () => window.removeEventListener('mousedown', handleOutsideClick);
+  }, [showExitConfirm]);
+
+  // REC indicator: reset và đếm lại 5s
+  useEffect(() => {
+    setShowRec(false);
+    const t = setTimeout(() => setShowRec(true), 5000);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Preload all game sound files into RAM for teacher
+  useEffect(() => {
+    try {
+      unlockAudio();
+    } catch (e) {}
+  }, []);
+
+  const lastPraiseTimeRef = useRef<number>(0);
+  const isTileViewEnabledRef = useRef<boolean>(false);
+  const isScreenSharingRef = useRef<boolean>(false);
+  const breakoutRoomsDataRef = useRef<any>(null);
+  const currentSubRoomJidRef = useRef<string>('');
+  const shouldEndConferenceOnMainJoinRef = useRef<boolean>(false);
+  const [isInBreakoutRoom, setIsInBreakoutRoom] = useState(false);
+  const [currentSubRoomName, setCurrentSubRoomName] = useState<string | null>(null);
+  const [isTileViewActive, setIsTileViewActive] = useState<boolean>(false);
+
+  const [allowStudentShare, setAllowStudentShare] = useState(false);
+
+  const handleToggleStudentShare = () => {
+    const next = !allowStudentShare;
+    setAllowStudentShare(next);
+    if (apiRef.current) {
+      apiRef.current.executeCommand('sendChatMessage', `__TOGGLE_STUDENT_SCREENSHARE__:${next}`);
+    }
+  };
+
+  useEffect(() => {
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data && e.data.type === 'TEACHER_TOGGLED_STUDENT_SHARE') {
+        const allowed = !!e.data.allowed;
+        setAllowStudentShare(allowed);
+        if (apiRef.current) {
+          try {
+            apiRef.current.executeCommand('sendChatMessage', `__TOGGLE_STUDENT_SCREENSHARE__:${allowed}`);
+          } catch (err) {
+            console.error('[Parent] Failed to sendChatMessage:', err);
+          }
+        }
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  const [bgImage, setBgImage] = useState<string | null>(null);
+  const [apiReady, setApiReady] = useState(false);
+  const [isPraiseModalOpen, setIsPraiseModalOpen] = useState(false);
+  const starScoresKey = `praiseStars_${roomName || 'default'}`;
+  const [starScores, setStarScores] = useState<Record<string, number>>(() => {
+    try {
+      const saved = localStorage.getItem(`praiseStars_${roomName || 'default'}`);
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
+  const participantsRef = useRef<string[]>([]);
+
+  const getStudentList = () => {
+    if (!apiRef.current) return [];
+    try {
+      const participants = apiRef.current.getParticipantsInfo() || [];
+      return participants
+        .filter((p: any) => {
+          const displayName = p.formattedDisplayName || p.displayName || '';
+          if (displayName.includes('(me)')) return false;
+          return true;
+        })
+        .map((p: any) => ({
+          id: p.participantId || p.id,
+          name: (p.formattedDisplayName || p.displayName || 'Học viên').replace(/\s*⭐\s*\d+/g, '').trim(),
+        }));
+    } catch (e) {
+      return [];
+    }
+  };
+
+  const handleSendPraise = (opts: { studentName?: string; studentId?: string; isAll?: boolean }) => {
+    const randIndex = Math.floor(Math.random() * 5);
+    const students = getStudentList();
+
+    if (opts.isAll) {
+      const newScores = { ...starScores };
+      students.forEach((s: any) => { newScores[s.name] = (newScores[s.name] || 0) + 1; });
+
+      const payload = { isAll: true, mascotIdx: randIndex, allScores: newScores };
+      if (apiRef.current) {
+        apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${JSON.stringify(payload)}`);
+      }
+
+      triggerPraiseAnimation({ isAll: true, mascotIdx: randIndex }, apiRef);
+      setStarScores(newScores);
+      try { localStorage.setItem(starScoresKey, JSON.stringify(newScores)); } catch { }
+
+    } else if (opts.studentName) {
+      const newScores = { ...starScores, [opts.studentName]: (starScores[opts.studentName] || 0) + 1 };
+      const payload = { studentName: opts.studentName, mascotIdx: randIndex, allScores: newScores };
+      if (apiRef.current) {
+        apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${JSON.stringify(payload)}`);
+      }
+      triggerPraiseAnimation(payload, apiRef);
+      setStarScores(newScores);
+      try { localStorage.setItem(starScoresKey, JSON.stringify(newScores)); } catch { }
+    }
+
+    setIsPraiseModalOpen(false);
+  };
+
+  // Generate JWT Token using Web Crypto API
+  const generateJitsiJWT = async (roomJID?: string, name?: string) => {
+    const header = { alg: "HS256", typ: "JWT" };
+    const now = Math.floor(Date.now() / 1000);
+    const displayName = name || userRef.current?.fullName || userRef.current?.username || 'Giáo viên';
+    const email = userRef.current?.email || '';
+    const avatarRawUrl = userRef.current?.avatar?.formats?.small?.url ||
+      userRef.current?.avatar?.formats?.thumbnail?.url ||
+      userRef.current?.avatar?.url;
+    const avatarURL = avatarRawUrl
+      ? (avatarRawUrl.startsWith('http') ? avatarRawUrl : (process.env.NEXT_PUBLIC_BE_HOST || '') + avatarRawUrl)
+      : '';
+    const sanitizedRoom = decodeURIComponent(roomName || '')
+      .replace(/[^a-zA-Z0-9À-ỹ\-_]/g, '-')
+      .replace(/-+/g, '-');
+    const teacherId = userRef.current?.id || '0';
+    const targetRoomJID = roomJID || `${sanitizedRoom}_GV_${teacherId}`;
+
+    const payload = {
+      context: {
+        user: { name: displayName, email: email, avatar: avatarURL },
+        features: { recording: true, livestreaming: true }
+      },
+      aud: "vietsure_app",
+      iss: "vietsure_app",
+      sub: "meet.jitsi",
+      room: targetRoomJID,
+      iat: now,
+      nbf: now - 60,
+      exp: now + 86400
+    };
+
+    const base64UrlEncode = (obj: any) => {
+      const str = JSON.stringify(obj);
+      const encoded = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+        (match, p1) => String.fromCharCode(parseInt(p1, 16))
+      );
+      return btoa(encoded).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    };
+    const encodedHeader = base64UrlEncode(header);
+    const encodedPayload = base64UrlEncode(payload);
+
+    const secret = "vietsure_secret_key_2026";
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+
+    const signature = await crypto.subtle.sign(
+      "HMAC",
+      key,
+      encoder.encode(`${encodedHeader}.${encodedPayload}`)
+    );
+
+    const encodedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+    return `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
+  };
+
+  useEffect(() => {
+    if (!hasHydrated || !roomName) return;
+
+    const initJitsi = async () => {
+      if (!containerRef.current || !roomName) return;
+
+      if (apiRef.current) {
+        apiRef.current.dispose();
+      }
+
+      const displayName = userRef.current?.fullName || userRef.current?.username || 'Giáo viên';
+      const email = userRef.current?.email || '';
+
+      const avatarRawUrl = userRef.current?.avatar?.formats?.small?.url ||
+        userRef.current?.avatar?.formats?.thumbnail?.url ||
+        userRef.current?.avatar?.url;
+      const avatarURL = avatarRawUrl
+        ? (avatarRawUrl.startsWith('http') ? avatarRawUrl : (process.env.NEXT_PUBLIC_BE_HOST || '') + avatarRawUrl)
+        : '';
+
+      const sanitizedRoom = decodeURIComponent(roomName)
+        .replace(/[^a-zA-Z0-9À-ỹ\-_]/g, '-')
+        .replace(/-+/g, '-');
+      const teacherId = userRef.current?.id || '0';
+      const jitsiRoomJID = `${sanitizedRoom}_GV_${teacherId}`;
+
+      const token = await generateJitsiJWT(jitsiRoomJID, displayName);
+
+      let startWithAudioMuted = false;
+      let startWithVideoMuted = false;
+      try {
+        const savedAudio = localStorage.getItem('jitsi_audio_muted');
+        const savedVideo = localStorage.getItem('jitsi_video_muted');
+        if (savedAudio !== null) startWithAudioMuted = savedAudio === 'true';
+        if (savedVideo !== null) startWithVideoMuted = savedVideo === 'true';
+      } catch (e) {}
+
+      apiRef.current = new (window as any).JitsiMeetExternalAPI(JITSI_SERVER, {
+        roomName: jitsiRoomJID,
+        jwt: token,
+        width: '100%',
+        height: '100%',
+        parentNode: containerRef.current,
+        userInfo: {
+          displayName,
+          email,
+          avatarURL,
+        },
+        configOverwrite: {
+          startWithAudioMuted,
+          startWithVideoMuted,
+          disableDeepLinking: true,
+          prejoinPageEnabled: false,
+          startTileView: true,
+          disablePolls: false,
+          defaultLanguage: 'vi',
+          settingsSections: ['devices', 'moderator', 'profile', 'calendar', 'sounds'],
+          disableSelfViewSettings: true,
+          disabledSounds: ['INCOMING_MSG_SOUND_ID', 'OUTGOING_MSG_SOUND_ID'],
+          isStudent: false,
+          subject: sanitizedRoom,
+          whiteboard: { enabled: true },
+          localRecording: {
+            enabled: true,
+            disableSelfRecording: false,
+          },
+          resolution: 720,
+          videoQuality: {
+            maxReceiverVideoQuality: 3,
+          },
+          toolbarButtons: [
+            'camera', 'chat', 'closedcaptions', 'download',
+            'etherpad', 'feedback', 'filmstrip',
+            'help', 'highlight', 'livestreaming', 'microphone',
+            'mute-everyone', 'mute-video-everyone', 'participants-pane',
+            'profile', 'raisehand', 'select-background',
+            'settings', 'shareaudio', 'sharedvideo', 'stats',
+            'toggle-camera', 'polls', 'whiteboard', 'tileview', 'desktop'
+          ],
+        },
+        interfaceConfigOverwrite: {
+          SHOW_JITSI_WATERMARK: false,
+          SHOW_WATERMARK_FOR_GUESTS: false,
+          DEFAULT_BACKGROUND: '#F0F7FF',
+          SETTINGS_SECTIONS: ['devices', 'moderator', 'profile', 'calendar', 'sounds'],
+        },
+      });
+
+      apiRef.current.addEventListener('participantJoined', (event: any) => {
+        console.log('[Jitsi] participantJoined event raw data:', event);
+
+        if (event.id === 'shared-video' && apiRef.current) {
+          console.log('[Jitsi] YouTube shared video participant joined:', event.id);
+
+          const iframe = apiRef.current.getIFrame();
+          const iframeDoc = iframe?.contentDocument || iframe?.contentWindow?.document;
+          const isLocalScreenSharing = !!iframeDoc?.getElementById('filmstripLocalScreenShareThumbnail');
+
+          console.log('[Jitsi] Screen share status when video joined:', isLocalScreenSharing);
+          if (isLocalScreenSharing) {
+            console.log('[Jitsi] Toggling screen sharing off due to video join');
+            apiRef.current.executeCommand('toggleShareScreen');
+          }
+        }
+
+        if (!participantsRef.current.includes(event.id)) {
+          participantsRef.current.push(event.id);
+        }
+        if (!!userRef.current && bgImageRef.current) {
+          setTimeout(() => {
+            if (apiRef.current && bgImageRef.current) {
+              console.log("📤 Delay-sending whiteboard background to participant:", event.id);
+              try {
+                apiRef.current.executeCommand('sendEndpointTextMessage', event.id, JSON.stringify({
+                  type: 'SET_WHITEBOARD_BACKGROUND',
+                  imageUrl: bgImageRef.current
+                }));
+              } catch (e) {}
+            }
+          }, 5000);
+        }
+      });
+
+      apiRef.current.addEventListener('participantLeft', (event: any) => {
+        participantsRef.current = participantsRef.current.filter(id => id !== event.id);
+      });
+
+      apiRef.current.addEventListener('audioMuteStatusChanged', (event: any) => {
+        try {
+          localStorage.setItem('jitsi_audio_muted', String(!!event.muted));
+        } catch (e) {}
+      });
+
+      apiRef.current.addEventListener('videoMuteStatusChanged', (event: any) => {
+        try {
+          localStorage.setItem('jitsi_video_muted', String(!!event.muted));
+        } catch (e) {}
+      });
+
+      apiRef.current.addEventListener('endpointTextMessageReceived', (event: any) => {
+        try {
+          const text = event.eventData?.text || event.text || event.data?.text;
+          const payload = JSON.parse(text);
+          if (payload.type === 'SET_WHITEBOARD_BACKGROUND') {
+            setBgImage(payload.imageUrl);
+          }
+        } catch (err) { }
+      });
+
+      apiRef.current.addEventListener('videoConferenceJoined', () => {
+        setApiReady(true);
+
+        if (avatarURL && apiRef.current) {
+          try {
+            apiRef.current.executeCommand('avatarUrl', avatarURL);
+          } catch (e) { }
+        }
+
+        setTimeout(() => {
+          if (apiRef.current) {
+            apiRef.current.executeCommand('startRecording', {
+              mode: 'file'
+            });
+          }
+        }, 1000);
+
+        setTimeout(() => {
+          if (apiRef.current && !isTileViewEnabledRef.current) {
+            apiRef.current.executeCommand('setTileView', true);
+          }
+        }, 1000);
+
+        if (bgImageRef.current && apiRef.current && apiRef.current.getIFrame()) {
+          apiRef.current.getIFrame().contentWindow.postMessage({
+            type: 'SET_WHITEBOARD_BACKGROUND',
+            imageUrl: bgImageRef.current
+          }, '*');
+        }
+      });
+
+      apiRef.current.addEventListener('tileViewChanged', (event: any) => {
+        const enabled = !!event.enabled;
+        isTileViewEnabledRef.current = enabled;
+        setIsTileViewActive(enabled);
+        console.log('📢 [Teacher TileView] Toggled Grid View to:', enabled);
+        try {
+          apiRef.current.executeCommand('sendChatMessage', `__TILE_VIEW__:${enabled}`);
+        } catch (e) { }
+      });
+
+      apiRef.current.addEventListener('screenSharingStatusChanged', (event: any) => {
+        if (event.on && apiRef.current && isTileViewEnabledRef.current) {
+          apiRef.current.executeCommand('toggleTileView');
+        }
+      });
+
+      const resolveSubRoomName = (cleanCurrent: string, rawCurrentName: string, roomsData: any) => {
+        const roomList = Array.isArray(roomsData) ? roomsData : (roomsData ? Object.values(roomsData) : []);
+        const matched = roomList.find((r: any) => {
+          if (!r || r.isMainRoom) return false;
+          const rId = String(r.id || '').toLowerCase().trim();
+          const rJid = String(r.jid || '').toLowerCase().trim();
+          return (rId && cleanCurrent.includes(rId)) || (rJid && cleanCurrent.includes(rJid));
+        });
+
+        if (matched && matched.name) {
+          return matched.name;
+        }
+
+        let subName = rawCurrentName;
+        const cleanMain = decodeURIComponent(String(roomName || '')).toLowerCase().trim();
+        if (subName.toLowerCase().startsWith(cleanMain)) {
+          subName = subName.substring(cleanMain.length).replace(/^[-_]+/, '').trim();
+        }
+        const isUuid = /^[0-9a-fA-F-]{20,}$/.test(subName) || subName.length > 20;
+        return !isUuid && subName ? subName : 'Phòng nhỏ';
+      };
+
+      apiRef.current.addEventListener('videoConferenceJoined', (event: any) => {
+        console.log('[Widget] videoConferenceJoined:', event);
+        const rawCurrentName = decodeURIComponent(String(event.roomName || event.id || '')).trim();
+        const cleanCurrent = rawCurrentName.toLowerCase().replace(/_[gG][vV]_\d+$/i, '');
+        const cleanMain = decodeURIComponent(String(roomName || '')).toLowerCase().trim();
+
+        if (cleanCurrent && cleanMain && cleanCurrent !== cleanMain) {
+          setIsInBreakoutRoom(true);
+          currentSubRoomJidRef.current = cleanCurrent;
+          const resolvedName = resolveSubRoomName(cleanCurrent, rawCurrentName, breakoutRoomsDataRef.current);
+          setCurrentSubRoomName(resolvedName);
+        } else {
+          setIsInBreakoutRoom(false);
+          currentSubRoomJidRef.current = '';
+          setCurrentSubRoomName(null);
+
+          if (shouldEndConferenceOnMainJoinRef.current) {
+            shouldEndConferenceOnMainJoinRef.current = false;
+            try {
+              apiRef.current?.executeCommand('endConference');
+            } catch (e) { }
+          }
+        }
+      });
+
+      apiRef.current.addEventListener('breakoutRoomsUpdated', (event: any) => {
+        console.log('[Widget] breakoutRoomsUpdated:', event);
+        if (event && event.rooms) {
+          breakoutRoomsDataRef.current = event.rooms;
+          const currentJid = currentSubRoomJidRef.current;
+          if (currentJid) {
+            const resolvedName = resolveSubRoomName(currentJid, currentJid, event.rooms);
+            if (resolvedName) {
+              setCurrentSubRoomName(resolvedName);
+            }
+          }
+        }
+      });
+
+      apiRef.current.addEventListener('readyToClose', () => {
+        window.close();
+      });
+
+      const handleConferenceEndedMessage = (e: MessageEvent) => {
+        if (e.data && e.data.type === 'JITSI_CONFERENCE_ENDED') {
+          window.close();
+        }
+      };
+      window.addEventListener('message', handleConferenceEndedMessage);
+    };
+
+    let initTimer: any = null;
+    const startInit = () => {
+      initTimer = setTimeout(() => {
+        initJitsi();
+      }, 150);
+    };
+
+    if (!window.hasOwnProperty('JitsiMeetExternalAPI')) {
+      const script = document.createElement('script');
+      script.src = `https://${JITSI_SERVER}/external_api.js`;
+      script.async = true;
+      script.onload = () => { startInit(); };
+      script.onerror = () => console.error('Failed to load Jitsi API');
+      document.body.appendChild(script);
+    } else {
+      startInit();
+    }
+
+    return () => {
+      if (initTimer) clearTimeout(initTimer);
+      if (apiRef.current) {
+        apiRef.current.dispose();
+        apiRef.current = null;
+        setApiReady(false);
+      }
+    };
+  }, [roomName, hasHydrated]);
+
+  const bgImageRef = useRef<string | null>(null);
+  useEffect(() => {
+    bgImageRef.current = bgImage;
+  }, [bgImage]);
+
+  useEffect(() => {
+    if (apiRef.current) {
+      const iframe = containerRef.current?.querySelector('iframe');
+      if (iframe) {
+        iframe.contentWindow?.postMessage({
+          type: 'SET_WHITEBOARD_BACKGROUND',
+          imageUrl: bgImage
+        }, '*');
+      }
+    }
+  }, [bgImage]);
+
+  const pipWindowRef = useRef<any>(null);
+  const outerDivRef = useRef<HTMLDivElement | null>(null);
+  const widgetInnerRef = useRef<HTMLDivElement | null>(null);
+  const slotRef = useRef<HTMLDivElement | null>(null);
+  const widgetSlotRef = useRef<HTMLDivElement | null>(null);
+
+  const handlePiP2 = async () => {
+    if (typeof window === 'undefined') return;
+
+    if (!('documentPictureInPicture' in window)) {
+      alert('Trình duyệt của bạn chưa hỗ trợ Document Picture-in-Picture (vui lòng sử dụng Google Chrome hoặc Microsoft Edge 116+)!');
+      return;
+    }
+
+    if (pipWindowRef.current) {
+      try {
+        pipWindowRef.current.close();
+      } catch (e) {}
+      pipWindowRef.current = null;
+      setPipWinBody(null);
+      setIsPipActive(false);
+      return;
+    }
+
+    try {
+      const pipWin = await (window as any).documentPictureInPicture.requestWindow({
+        width: 1100,
+        height: 700,
+      });
+      pipWindowRef.current = pipWin;
+
+      const styleElements = document.querySelectorAll('style, link[rel="stylesheet"]');
+      styleElements.forEach((el) => {
+        pipWin.document.head.appendChild(el.cloneNode(true));
+      });
+
+      pipWin.document.title = `Vietsure English - Lớp: ${roomName}`;
+      pipWin.document.body.style.cssText = 'margin: 0; padding: 0; overflow: hidden; background: #1d285c; height: 100vh; width: 100vw;';
+
+      const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+        const reasonStr = String(event.reason || '');
+        if (reasonStr.includes('NotAllowedError') || reasonStr.includes('Permission denied') || reasonStr.includes('DevicesNotFoundError')) {
+          console.warn('🎥 [PiP Window] Safely prevented camera/mic permission crash:', reasonStr);
+          event.preventDefault();
+        }
+      };
+      pipWin.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+      const handlePipMessage = (event: MessageEvent) => {
+        if (event.data) {
+          try {
+            window.dispatchEvent(new MessageEvent('message', {
+              data: event.data,
+              origin: event.origin,
+              source: event.source,
+            }));
+          } catch (e) {
+            window.postMessage(event.data, '*');
+          }
+        }
+      };
+      pipWin.addEventListener('message', handlePipMessage);
+
+      setPipWinBody(pipWin.document.body);
+      setIsPipActive(true);
+
+      pipWin.addEventListener('pagehide', () => {
+        pipWin.removeEventListener('message', handlePipMessage);
+        pipWin.removeEventListener('unhandledrejection', handleUnhandledRejection);
+        pipWindowRef.current = null;
+        setPipWinBody(null);
+        setIsPipActive(false);
+      });
+
+    } catch (err) {
+      console.error('[Document PiP] Failed to open:', err);
+      alert('Không thể mở Document Picture-in-Picture!');
+    }
+  };
+
+  useEffect(() => {
+    const handleWindowMessage = (event: MessageEvent) => {
+      if (event.data) {
+        if (event.data.type === 'PIP_CLOSED') {
+          setIsPipActive(false);
+        }
+      }
+    };
+    window.addEventListener('message', handleWindowMessage);
+    return () => window.removeEventListener('message', handleWindowMessage);
+  }, []);
+
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = () => {
+    const element = widgetInnerRef.current;
+    if (!element) return;
+    if (!document.fullscreenElement) {
+      element.requestFullscreen()
+        .then(() => setIsFullscreen(true))
+        .catch((err) => console.warn('[Fullscreen] Error entering fullscreen:', err));
+    } else {
+      document.exitFullscreen()
+        .then(() => setIsFullscreen(false))
+        .catch((err) => console.warn('[Fullscreen] Error exiting fullscreen:', err));
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement && document.fullscreenElement === widgetInnerRef.current);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data) {
+        if (event.data.type === 'TOGGLE_TIMER_CARD' || event.data.type === 'TOGGLE_TIMER') {
+          window.dispatchEvent(new CustomEvent('toggle-timer-card'));
+        } else if (event.data.type === 'TRIGGER_PRAISE') {
+          window.dispatchEvent(new CustomEvent('toggle-praise-widget'));
+        } else if (event.data.type === 'TRIGGER_DICE') {
+          window.dispatchEvent(new CustomEvent('toggle-dice-widget'));
+        } else if (event.data.type === 'TRIGGER_WHEEL') {
+          window.dispatchEvent(new CustomEvent('toggle-wheel-widget'));
+        } else if (event.data.type === 'PLAY_PRAISE') {
+          const payload = event.data.payload || { mascotIdx: 0 };
+          triggerPraiseAnimation(payload, apiRef);
+          if (payload.studentName) {
+            setStarScores(prev => ({
+              ...prev,
+              [payload.studentName]: (prev[payload.studentName] || 0) + 1
+            }));
+          } else if (payload.isAll) {
+            setStarScores(prev => {
+              const next = { ...prev };
+              Object.keys(next).forEach(k => { next[k] = (next[k] || 0) + 1; });
+              return next;
+            });
+          }
+        } else if (event.data.type === 'BREAKOUT_ROOM_STATUS') {
+          setIsInBreakoutRoom(!!event.data.inBreakout);
+        } else if (event.data.type === 'JITSI_CLICKED') {
+          setShowExitConfirm(false);
+        } else if (event.data.type === 'FORCE_END_MEETING_ALL') {
+          try {
+            apiRef.current?.executeCommand('hangup');
+          } catch (e) { }
+          setTimeout(() => {
+            window.close();
+          }, 200);
+        }
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, []);
+
+  const widgetContent = (
+    <div
+      ref={outerDivRef}
+      className="fixed inset-0 w-screen h-screen flex flex-col overflow-hidden bg-[#141414] z-[99999]"
+    >
+      <div ref={slotRef} className="flex-1 w-full flex">
+        <div
+          ref={widgetInnerRef}
+          className="flex-col bg-[#1d285c] flex-1 w-full flex"
+        >
+          {/* Header Bar */}
+          <div className="items-center justify-between px-4 py-2.5 bg-[#1d285c] border-b border-white/10 select-none cursor-default flex">
+            <div className="flex items-center gap-2 shrink-0">
+              <img
+                src="/images/Vietsure English_Logo-15.png"
+                alt="VietSure English"
+                className="h-6 w-auto object-contain"
+              />
+              <p className="text-white/60 text-[10px]">| Phòng: {roomName}{currentSubRoomName ? ` > ${currentSubRoomName}` : ''}</p>
+              {showRec && (
+                <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-full px-2.5 py-0.5 ml-1">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_6px_2px_rgba(239,68,68,0.6)]" />
+                  <span className="text-white text-[11px] font-bold tracking-widest">REC</span>
+                </div>
+              )}
+            </div>
+            <p className="hidden sm:block text-white/95 text-[11px] md:text-xs font-black tracking-wider uppercase text-center flex-1 mx-4 truncate">
+              HỆ THỐNG GIÁO DỤC ONLINE <span className="text-[#FF6B00]">CHẤT LƯỢNG CAO</span> CHO TRẺ EM TRONG VÀ NGOÀI NƯỚC
+            </p>
+            <div className="flex items-center gap-1">
+              {!isPipActive && (
+                <button
+                  onClick={toggleFullscreen}
+                  className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                  title={isFullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}
+                >
+                  {isFullscreen ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" />
+                    </svg>
+                  )}
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  setShowExitConfirm(prev => !prev);
+                  setShowHostTransferList(false);
+                }}
+                className="p-1.5 bg-[#FF4D4D] hover:bg-[#E60000] text-white rounded-lg transition-colors shadow-sm flex items-center justify-center no-drag"
+                title="Thoát cuộc họp"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path fillRule="evenodd" clipRule="evenodd" d="M15.5354 14.2137C15.7419 15.0465 15.9228 15.4474 16.4337 15.8121C16.8922 16.1384 19.3358 16.5121 20.3023 16.4997C20.811 16.4933 21.2542 16.3621 21.6056 16.0384L21.6232 16.0217C22.4813 15.1709 22.6574 12.8488 22.3762 11.6107C22.2078 10.4059 21.3703 9.47571 19.9807 8.85603L19.7682 8.76541C16.0438 7.06296 7.96818 7.0911 4.2181 8.77268C2.73412 9.36142 1.82253 10.3345 1.61993 11.6621C1.35005 12.7299 1.50796 15.133 2.37837 16.0151C2.75243 16.3607 3.19644 16.492 3.70455 16.4986C4.66973 16.5111 7.11478 16.1372 7.57192 15.8123C8.04127 15.4779 8.23266 15.113 8.42034 14.413L8.48734 14.1503C8.61337 13.6444 8.68996 13.4979 8.88053 13.4009C10.9611 12.4505 13.0448 12.4503 15.1496 13.4114C15.3001 13.4887 15.3773 13.6153 15.4834 14.0097L15.5354 14.2137ZM7.03286 13.7836C7.09435 13.537 7.18016 13.2139 7.33129 12.9257C7.53766 12.5321 7.83388 12.2506 8.19985 12.0642L8.22827 12.0497L8.25728 12.0365C10.7362 10.9041 13.2746 10.9063 15.7726 12.0469L15.8041 12.0613L15.8348 12.0771C16.172 12.2502 16.4436 12.5087 16.6381 12.8519C16.7893 13.1187 16.8744 13.4061 16.9319 13.6203L16.9344 13.6297L16.9913 13.8528C17.0895 14.2487 17.1504 14.4019 17.1903 14.4759C17.2045 14.5022 17.2134 14.5129 17.22 14.5202" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          {/* Jitsi Call Frame */}
+          <div className="flex-1 w-full bg-[#F0F7FF] relative">
+            <div ref={containerRef} className="w-full h-full" />
+            <TimerWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} />
+            <WheelWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} />
+            <DiceWidget apiRef={apiRef} isHost={isHost} apiReady={apiReady} />
+            <PraiseWidget apiRef={apiRef} isHost={true} apiReady={apiReady} roomName={roomName || 'default'} />
+
+            {/* Custom Exit Popover for Teacher */}
+            {showExitConfirm && (
+              <div
+                ref={teacherExitPopoverRef}
+                className="absolute top-[10px] right-[10px] bg-[#141414] p-3 rounded-xl flex flex-col items-center shadow-[0_4px_16px_rgba(0,0,0,0.5)] border border-white/10 w-[260px] z-[99999] no-drag"
+                style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+              >
+                {showHostTransferList ? (
+                  <div className="w-full flex flex-col items-center">
+                    <div className="text-white font-bold text-[13px] mb-2.5 w-full text-center border-b border-white/10 pb-2">
+                      Chọn người nhận quyền Host
+                    </div>
+                    <div className="w-full max-h-[180px] overflow-y-auto flex flex-col gap-1.5 mb-2 pr-1 custom-scrollbar">
+                      {getStudentList().length === 0 ? (
+                        <div className="text-white/50 text-[12px] py-4 text-center">
+                          Không có thành viên khác trong phòng
+                        </div>
+                      ) : (
+                        getStudentList().map((student: any) => (
+                          <button
+                            key={student.id}
+                            onClick={async () => {
+                              try {
+                                apiRef.current?.executeCommand('grantModerator', student.id);
+                                const token = await generateJitsiJWT();
+                                if (token) {
+                                  apiRef.current?.executeCommand('sendChatMessage', `__GRANT_MODERATOR_TOKEN__:${token}`);
+                                  console.log('🔑 [Teacher] Sent Moderator JWT token to student');
+                                }
+                              } catch (err) {
+                                console.error('Failed to grant moderator:', err);
+                              }
+                              setShowExitConfirm(false);
+                              setShowHostTransferList(false);
+                              setTimeout(() => {
+                                apiRef.current?.executeCommand('hangup');
+                              }, 500);
+                            }}
+                            className="w-full bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-3 rounded-lg text-[13px] text-left truncate transition-colors"
+                          >
+                            👤 {student.name}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                    <button
+                      onClick={() => setShowHostTransferList(false)}
+                      className="w-full bg-white/5 hover:bg-white/10 text-white font-semibold py-2 px-4 rounded-lg text-[13px] text-center transition-colors"
+                    >
+                      Quay lại
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        setShowExitConfirm(false);
+
+                        setStarScores({});
+                        try {
+                          localStorage.removeItem(starScoresKey);
+                        } catch (e) {}
+                        if (apiRef.current) {
+                          const payload = { reset: true, allScores: {} };
+                          apiRef.current.executeCommand('sendChatMessage', `__PRAISE__:${JSON.stringify(payload)}`);
+                        }
+
+                        if (isInBreakoutRoom) {
+                          shouldEndConferenceOnMainJoinRef.current = true;
+                          try {
+                            const iframe = apiRef.current?.getIFrame();
+                            if (iframe && iframe.contentWindow) {
+                              iframe.contentWindow.postMessage({ type: 'LEAVE_BREAKOUT_ROOM', mainRoomName: roomName }, '*');
+                            }
+                            apiRef.current?.executeCommand('joinBreakoutRoom', '');
+                          } catch (e) { }
+                        } else {
+                          apiRef.current?.executeCommand('endConference');
+                        }
+                      }}
+                      className="w-full bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
+                    >
+                      Kết thúc tất cả
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowExitConfirm(false);
+                        apiRef.current?.executeCommand('hangup');
+                      }}
+                      className="w-full bg-[#E0E0E0] hover:bg-[#c9c9c9] text-[#040404] font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
+                    >
+                      Rời khỏi cuộc họp
+                    </button>
+                    <button
+                      onClick={() => setShowHostTransferList(true)}
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-4 rounded-lg text-[13px] text-center transition-colors mb-2"
+                    >
+                      Thoát và nhượng quyền Host
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowExitConfirm(false);
+                        setShowHostTransferList(false);
+                      }}
+                      className="w-full bg-transparent hover:bg-white/10 text-white font-semibold py-2 px-4 rounded-lg text-[13px] text-center mt-1 transition-colors"
+                    >
+                      Hủy
+                    </button>
+                  </>
+                )}
+
+                {/* Arrow pointing up */}
+                <div className="absolute bottom-full right-[20px] w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[8px] border-b-[#141414]"></div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (!hasHydrated) {
+    return (
+      <div className="fixed inset-0 w-screen h-screen bg-[#1d285c] flex items-center justify-center text-white">
+        <p className="text-sm font-semibold">Đang tải phòng học...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={widgetSlotRef}>
+      {pipWinBody ? createPortal(widgetContent, pipWinBody) : widgetContent}
+    </div>
+  );
+}
+
+const triggerPraiseAnimation = (param?: any, apiRef?: any) => {
+  if (typeof window === 'undefined') return;
+
+  let mascotIdx = 0;
+  let studentName = '';
+  let isAll = false;
+
+  if (typeof param === 'number') {
+    mascotIdx = param;
+  } else if (param && typeof param === 'object') {
+    mascotIdx = typeof param.mascotIdx === 'number' ? param.mascotIdx : (typeof param.index === 'number' ? param.index : 0);
+    studentName = param.studentName || '';
+    isAll = !!param.isAll;
+  }
+
+  try {
+    playSound('/Hooray.mp3');
+  } catch (e) {
+    console.warn('[Praise] Audio player creation failed:', e);
+  }
+
+  const pipWin = (window as any).documentPictureInPicture?.window;
+  const targetDoc = (pipWin && !pipWin.closed) ? pipWin.document : document;
+
+  const targetParent = targetDoc.fullscreenElement || targetDoc.body;
+  const containerId = 'custom-celebration-container';
+  let container = targetDoc.getElementById(containerId);
+  if (!container || !targetParent.contains(container)) {
+    if (container && container.parentNode) {
+      container.parentNode.removeChild(container);
+    }
+    container = targetDoc.createElement('div');
+    container.id = containerId;
+    container.style.cssText = `
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999999;
+      overflow: hidden;
+    `;
+    targetParent.appendChild(container);
+  }
+
+  const styleId = 'custom-celebration-style';
+  if (!targetDoc.getElementById(styleId)) {
+    const style = targetDoc.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      @keyframes floatUpSingle {
+        0% {
+          transform: translate(-50%, 0) scale(0.6) rotate(0deg);
+          opacity: 0;
+        }
+        20% {
+          transform: translate(-50%, -60vh) scale(1) rotate(-3deg);
+          opacity: 1;
+        }
+        80% {
+          transform: translate(-50%, -65vh) scale(1) rotate(3deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(-50%, -135vh) scale(0.8) rotate(10deg);
+          opacity: 0;
+        }
+      }
+      .praise-wrapper-single {
+        position: absolute;
+        left: 50%;
+        bottom: -360px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        will-change: transform, opacity;
+        animation: floatUpSingle 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      }
+      .praise-banner-single {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+        color: #ffffff;
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.6), inset 0 2px 4px rgba(255,255,255,0.4);
+        border: 2px solid #fef3c7;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        white-space: nowrap;
+      }
+    `;
+    targetDoc.head.appendChild(style);
+  }
+
+  const penguinImages = [
+    '/images/phan-khich-nang-dong.png',
+    '/images/hao-hung-san-sang.png',
+    '/images/bo-ngo-to-mo.png',
+    '/images/character-penguin.png',
+    '/images/tap-trung-quyet-liet.png'
+  ];
+
+  const imgPath = penguinImages[mascotIdx % penguinImages.length];
+
+  const wrapper = targetDoc.createElement('div');
+  wrapper.className = 'praise-wrapper-single';
+
+  if (studentName || isAll) {
+    const banner = targetDoc.createElement('div');
+    banner.className = 'praise-banner-single';
+    const text = isAll ? '🌟 KHEN THƯỞNG CẢ LỚP (+1 ⭐)' : `⭐ KHEN THƯỞNG ${studentName.toUpperCase()} (+1 ⭐)`;
+    banner.innerHTML = text;
+    wrapper.appendChild(banner);
+  }
+
+  const img = targetDoc.createElement('img');
+  img.src = imgPath;
+  img.style.width = '240px';
+  img.style.height = 'auto';
+  wrapper.appendChild(img);
+
+  container.appendChild(wrapper);
+
+  setTimeout(() => {
+    if (wrapper && wrapper.parentNode) {
+      wrapper.parentNode.removeChild(wrapper);
+    }
+  }, 2500);
+};

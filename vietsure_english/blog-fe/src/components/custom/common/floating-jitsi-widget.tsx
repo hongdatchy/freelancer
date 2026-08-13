@@ -76,20 +76,7 @@ export default function FloatingJitsiWidget() {
     }
   }, [isOpen]);
 
-  const hasOpenedRef = useRef(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      hasOpenedRef.current = true;
-    }
-  }, [isOpen]);
-
-  // Close the popup window when the meeting is closed
-  useEffect(() => {
-    if (!isOpen && hasOpenedRef.current && typeof window !== 'undefined' && window.name === 'teacher_classroom_window') {
-      window.close();
-    }
-  }, [isOpen]);
 
   const dragStartRef = useRef({ x: 0, y: 0 });
 

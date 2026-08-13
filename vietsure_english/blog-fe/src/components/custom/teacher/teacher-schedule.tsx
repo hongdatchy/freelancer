@@ -1,7 +1,6 @@
 'use client';
 
 import { getData, postData, putData } from '@/service/api';
-import useJitsiStore from '@/state-manager/jitsi-store';
 import useUserLoginStore from '@/state-manager/user-login-store';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -54,7 +53,6 @@ interface ScheduleMap {
 export function TeacherScheduleView() {
   const { user } = useUserLoginStore();
   const router = useRouter();
-  const startMeeting = useJitsiStore((state) => state.startMeeting);
   const [scheduleMap, setScheduleMap] = useState<ScheduleMap>({});
   const [loading, setLoading] = useState(false);
 
@@ -74,23 +72,6 @@ export function TeacherScheduleView() {
       setOrigin(window.location.origin);
     }
   }, []);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      const classroom = urlParams.get('classroom');
-      if (classroom) {
-        try {
-          unlockAudio();
-        } catch (e) {}
-        startMeeting(classroom);
-        
-        // Clean URL
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, '', newUrl);
-      }
-    }
-  }, [startMeeting]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -414,32 +395,17 @@ export function TeacherScheduleView() {
                         const cleanClass = item!.class_code!.trim().replace(/\s+/g, '_');
                         const roomName = cleanClass;
                         
-                        // Check if this window was already launched with the classroom parameter
-                        // or is explicitly the classroom child window
-                        const isChildWindow = typeof window !== 'undefined' && 
-                          (window.location.search.includes('classroom=') || window.name === 'teacher_classroom_window');
-
-                        if (!isChildWindow) {
-                          const width = 1200;
-                          const height = 800;
-                          const left = (window.screen.width - width) / 2;
-                          const top = (window.screen.height - height) / 2;
-                          
-                          window.open(
-                            `${window.location.origin}/schedule-management?classroom=${roomName}`,
-                            'teacher_classroom_window',
-                            `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
-                          );
-                          setSelectedSlotForView(null);
-                        } else {
-                          try {
-                            unlockAudio();
-                          } catch (e) {
-                            console.warn('Failed to unlock AudioContext:', e);
-                          }
-                          setSelectedSlotForView(null);
-                          startMeeting(roomName);
-                        }
+                        const width = 1200;
+                        const height = 800;
+                        const left = (window.screen.width - width) / 2;
+                        const top = (window.screen.height - height) / 2;
+                        
+                        window.open(
+                          `${window.location.origin}/classroom-teacher/${roomName}`,
+                          'teacher_classroom_window',
+                          `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+                        );
+                        setSelectedSlotForView(null);
                       }}
                       className="w-full py-3 rounded-xl text-sm font-bold bg-[#3F489A] text-white hover:bg-[#2E357F] transition-all shadow-md flex items-center justify-center gap-2"
                     >
