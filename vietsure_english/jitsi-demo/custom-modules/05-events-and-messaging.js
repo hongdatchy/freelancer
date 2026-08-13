@@ -790,9 +790,10 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
                             const time = parseFloat(sharedVideoState.time || 0);
                             const timestamp = parseFloat(sharedVideoState.sharedVideoTimestamp || Date.now());
                             const elapsed = (Date.now() - timestamp) / 1000;
-                            const playTime = time + elapsed;
+                            // Add 1.2s compensation offset for mobile buffering latency
+                            const playTime = time + elapsed + 1.2;
                             
-                            console.log(`📱 [Mobile Click Lock] Syncing video to: ${playTime}s (base: ${time}s, elapsed: ${elapsed}s)`);
+                            console.log(`📱 [Mobile Click Lock] Syncing video to: ${playTime}s (base: ${time}s, elapsed: ${elapsed}s, compensation: +1.2s)`);
                             
                             // Send seek command to YouTube player iframe
                             if (activeEl.contentWindow) {
