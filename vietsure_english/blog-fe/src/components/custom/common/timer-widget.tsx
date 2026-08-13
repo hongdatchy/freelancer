@@ -29,6 +29,8 @@ export default function TimerWidget({
   inTopBar = false,
 }: TimerWidgetProps) {
   const [time, setTime]         = useState(0);
+  const timeRef = React.useRef(time);
+  timeRef.current = time;
   const [isActive, setIsActive] = useState(false);
   const [isOpen, setIsOpen]     = useState(false);
   const [timerMode, setTimerMode] = useState<TimerMode>('UP');
@@ -205,20 +207,16 @@ export default function TimerWidget({
         }
       } else {
         if (timerMode === 'DOWN') {
-          setTime((t) => {
-            const next = Math.max(0, t - 1);
-            nextTime = next;
-            if (next <= 0) {
-              setIsActive(false);
-            }
-            return next;
-          });
+          const next = Math.max(0, timeRef.current - 1);
+          setTime(next);
+          nextTime = next;
+          if (next <= 0) {
+            setIsActive(false);
+          }
         } else {
-          setTime((t) => {
-            const next = t + 1;
-            nextTime = next;
-            return next;
-          });
+          const next = timeRef.current + 1;
+          setTime(next);
+          nextTime = next;
         }
       }
 
