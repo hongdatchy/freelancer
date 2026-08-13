@@ -2406,8 +2406,13 @@ const createTestWhiteboardButton = (doc) => {
         }, 800);
 
       } else {
-        // Từ lần 2 trở đi: Chỉ click lại nút ghim/bỏ ghim bảng trắng gốc trên filmstrip
-        console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Từ lần 2 trở đi -> Click nút ghim/bỏ ghim trên filmstrip");
+        // Từ lần 2 trở đi: Click nút ghim/bỏ ghim trên filmstrip + Đồng bộ Grid View
+        console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Từ lần 2 trở đi -> Click nút ghim trên filmstrip + Đồng bộ Grid View");
+        const state = window.APP.store.getState();
+        const pinnedId = state["features/large-video"]?.participantId;
+        const isTileView = !!state["features/video-layout"]?.tileViewEnabled;
+        const isWbPinned = pinnedId === "whiteboard" && !isTileView;
+
         const pinBtn = document.querySelector('#participant_whiteboard [aria-label*="Ghim" i]') ||
                        document.querySelector('#participant_whiteboard [aria-label*="Pin" i]') ||
                        document.querySelector('#participant_whiteboard [aria-label*="Whiteboard" i]') ||
@@ -2417,6 +2422,12 @@ const createTestWhiteboardButton = (doc) => {
         } else {
           console.warn("🎨 [NÚT CUSTOM BẢNG TRẮNG] Không tìm thấy nút ghim trên filmstrip!");
         }
+
+        // Đồng bộ Grid View: Nếu đang ghim -> Click sẽ bỏ ghim -> Bật Grid View (true). Ngược lại -> Tắt Grid View (false)
+        window.APP.store.dispatch({
+          type: "SET_TILE_VIEW",
+          enabled: isWbPinned
+        });
       }
     }
   });
@@ -2449,9 +2460,11 @@ const injectTestWhiteboardButton = (doc) => {
     const state = window.APP.store.getState();
     const pinnedId = state["features/large-video"]?.participantId;
     const isTileView = !!state["features/video-layout"]?.tileViewEnabled;
+    const isWbOpen = !!state["features/whiteboard"]?.isOpen;
     const isWbPinned = pinnedId === "whiteboard" && !isTileView;
 
-    const titleText = isWbPinned ? "Ẩn bảng" : "Bảng trắng";
+    const titleText = isWbOpen ? "Ẩn bảng" : "Bảng trắng";
+    btn.setAttribute("data-label", titleText);
     const innerBtn = btn.querySelector(".toolbox-button");
     const tooltip = btn.querySelector(".custom-tooltip-popup");
 
@@ -2811,7 +2824,7 @@ const setupToolbarButtonLabels = (doc) => {
   const items = toolbarContainer.children;
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
-    if (item.id === "custom-jitsi-divider") continue;
+    if (item.id === "custom-jitsi-divider" || item.id === "custom-test-whiteboard-btn") continue;
 
     let labelText = "";
     if (item.id === "custom-jitsi-tools-btn") {
