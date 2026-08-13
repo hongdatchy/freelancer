@@ -2408,7 +2408,26 @@ const createTestWhiteboardButton = (doc) => {
         // Bảng đang ghim -> Ẩn bảng
         console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Click Ẩn bảng -> BỎ GHIM & BẬT GRID VIEW");
         window.APP.store.dispatch({ type: "PIN_PARTICIPANT", participant: { id: null } });
+        // Bỏ ghim toàn bộ tất cả participant đang được ghim
+        const unpinAll = () => {
+          try {
+            const st = window.APP.store.getState();
+            const participantsState = st['features/base/participants'] || {};
+            const participantsArr = Array.isArray(participantsState)
+              ? participantsState
+              : Object.values(participantsState);
+            participantsArr.forEach(p => {
+              if (p && p.pinned && p.id) {
+                window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: p.id } });
+              }
+            });
+            // Bỏ ghim large-video hiện tại cho chắc
+            window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: null } });
+          } catch (e) {}
+        };
+
         window.APP.store.dispatch({ type: "SET_TILE_VIEW", enabled: true });
+        unpinAll();
 
       } else {
         // Bảng đã mở nhưng chưa ghim -> Ghim lại
