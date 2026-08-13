@@ -4148,18 +4148,43 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
                      (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
     if (!isMobile) return;
 
-    window.addEventListener('blur', () => {
+    const checkActiveElement = () => {
         try {
             // Find Jitsi's active focused element
             const activeEl = document.activeElement;
-            if (activeEl && (activeEl.id === 'sharedVideoIFrame' || activeEl.tagName === 'IFRAME' || activeEl.src.includes('youtube'))) {
+            if (activeEl && (activeEl.id === 'sharedVideoIFrame' || activeEl.tagName === 'IFRAME' || (activeEl.src && activeEl.src.includes('youtube')))) {
                 // Find all containers representing the shared video area
                 const container = document.getElementById('sharedVideo') || 
                                   document.getElementById('sharedVideoContainer') ||
                                   activeEl.closest('.shared-video-container');
                 
                 if (container && !container.classList.contains('unlocked-clicked')) {
-                    console.log('📱 [Mobile Click Lock] Iframe focused (first click). Locking pointer-events on mobile student screen.');
+                    console.log('📱 [Mobile Click Lock] Iframe focused. Locking pointer-events and seeking to sync time.');
+                    
+                    // 1. Calculate sync time from Jitsi's Redux state
+                    if (window.APP && window.APP.store) {
+                        const state = window.APP.store.getState();
+                        const sharedVideoState = state['features/shared-video'];
+                        if (sharedVideoState && sharedVideoState.status === 'playing') {
+                            const time = parseFloat(sharedVideoState.time || 0);
+                            const timestamp = parseFloat(sharedVideoState.sharedVideoTimestamp || Date.now());
+                            const elapsed = (Date.now() - timestamp) / 1000;
+                            const playTime = time + elapsed;
+                            
+                            console.log(`📱 [Mobile Click Lock] Syncing video to: ${playTime}s (base: ${time}s, elapsed: ${elapsed}s)`);
+                            
+                            // Send seek command to YouTube player iframe
+                            if (activeEl.contentWindow) {
+                                activeEl.contentWindow.postMessage(JSON.stringify({
+                                    event: 'command',
+                                    func: 'seekTo',
+                                    args: [playTime, true]
+                                }), '*');
+                            }
+                        }
+                    }
+
+                    // 2. Lock interaction
                     container.classList.add('unlocked-clicked');
                     activeEl.classList.add('unlocked-clicked');
                     
@@ -4171,7 +4196,10 @@ setInterval(updateStarBadgesInJitsiUI, 1000);
                 }
             }
         } catch (e) {}
-    });
+    };
+
+    window.addEventListener('blur', checkActiveElement);
+    setInterval(checkActiveElement, 200);
 })();
 
 // Intercept explicit PIN_PARTICIPANT / SELECT_PARTICIPANT Redux action on Teacher screen & broadcast message to Student
