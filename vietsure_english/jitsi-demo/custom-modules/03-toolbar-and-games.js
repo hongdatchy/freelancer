@@ -523,36 +523,18 @@ const createTestWhiteboardButton = (doc) => {
           window.APP.store.dispatch({ type: "PIN_PARTICIPANT", participant: { id: "whiteboard" } });
         }, 800);
 
-      } else if (isWbPinned) {
-        // Bảng đang ghim -> Ẩn bảng
-        console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Click Ẩn bảng -> BỎ GHIM & BẬT GRID VIEW");
-        window.APP.store.dispatch({ type: "PIN_PARTICIPANT", participant: { id: null } });
-        // Bỏ ghim toàn bộ tất cả participant đang được ghim
-        const unpinAll = () => {
-          try {
-            const st = window.APP.store.getState();
-            const participantsState = st['features/base/participants'] || {};
-            const participantsArr = Array.isArray(participantsState)
-              ? participantsState
-              : Object.values(participantsState);
-            participantsArr.forEach(p => {
-              if (p && p.pinned && p.id) {
-                window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: p.id } });
-              }
-            });
-            // Bỏ ghim large-video hiện tại cho chắc
-            window.APP.store.dispatch({ type: 'PIN_PARTICIPANT', participant: { id: null } });
-          } catch (e) {}
-        };
-
-        window.APP.store.dispatch({ type: "SET_TILE_VIEW", enabled: true });
-        unpinAll();
-
       } else {
-        // Bảng đã mở nhưng chưa ghim -> Ghim lại
-        console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Click Ghim lại Bảng -> GHIM & TẮT GRID VIEW");
-        window.APP.store.dispatch({ type: "SET_TILE_VIEW", enabled: false });
-        window.APP.store.dispatch({ type: "PIN_PARTICIPANT", participant: { id: "whiteboard" } });
+        // Từ lần 2 trở đi: Chỉ click lại nút ghim/bỏ ghim bảng trắng gốc trên filmstrip
+        console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Từ lần 2 trở đi -> Click nút ghim/bỏ ghim trên filmstrip");
+        const pinBtn = document.querySelector('#participant_whiteboard [aria-label*="Ghim" i]') ||
+                       document.querySelector('#participant_whiteboard [aria-label*="Pin" i]') ||
+                       document.querySelector('#participant_whiteboard [aria-label*="Whiteboard" i]') ||
+                       document.querySelector('#participant_whiteboard [class*="keyboardPinButton"]');
+        if (pinBtn) {
+          pinBtn.click();
+        } else {
+          console.warn("🎨 [NÚT CUSTOM BẢNG TRẮNG] Không tìm thấy nút ghim trên filmstrip!");
+        }
       }
     }
   });
