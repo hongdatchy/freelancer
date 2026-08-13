@@ -10,6 +10,7 @@ import WheelWidget from '@/components/custom/common/wheel-widget';
 import DiceWidget from '@/components/custom/common/dice-widget';
 import PraiseWidget from '@/components/custom/common/praise-widget';
 import { getData } from '@/service/api';
+import { playSound, unlockAudio } from '@/lib/audio-context';
 
 const JITSI_SERVER = process.env.NEXT_PUBLIC_JITSI_SERVER;
 
@@ -64,6 +65,15 @@ export default function FloatingJitsiWidget() {
     setShowRec(false);
     const t = setTimeout(() => setShowRec(true), 5000);
     return () => clearTimeout(t);
+  }, [isOpen]);
+
+  // Preload all game sound files into RAM for teacher
+  useEffect(() => {
+    if (isOpen) {
+      try {
+        unlockAudio();
+      } catch (e) {}
+    }
   }, [isOpen]);
 
   const dragStartRef = useRef({ x: 0, y: 0 });
@@ -1277,25 +1287,9 @@ const triggerPraiseAnimation = (param?: any, apiRef?: any) => {
     isAll = !!param.isAll;
   }
 
-  // 1. Play Hooray celebratory sound via MP3 (route via Jitsi iframe if apiRef provided)
+  // 1. Play Hooray celebratory sound via MP3 directly on parent window
   try {
-    const api = apiRef?.current;
-    let playedViaIframe = false;
-    if (api) {
-      const iframe = api.getIFrame();
-      if (iframe && iframe.contentWindow) {
-        iframe.contentWindow.postMessage({
-          type: 'PLAY_CUSTOM_SOUND',
-          soundPath: '/Hooray.mp3',
-          key: 'praiseSound',
-          origin: window.location.origin
-        }, '*');
-        playedViaIframe = true;
-      }
-    }
-    if (!playedViaIframe) {
-      import('@/lib/audio-context').then(({ playSound }) => playSound('/Hooray.mp3'));
-    }
+    playSound('/Hooray.mp3');
   } catch (e) {
     console.warn('[Praise] Audio player creation failed:', e);
   }

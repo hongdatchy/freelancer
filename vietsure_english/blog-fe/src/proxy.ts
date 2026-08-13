@@ -6,6 +6,11 @@ export function proxy(request: NextRequest) {
 
   const url = request.nextUrl;
 
+  // Bypass middleware for static assets (like audio files)
+  if (url.pathname.includes('.') || url.pathname.endsWith('.mp3')) {
+    return NextResponse.next();
+  }
+
   const locale =
     url.searchParams.get('locale') ||
     process.env.NEXT_PUBLIC_DEFAULT_LANGUAGE;
@@ -43,6 +48,6 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico)).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|mp3)).*)',
   ],
 };

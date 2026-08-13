@@ -6,6 +6,7 @@ import useUserLoginStore from '@/state-manager/user-login-store';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
+import { unlockAudio } from '@/lib/audio-context';
 
 // ---- Config ----
 const START_HOUR = 7;
@@ -395,6 +396,11 @@ export function TeacherScheduleView() {
                         if (!selectedSlotForView) return;
                         const cleanClass = item!.class_code!.trim().replace(/\s+/g, '_');
                         const roomName = cleanClass;
+                        try {
+                          unlockAudio();
+                        } catch (e) {
+                          console.warn('Failed to unlock AudioContext:', e);
+                        }
                         setSelectedSlotForView(null);
                         startMeeting(roomName);
                       }}

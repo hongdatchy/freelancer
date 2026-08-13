@@ -41,17 +41,37 @@ if (typeof window !== 'undefined') {
  */
 const loadBuffer = async (url: string): Promise<AudioBuffer | null> => {
   const ctx = getAudioContext();
-  if (!ctx) return null;
+  if (!ctx) {
+    console.error(`[AudioContext] No context available for loadBuffer(${url})`);
+    return null;
+  }
 
   if (_bufferCache.has(url)) return _bufferCache.get(url)!;
 
   try {
+    console.log(`[AudioContext] Fetching sound file: ${url}`);
     const response = await fetch(url);
+    if (!response.ok) {
+      console.error(`[AudioContext] Fetch failed with status ${response.status} for: ${url}`);
+      return null;
+    }
+    
+    const contentType = response.headers.get('content-type') || '';
+    console.log(`[AudioContext] Fetch response Content-Type for ${url}: ${contentType}`);
+    
+    if (contentType.includes('text/html') || contentType.includes('application/json') || contentType.includes('text/plain')) {
+      const text = await response.text();
+      console.error(`[AudioContext] Expected audio but got text response for ${url}: ${text.substring(0, 300)}`);
+      return null;
+    }
+    
     const arrayBuffer = await response.arrayBuffer();
+    console.log(`[AudioContext] Decoding audio data for: ${url} (${arrayBuffer.byteLength} bytes)`);
     const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
     _bufferCache.set(url, audioBuffer);
     return audioBuffer;
   } catch (e) {
+    console.error(`[AudioContext] Error loading or decoding buffer for ${url}:`, e);
     return null;
   }
 };
@@ -63,32 +83,49 @@ const loadBuffer = async (url: string): Promise<AudioBuffer | null> => {
  * @returns the AudioBufferSourceNode (so it can be stopped if needed)
  */
 export const playSound = async (url: string, playbackRate: number = 1.0): Promise<AudioBufferSourceNode | null> => {
+  console.log(`[AudioContext] playSound() requested for: ${url} (rate: ${playbackRate})`);
   const ctx = getAudioContext();
 
   if (ctx) {
+    console.log(`[AudioContext] Shared context state is: ${ctx.state}`);
     // Resume first in case it was suspended
     if (ctx.state === 'suspended') {
-      await ctx.resume().catch(() => {});
+      console.log(`[AudioContext] Resuming suspended context...`);
+      await ctx.resume().catch((err) => console.error('[AudioContext] resume() failed:', err));
+      console.log(`[AudioContext] Context state after resume attempt: ${ctx.state}`);
     }
+    
     const buffer = await loadBuffer(url);
     if (buffer) {
-      const source = ctx.createBufferSource();
-      source.buffer = buffer;
-      if (playbackRate !== 1.0) {
-        source.playbackRate.value = playbackRate;
+      try {
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        if (playbackRate !== 1.0) {
+          source.playbackRate.value = playbackRate;
+        }
+        source.connect(ctx.destination);
+        source.start(0);
+        console.log(`[AudioContext] Playback started successfully for: ${url}`);
+        return source;
+      } catch (err) {
+        console.error(`[AudioContext] Error creating/starting buffer source for ${url}:`, err);
       }
-      source.connect(ctx.destination);
-      source.start(0);
-      return source;
+    } else {
+      console.error(`[AudioContext] Failed to load sound buffer for: ${url}`);
     }
   }
 
   // Fallback: new Audio() for environments without AudioContext
+  console.log(`[AudioContext] Falling back to HTML5 new Audio() for: ${url}`);
   try {
     const audio = new Audio(url);
     if (playbackRate !== 1.0) audio.playbackRate = playbackRate;
-    audio.play().catch(() => {});
-  } catch (e) {}
+    audio.play().catch((err) => {
+      console.error(`[AudioContext] HTML5 Audio play() failed for ${url}:`, err);
+    });
+  } catch (e) {
+    console.error(`[AudioContext] HTML5 Audio creation failed for ${url}:`, e);
+  }
   return null;
 };
 
@@ -108,11 +145,14 @@ export const ALL_GAME_SOUNDS = [
  */
 export const preloadAllSounds = async () => {
   if (typeof window === 'undefined') return;
+  console.log(`[AudioContext] Preloading all game sounds...`);
   const ctx = getAudioContext();
   if (ctx && ctx.state === 'suspended') {
+    console.log(`[AudioContext] Context is suspended during preloading. Attempting resume...`);
     ctx.resume().catch(() => {});
   }
   await Promise.all(ALL_GAME_SOUNDS.map(url => loadBuffer(url)));
+  console.log(`[AudioContext] All game sounds preloaded!`);
 };
 
 /**
@@ -120,9 +160,19 @@ export const preloadAllSounds = async () => {
  * Call this on first button click ("Vào lớp học").
  */
 export const unlockAudio = () => {
+  console.log(`[AudioContext] unlockAudio() called. Unlocking context and preloading sounds...`);
   const ctx = getAudioContext();
-  if (ctx && ctx.state === 'suspended') {
-    ctx.resume().catch(() => {});
+  if (ctx) {
+    console.log(`[AudioContext] Current context state before unlock: ${ctx.state}`);
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(() => {
+        console.log(`[AudioContext] Context unlocked successfully! State: ${ctx.state}`);
+      }).catch((err) => {
+        console.error(`[AudioContext] Context unlock failed:`, err);
+      });
+    }
+  } else {
+    console.error(`[AudioContext] No context available to unlock!`);
   }
   preloadAllSounds().catch(() => {});
 };
