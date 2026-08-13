@@ -90,7 +90,7 @@ window.checkIfStudent = () => {
     };
 })();
 
-// Force selfBrowserSurface to 'include' to allow sharing the current tab + Block unauthorized Student getDisplayMedia
+// Block unauthorized Student getDisplayMedia + Exclude selfBrowserSurface to prevent sharing the current tab
 if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
     const originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
     navigator.mediaDevices.getDisplayMedia = function(constraints) {
@@ -104,8 +104,7 @@ if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.medi
         if (typeof constraints.video === 'boolean' || !constraints.video) {
             constraints.video = {};
         }
-        constraints.selfBrowserSurface = 'include';
-        constraints.video.displaySurface = 'browser';
+        constraints.selfBrowserSurface = 'exclude';
         
         return originalGetDisplayMedia(constraints);
     };
