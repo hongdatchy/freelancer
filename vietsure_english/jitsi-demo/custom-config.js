@@ -2397,41 +2397,24 @@ const createTestWhiteboardButton = (doc) => {
           }
         }
         // Sau khi Jitsi khởi tạo xong, ghim bảng trắng & tắt tile view
+        // (Interceptor trong 05-events-and-messaging.js sẽ tự broadcast __TEACHER_PIN__ khi PIN_PARTICIPANT được dispatch)
         setTimeout(() => {
-          console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Sau click gốc -> GHIM BẢNG & BẮN BROADCAST");
+          console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Sau click gốc -> GHIM BẢNG");
           window.APP.store.dispatch({ type: "SET_TILE_VIEW", enabled: false });
           window.APP.store.dispatch({ type: "PIN_PARTICIPANT", participant: { id: "whiteboard" } });
-          try {
-            if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
-              window.APP.conference._room.sendTextMessage("__TEACHER_PIN__:whiteboard");
-              console.log("📡 Bắn __TEACHER_PIN__:whiteboard thành công!");
-            }
-          } catch (err) {}
         }, 800);
 
       } else if (isWbPinned) {
         // Bảng đang ghim -> Ẩn bảng
-        console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Click Ẩn bảng -> BỎ GHIM & BẬT GRID VIEW & BROADCAST");
+        console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Click Ẩn bảng -> BỎ GHIM & BẬT GRID VIEW");
         window.APP.store.dispatch({ type: "PIN_PARTICIPANT", participant: { id: null } });
         window.APP.store.dispatch({ type: "SET_TILE_VIEW", enabled: true });
-        try {
-          if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
-            window.APP.conference._room.sendTextMessage("__TEACHER_PIN__:null");
-            console.log("📡 Bắn __TEACHER_PIN__:null thành công!");
-          }
-        } catch (err) {}
 
       } else {
         // Bảng đã mở nhưng chưa ghim -> Ghim lại
-        console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Click Ghim lại Bảng -> GHIM & TẮT GRID VIEW & BROADCAST");
+        console.log("🎨 [NÚT CUSTOM BẢNG TRẮNG] Click Ghim lại Bảng -> GHIM & TẮT GRID VIEW");
         window.APP.store.dispatch({ type: "SET_TILE_VIEW", enabled: false });
         window.APP.store.dispatch({ type: "PIN_PARTICIPANT", participant: { id: "whiteboard" } });
-        try {
-          if (window.APP?.conference?._room && typeof window.APP.conference._room.sendTextMessage === 'function') {
-            window.APP.conference._room.sendTextMessage("__TEACHER_PIN__:whiteboard");
-            console.log("📡 Bắn __TEACHER_PIN__:whiteboard thành công!");
-          }
-        } catch (err) {}
       }
     }
   });
