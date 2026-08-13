@@ -271,6 +271,8 @@ export default function TimerWidget({
         setIsOpen(true);
         break;
       case 'START': {
+        /*
+        // Timestamp-based sync calculation (Commented out per user request):
         const ts = payload.startTimestamp!;
         const mode = payload.timerMode || 'UP';
         const limit = payload.initialLimit ?? 300;
@@ -279,6 +281,15 @@ export default function TimerWidget({
           setTime(Math.max(0, limit - Math.floor((Date.now() - ts) / 1000)));
         } else {
           setTime(Math.max(0, Math.floor((Date.now() - ts) / 1000)));
+        }
+        */
+
+        // Simple logic: Start local ticking directly upon receiving START message
+        startTsRef.current = null;
+        if (payload.elapsed !== undefined) {
+          setTime(payload.elapsed);
+        } else if (payload.timerMode === 'DOWN') {
+          setTime(payload.initialLimit ?? 300);
         }
         setIsActive(true);
         setIsOpen(true);
