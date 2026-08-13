@@ -203,9 +203,9 @@ if (typeof document !== 'undefined') {
             display: none !important;
         }
 
-        /* Hide native whiteboard button for teacher (custom button used instead, native stays in DOM for programmatic click) */
-        body:not(.is-student) [aria-label="Hiển thị bảng trắng"],
-        body:not(.is-student) [aria-label="Ẩn bảng trắng"] {
+        /* Hide native whiteboard button for teacher - only inside overflow menu, not the custom toolbar button */
+        body:not(.is-student) #overflow-context-menu [aria-label="Hiển thị bảng trắng"],
+        body:not(.is-student) #overflow-context-menu [aria-label="Ẩn bảng"] {
             display: none !important;
         }
 

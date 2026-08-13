@@ -490,7 +490,7 @@ const createTestWhiteboardButton = (doc) => {
 
         const doClickNative = () => {
           nativeWbBtn = document.querySelector('[aria-label="Hiển thị bảng trắng"]') ||
-                        document.querySelector('[aria-label="Ẩn bảng trắng"]');
+                        document.querySelector('[aria-label="Ẩn bảng"]');
           if (nativeWbBtn) {
             nativeWbBtn.click();
             // Đóng overflow menu nếu đang mở
