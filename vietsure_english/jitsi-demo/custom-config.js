@@ -1315,21 +1315,6 @@ if (typeof window !== 'undefined') {
                     doc.head.appendChild(cursorStyle);
                 }
 
-                const buttons = doc.querySelectorAll('button, label, input, .ToolIcon_type_radio, [data-testid]');
-                buttons.forEach(el => {
-                    const title = String(el.title || el.getAttribute('aria-label') || '').toLowerCase();
-                    const testId = String(el.getAttribute('data-testid') || '').toLowerCase();
-                    const value = String(el.value || el.getAttribute('data-tool') || '').toLowerCase();
-                    const id = String(el.id || '').toLowerCase();
-                    
-                    if (title.includes('hand') || title.includes('bàn tay') || 
-                        testId.includes('hand') || testId.includes('toolbar-hand') ||
-                        value === 'hand' || id === 'hand') {
-                        el.style.setProperty('display', 'none', 'important');
-                        const parentLabel = el.closest('label') || el.closest('.ToolIcon') || el.closest('.ToolIcon_type_radio');
-                        if (parentLabel) parentLabel.style.setProperty('display', 'none', 'important');
-                    }
-                });
             });
         } catch (err) {}
     }, 500);
@@ -1685,6 +1670,45 @@ if (typeof window !== 'undefined') {
                     if (existingBtn) existingBtn.style.setProperty('display', 'none', 'important');
                     toolbars.forEach(tb => tb.style.setProperty('display', 'none', 'important'));
                     return;
+                }
+
+                // Inject student-specific Excalidraw toolbar styling if user is a student
+                const isStudent = typeof checkIfStudent === 'function' ? checkIfStudent() : false;
+                if (isStudent) {
+                    if (!doc.getElementById('custom-student-excalidraw-toolbar-css')) {
+                        const style = doc.createElement('style');
+                        style.id = 'custom-student-excalidraw-toolbar-css';
+                        style.textContent = `
+                            /* Hide geometric shapes, dividers, and extra tools for students */
+                            .excalidraw label:has(input[data-testid="toolbar-rectangle"]),
+                            .excalidraw label:has(input[data-testid="toolbar-diamond"]),
+                            .excalidraw label:has(input[data-testid="toolbar-ellipse"]),
+                            .excalidraw label:has(input[data-testid="toolbar-arrow"]),
+                            .excalidraw label:has(input[data-testid="toolbar-line"]),
+                            .excalidraw label:has(input[value="rectangle"]),
+                            .excalidraw label:has(input[value="diamond"]),
+                            .excalidraw label:has(input[value="ellipse"]),
+                            .excalidraw label:has(input[value="arrow"]),
+                            .excalidraw label:has(input[value="line"]),
+                            .excalidraw label:has(input[value="image"]),
+                            .excalidraw [data-testid="toolbar-rectangle"],
+                            .excalidraw [data-testid="toolbar-diamond"],
+                            .excalidraw [data-testid="toolbar-ellipse"],
+                            .excalidraw [data-testid="toolbar-arrow"],
+                            .excalidraw [data-testid="toolbar-line"],
+                            .excalidraw [data-testid="toolbar-image"],
+                            .excalidraw [data-testid="dropdown-menu-button"],
+                            .excalidraw .App-toolbar__divider {
+                                display: none !important;
+                            }
+                        `;
+                        doc.head.appendChild(style);
+                    }
+                } else {
+                    const studentCss = doc.getElementById('custom-student-excalidraw-toolbar-css');
+                    if (studentCss) {
+                        studentCss.remove();
+                    }
                 }
 
                 // Apply toolbar visibility state directly to toolbar elements
