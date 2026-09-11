@@ -78,7 +78,8 @@ export async function scanAndSendDueReminders() {
 
             if (recipients.length > 0) {
               try {
-                const trackingBaseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+                const rawBaseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+                const trackingBaseUrl = rawBaseUrl.replace(/\/+$/, "");
                 const trackingUrl = trackingBaseUrl ? `${trackingBaseUrl}/track/${order.orderCode}` : undefined;
 
                 const customMessage =
