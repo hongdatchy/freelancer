@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DateInputVN } from "@/components/custom/common/date-input-vn";
 import { Edit3 } from "lucide-react";
 
 interface OrderEditModalProps {
@@ -117,19 +118,17 @@ export function OrderEditModal({
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">Ngày bắt đầu:</label>
-                <Input
-                  type="date"
+                <label className="text-xs font-semibold text-slate-700">Ngày bắt đầu (dd/mm/yyyy):</label>
+                <DateInputVN
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  onChange={setStartDate}
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">Giao dự kiến:</label>
-                <Input
-                  type="date"
+                <label className="text-xs font-semibold text-slate-700">Giao dự kiến (dd/mm/yyyy):</label>
+                <DateInputVN
                   value={expectedDeliveryDate}
-                  onChange={(e) => setExpectedDeliveryDate(e.target.value)}
+                  onChange={setExpectedDeliveryDate}
                 />
               </div>
               <div className="space-y-1.5">

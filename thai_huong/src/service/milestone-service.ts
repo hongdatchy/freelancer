@@ -14,14 +14,18 @@ export const milestoneService = {
 
     const updatedMilestones = order.milestones.map((m) => {
       if (m.id === milestoneId) {
-        return {
+        const updatedItem: MilestoneDTO = {
           ...m,
           ...updates,
-          completedAt:
-            updates.status === "COMPLETED" && !m.completedAt
-              ? new Date().toISOString()
-              : m.completedAt,
         };
+
+        if (updates.status === "COMPLETED") {
+          updatedItem.completedAt = m.completedAt || new Date().toISOString();
+        } else if (updates.status && updates.status !== "COMPLETED") {
+          delete updatedItem.completedAt;
+        }
+
+        return updatedItem;
       }
       return m;
     });

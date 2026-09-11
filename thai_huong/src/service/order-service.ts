@@ -18,6 +18,28 @@ import { addDays, format, parseISO } from "date-fns";
 const ORDERS_COLLECTION = "orders";
 const LOCAL_STORAGE_KEY = "thai_huong_mock_orders";
 
+// Helper: Loại bỏ đệ quy tất cả các trường có giá trị undefined vì Firestore không hỗ trợ undefined
+export function removeUndefinedDeep<T>(obj: T): T {
+  if (obj === null || obj === undefined) {
+    return null as unknown as T;
+  }
+  if (Array.isArray(obj)) {
+    return obj
+      .filter((item) => item !== undefined)
+      .map((item) => removeUndefinedDeep(item)) as unknown as T;
+  }
+  if (typeof obj === "object" && !(obj instanceof Date)) {
+    const res: Record<string, any> = {};
+    for (const [key, value] of Object.entries(obj as Record<string, any>)) {
+      if (value !== undefined) {
+        res[key] = removeUndefinedDeep(value);
+      }
+    }
+    return res as T;
+  }
+  return obj;
+}
+
 // Helper: Tự động khởi tạo 7 mốc chuẩn theo quy trình
 export function generateDefaultMilestones(startDateStr: string): MilestoneDTO[] {
   let currentDate = parseISO(startDateStr);
@@ -45,6 +67,8 @@ export function generateDefaultMilestones(startDateStr: string): MilestoneDTO[] 
         sendEmail: true,
         sendNotification: true,
         remindDaysBefore: 2,
+        notifyDate: format(addDays(currentDate, Math.max(duration - 2, 0)), "yyyy-MM-dd"),
+        isNotified: false,
       },
     };
   });
@@ -223,7 +247,8 @@ export const orderService = {
     }
 
     try {
-      await setDoc(doc(db, ORDERS_COLLECTION, id), newOrder);
+      const cleanOrder = removeUndefinedDeep(newOrder);
+      await setDoc(doc(db, ORDERS_COLLECTION, id), cleanOrder);
       return newOrder;
     } catch (err) {
       console.warn("Firestore write error, saving locally:", err);
@@ -237,7 +262,7 @@ export const orderService = {
   // Cập nhật đơn hàng
   async updateOrder(id: string, updates: Partial<OrderDTO>): Promise<OrderDTO> {
     const updatedAt = new Date().toISOString();
-    const dataToUpdate = { ...updates, updatedAt };
+    const dataToUpdate = removeUndefinedDeep({ ...updates, updatedAt });
 
     if (!isFirebaseReady()) {
       const orders = getLocalOrders();

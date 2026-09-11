@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MilestoneStatusBadge } from "../common/status-badge";
 import { formatDateVN, getDaysRemaining } from "@/lib/utils";
-import { Calendar, Clock, Bell, Edit, ShieldCheck } from "lucide-react";
+import { Calendar, Clock, Bell, Edit, ShieldCheck, CalendarClock } from "lucide-react";
 
 interface MilestoneCardProps {
   milestone: MilestoneDTO;
@@ -60,7 +60,7 @@ export function MilestoneCard({
               {isFixed && (
                 <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
                   <ShieldCheck className="w-3 h-3" />
-                  Cố định 25-28 ngày
+                  Quy chuẩn 28 ngày
                 </span>
               )}
             </h4>
@@ -120,6 +120,21 @@ export function MilestoneCard({
           </p>
         )}
 
+        {/* Lịch gửi thông báo nếu đã cấu hình */}
+        {milestone.notifyConfig?.notifyDate && (
+          <div className="text-[11px] text-blue-800 bg-blue-50/80 border border-blue-200/70 px-2.5 py-1 rounded-lg flex items-center justify-between">
+            <span className="flex items-center gap-1">
+              <CalendarClock className="w-3.5 h-3.5 text-blue-600" />
+              Lịch báo: <strong>{formatDateVN(milestone.notifyConfig.notifyDate)}</strong>
+            </span>
+            {milestone.notifyConfig.isNotified ? (
+              <span className="text-emerald-700 font-semibold text-[10px] bg-emerald-100/60 px-1.5 py-0.2 rounded">Đã gửi</span>
+            ) : (
+              <span className="text-slate-500 text-[10px]">Chờ gửi</span>
+            )}
+          </div>
+        )}
+
         {/* Actions for Admin */}
         {!isReadOnly && (
           <div className="pt-2 flex items-center gap-2 border-t border-slate-100">
@@ -138,11 +153,12 @@ export function MilestoneCard({
               <Button
                 variant="secondary"
                 size="sm"
-                className="h-8 text-xs gap-1 text-blue-700 bg-blue-50 hover:bg-blue-100"
+                className="h-8 text-xs gap-1 text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200"
                 onClick={() => onSendNotification(milestone)}
+                title="Xem và cấu hình ngày gửi, nội dung thông báo cho khách"
               >
-                <Bell className="w-3 h-3 text-blue-600" />
-                Báo Noti & Mail
+                <CalendarClock className="w-3.5 h-3.5 text-blue-600" />
+                Lịch thông báo
               </Button>
             )}
           </div>

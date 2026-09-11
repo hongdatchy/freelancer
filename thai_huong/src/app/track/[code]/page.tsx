@@ -44,11 +44,14 @@ export default function CustomerTrackPage({
   }, [resolvedParams.code]);
 
   const handleEnableNotification = async () => {
-    const granted = await notificationService.requestNotificationPermission();
+    const granted = await notificationService.requestNotificationPermission(resolvedParams.code);
     if (granted) {
-      alert("Đã bật thông báo thành công! Bạn sẽ nhận được nhắc nhở khi đến các mốc sản xuất.");
+      notificationService.showBrowserNotification({
+        title: "🔔 [Dược Mỹ Phẩm Thái Hương]",
+        body: `Đã kích hoạt thông báo thành công cho đơn ${order?.orderCode || resolvedParams.code}!`,
+      });
     } else {
-      alert("Trình duyệt không cho phép quyền thông báo.");
+      alert("Trình duyệt không cho phép quyền thông báo. Bạn hãy bấm vào biểu tượng cài đặt/ổ khóa bên cạnh thanh địa chỉ URL để cấp quyền Thông báo nhé!");
     }
   };
 

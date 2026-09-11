@@ -1,5 +1,5 @@
 export type MilestoneType =
-  | 'HO_SO_CONG_BO'          // Mốc 1: Hồ sơ công bố (Cố định 25 - 28 ngày)
+  | 'HO_SO_CONG_BO'          // Mốc 1: Hồ sơ công bố (Cố định 28 ngày)
   | 'NHAP_NGUYEN_LIEU'       // Mốc 2: Nhập nguyên liệu
   | 'NHAP_BAO_BI'            // Mốc 3: Nhập bao bì
   | 'IN_DECAL_HOP'           // Mốc 4: In decal và hộp giấy
@@ -12,8 +12,11 @@ export type MilestoneStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'DELAYED
 export interface MilestoneNotifyConfig {
   sendEmail: boolean;
   sendNotification: boolean;
-  remindDaysBefore: number;  // Báo trước X ngày
-  lastNotifiedAt?: string;
+  notifyDate?: string;          // Ngày dự kiến gửi thông báo (YYYY-MM-DD)
+  remindDaysBefore: number;     // Báo trước X ngày
+  customMessage?: string;       // Nội dung thông báo / email dự kiến gửi
+  lastNotifiedAt?: string;      // Thời gian đã gửi thực tế
+  isNotified?: boolean;         // Trạng thái đã gửi hay chưa
 }
 
 export interface MilestoneDTO {
@@ -22,7 +25,7 @@ export interface MilestoneDTO {
   type: MilestoneType;
   title: string;
   description?: string;
-  durationDays?: number;       // Mốc 1 cố định 25-28 ngày, các mốc khác linh hoạt
+  durationDays?: number;       // Mốc 1 quy chuẩn 28 ngày, các mốc khác linh hoạt
   startDate: string;           // YYYY-MM-DD
   endDate: string;             // YYYY-MM-DD
   completedAt?: string;        // Ngày hoàn thành thực tế

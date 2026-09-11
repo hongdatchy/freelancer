@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DateInputVN } from "@/components/custom/common/date-input-vn";
 import { milestoneService } from "@/service/milestone-service";
 import { notificationService } from "@/service/notification-service";
 import { ShieldAlert, Send } from "lucide-react";
@@ -50,6 +51,12 @@ export function MilestoneEditModal({
         notes,
       });
 
+      // Bắn thông báo ngay trên màn hình máy tính
+      notificationService.showBrowserNotification({
+        title: `[Thái Hương] Mốc #${milestone.stepNumber}: ${milestone.title}`,
+        body: `Đơn ${order.orderCode}: Đã cập nhật trạng thái "${status}"`,
+      });
+
       if (sendNotifyOnSave) {
         await notificationService.sendMilestoneEmail({
           order: updated,
@@ -81,7 +88,7 @@ export function MilestoneEditModal({
             <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-lg text-xs text-indigo-800 flex items-start gap-2">
               <ShieldAlert className="w-4 h-4 text-indigo-600 mt-0.5 shrink-0" />
               <span>
-                <strong>Lưu ý nghiệp vụ:</strong> Mốc Hồ sơ công bố có thời hạn quy chuẩn từ <strong>25 - 28 ngày</strong> để cơ quan quản lý thẩm định.
+                <strong>Lưu ý nghiệp vụ:</strong> Mốc Hồ sơ công bố có thời hạn quy chuẩn <strong>28 ngày</strong> để cơ quan quản lý thẩm định.
               </span>
             </div>
           )}
@@ -104,19 +111,17 @@ export function MilestoneEditModal({
           {/* Ngày bắt đầu và kết thúc */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700">Ngày bắt đầu:</label>
-              <Input
-                type="date"
+              <label className="text-xs font-semibold text-slate-700">Ngày bắt đầu (dd/mm/yyyy):</label>
+              <DateInputVN
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={setStartDate}
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700">Ngày dự kiến xong:</label>
-              <Input
-                type="date"
+              <label className="text-xs font-semibold text-slate-700">Ngày dự kiến xong (dd/mm/yyyy):</label>
+              <DateInputVN
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+                onChange={setEndDate}
               />
             </div>
           </div>
@@ -143,7 +148,7 @@ export function MilestoneEditModal({
               className="w-4 h-4 text-blue-600 rounded"
             />
             <label htmlFor="notifyCheck" className="text-xs font-medium text-slate-700 cursor-pointer">
-              Gửi email & thông báo cập nhật này cho cả Khách hàng & Thái Hương PIC
+              Gửi email thông báo cho Khách hàng ({order.customer.name}) và Người đại diện Thái Hương ({order.thaiHuongPIC.name})
             </label>
           </div>
         </div>

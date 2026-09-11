@@ -13,7 +13,9 @@ import {
   Clock,
   CheckCircle2,
   AlertTriangle,
+  Bell,
 } from "lucide-react";
+import { notificationService } from "@/service/notification-service";
 
 export default function DashboardPage() {
   const {
@@ -51,6 +53,22 @@ export default function DashboardPage() {
   const completedCount = orders.filter((o) => o.status === "COMPLETED").length;
   const delayedCount = orders.filter((o) => o.status === "DELAYED").length;
 
+  const handleEnableAdminNotification = async () => {
+    const granted = await notificationService.requestNotificationPermission({
+      role: "ADMIN",
+    });
+    if (granted) {
+      notificationService.showBrowserNotification({
+        title: "🔔 [Thái Hương - Quản Trị Viên]",
+        body: "Đã kích hoạt thông báo thành công cho thiết bị quản trị! Trình duyệt sẽ nhận nhắc lịch tiến độ cho tất cả các đơn hàng.",
+      });
+    } else {
+      alert(
+        "Trình duyệt không cho phép quyền thông báo. Bạn hãy bấm vào biểu tượng cài đặt/ổ khóa bên cạnh thanh địa chỉ URL để cấp quyền Thông báo nhé!"
+      );
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Top action banner */}
@@ -64,13 +82,24 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <Button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm h-11 px-5"
-        >
-          <PlusCircle className="w-4 h-4" />
-          Tạo Đơn Hàng Mới
-        </Button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <Button
+            onClick={handleEnableAdminNotification}
+            variant="outline"
+            className="gap-2 text-xs sm:text-sm font-semibold text-blue-700 border-blue-200 bg-blue-50/60 hover:bg-blue-100 h-11 px-4 shadow-sm"
+          >
+            <Bell className="w-4 h-4 text-amber-500" />
+            Bật Nhắc Nhở Trên Trình Duyệt
+          </Button>
+
+          <Button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm h-11 px-5"
+          >
+            <PlusCircle className="w-4 h-4" />
+            Tạo Đơn Hàng Mới
+          </Button>
+        </div>
       </div>
 
       {/* KPI Cards */}

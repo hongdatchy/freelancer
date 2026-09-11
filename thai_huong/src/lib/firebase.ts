@@ -20,4 +20,20 @@ if (!getApps().length) {
 
 export const db: Firestore = getFirestore(app);
 export const auth: Auth = getAuth(app);
+
+// Khởi tạo Firebase Cloud Messaging (FCM) an toàn cho môi trường Browser/Next.js
+export const getFirebaseMessaging = async () => {
+  if (typeof window === "undefined") return null;
+  try {
+    const { getMessaging, isSupported } = await import("firebase/messaging");
+    const supported = await isSupported();
+    if (supported) {
+      return getMessaging(app);
+    }
+  } catch (err) {
+    console.warn("FCM is not supported in this browser environment:", err);
+  }
+  return null;
+};
+
 export default app;

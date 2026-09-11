@@ -7,9 +7,8 @@ import { MilestoneCard } from "./milestone-card";
 import { MilestoneEditModal } from "./milestone-edit-modal";
 import { NotificationModal } from "./notification-modal";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { CheckCircle2, Clock, AlertCircle, PlayCircle, Send, Bell } from "lucide-react";
-import { notificationService } from "@/service/notification-service";
+import { CheckCircle2, Clock, AlertCircle, PlayCircle } from "lucide-react";
+import { formatDateVN } from "@/lib/utils";
 
 interface InteractiveTimelineProps {
   order: OrderDTO;
@@ -31,14 +30,6 @@ export function InteractiveTimeline({
   const completedCount = order.milestones.filter((m) => m.status === "COMPLETED").length;
   const progressPercent = Math.round((completedCount / 7) * 100);
 
-  const handleRequestPushPermission = async () => {
-    const granted = await notificationService.requestNotificationPermission();
-    if (granted) {
-      alert("Đã bật thông báo thành công trên trình duyệt!");
-    } else {
-      alert("Trình duyệt không cho phép hoặc quyền thông báo bị từ chối.");
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -61,19 +52,6 @@ export function InteractiveTimeline({
               Mã đơn: <span className="font-semibold text-slate-700">{order.orderCode}</span> | Khách hàng:{" "}
               <span className="font-semibold text-slate-700">{order.customer.name}</span>
             </p>
-          </div>
-
-          {/* Nút bật thông báo trình duyệt */}
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5 text-xs text-slate-700 border-slate-300"
-              onClick={handleRequestPushPermission}
-            >
-              <Bell className="w-3.5 h-3.5 text-amber-500" />
-              Bật Chuông Thông Báo
-            </Button>
           </div>
         </div>
 
@@ -132,9 +110,13 @@ export function InteractiveTimeline({
 
                 {m.stepNumber === 1 && (
                   <span className="text-[10px] text-indigo-600 font-semibold mt-0.5">
-                    (25-28 ngày)
+                    (28 ngày)
                   </span>
                 )}
+
+                <span className="text-[10px] text-slate-500 font-medium mt-1">
+                  {formatDateVN(m.startDate)} - {formatDateVN(m.endDate)}
+                </span>
               </div>
             );
           })}
@@ -177,13 +159,17 @@ export function InteractiveTimeline({
         />
       )}
 
-      {/* Modal gửi thông báo (Noti & Sendmail) */}
+      {/* Modal cấu hình lịch thông báo */}
       {selectedMilestoneForNoti && (
         <NotificationModal
           order={order}
           milestone={selectedMilestoneForNoti}
           open={!!selectedMilestoneForNoti}
           onClose={() => setSelectedMilestoneForNoti(null)}
+          onSuccess={(updatedOrder) => {
+            setSelectedMilestoneForNoti(null);
+            onOrderUpdated?.(updatedOrder);
+          }}
         />
       )}
     </div>

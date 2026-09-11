@@ -1,6 +1,8 @@
 import { OrderDTO } from "@/dto/OrderDTO";
 import { MilestoneDTO } from "@/dto/MilestoneDTO";
 import { NotificationLogDTO } from "@/dto/NotificationLogDTO";
+import { getFirebaseMessaging, db } from "@/lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
 
 export interface SendMilestoneNotificationParams {
   order: OrderDTO;
@@ -63,28 +65,118 @@ export const notificationService = {
     }
   },
 
-  // Yêu cầu quyền thông báo trên trình duyệt
-  async requestNotificationPermission(): Promise<boolean> {
+  // Yêu cầu quyền thông báo qua Firebase Cloud Messaging (FCM)
+  async requestNotificationPermission(
+    options?: string | { orderCode?: string; role?: "ADMIN" | "CUSTOMER" }
+  ): Promise<boolean> {
+    const orderCode = typeof options === "string" ? options : options?.orderCode;
+    const role =
+      typeof options === "object" && options?.role
+        ? options.role
+        : orderCode
+        ? "CUSTOMER"
+        : "ADMIN";
+
     if (typeof window === "undefined" || !("Notification" in window)) {
       return false;
     }
-    if (Notification.permission === "granted") return true;
-    if (Notification.permission !== "denied") {
+
+    try {
       const permission = await Notification.requestPermission();
-      return permission === "granted";
+      if (permission !== "granted") {
+        return false;
+      }
+
+      // Đăng ký FCM Service Worker chạy ngầm
+      let swRegistration: ServiceWorkerRegistration | undefined;
+      if ("serviceWorker" in navigator) {
+        swRegistration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+        console.log("[FCM] Đã đăng ký Service Worker thành công:", swRegistration.scope);
+      }
+
+      const messaging = await getFirebaseMessaging();
+      if (messaging) {
+        const { getToken, onMessage } = await import("firebase/messaging");
+        const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+
+        try {
+          const currentToken = await getToken(messaging, {
+            vapidKey: vapidKey || undefined,
+            serviceWorkerRegistration: swRegistration,
+          });
+
+          if (currentToken) {
+            console.log("[FCM] Đã nhận Device Token:", currentToken, "Role:", role);
+            // Lưu token lên Firestore collection 'fcm_tokens'
+            const tokenRef = doc(db, "fcm_tokens", currentToken);
+            await setDoc(
+              tokenRef,
+              {
+                token: currentToken,
+                role: role,
+                orderCode: role === "ADMIN" ? "ALL" : (orderCode || null),
+                userAgent: navigator.userAgent,
+                updatedAt: new Date().toISOString(),
+              },
+              { merge: true }
+            );
+          }
+        } catch (tokenErr) {
+          console.warn("[FCM] Lấy token từ Firebase:", tokenErr);
+        }
+
+        // Lắng nghe thông báo khi đang mở tab (Foreground)
+        onMessage(messaging, (payload) => {
+          console.log("[FCM] Nhận thông báo Foreground:", payload);
+          const title =
+            payload.notification?.title ||
+            payload.data?.title ||
+            "[Thái Hương] Cập nhật tiến độ";
+          const body =
+            payload.notification?.body ||
+            payload.data?.body ||
+            "Có tiến độ mới cho đơn hàng của bạn.";
+          this.showBrowserNotification({ title, body });
+        });
+      }
+
+      return true;
+    } catch (err) {
+      console.error("[FCM] Lỗi đăng ký thông báo:", err);
+      return false;
     }
-    return false;
   },
 
   // Hiển thị thông báo trên máy tính (Desktop Notification)
-  showBrowserNotification(payload: { title: string; body: string; icon?: string }) {
+  async showBrowserNotification(payload: { title: string; body: string; icon?: string }) {
     if (typeof window === "undefined" || !("Notification" in window)) return;
 
     if (Notification.permission === "granted") {
-      new Notification(payload.title, {
-        body: payload.body,
-        icon: payload.icon || "/favicon.ico",
-      });
+      try {
+        // Nếu có Service Worker, dùng registration.showNotification (Chrome ưu tiên cơ chế này)
+        if ("serviceWorker" in navigator) {
+          const reg = await navigator.serviceWorker.ready;
+          if (reg && reg.showNotification) {
+            await reg.showNotification(payload.title, {
+              body: payload.body,
+              icon: payload.icon || "/favicon.ico",
+              badge: "/favicon.ico",
+            });
+            return;
+          }
+        }
+      } catch (swErr) {
+        console.warn("ServiceWorker showNotification fallback:", swErr);
+      }
+
+      try {
+        new Notification(payload.title, {
+          body: payload.body,
+          icon: payload.icon || "/favicon.ico",
+        });
+      } catch (err) {
+        console.error("Browser notification failed:", err);
+      }
     }
   },
 };

@@ -74,7 +74,7 @@ export function generateMilestoneEmailHtml(params: {
         <div class="row"><span class="label">Thời gian bắt đầu:</span><span class="value">${formatDateVN(milestone.startDate)}</span></div>
         <div class="row"><span class="label">Thời gian dự kiến hoàn thành:</span><span class="value">${formatDateVN(milestone.endDate)}</span></div>
         ${milestone.durationDays ? `<div class="row"><span class="label">Thời lượng dự kiến:</span><span class="value">${milestone.durationDays} ngày</span></div>` : ''}
-        <div class="row"><span class="label">Phụ trách Thái Hương:</span><span class="value">${order.thaiHuongPIC.name} (${order.thaiHuongPIC.email})</span></div>
+        <div class="row"><span class="label">Đại diện Thái Hương:</span><span class="value">${order.thaiHuongPIC.name} (${order.thaiHuongPIC.email})</span></div>
       </div>
 
       ${trackingUrl ? `

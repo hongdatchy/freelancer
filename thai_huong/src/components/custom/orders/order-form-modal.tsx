@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DateInputVN } from "@/components/custom/common/date-input-vn";
 import { format, addDays } from "date-fns";
 import { PlusCircle, Settings2 } from "lucide-react";
 
@@ -50,6 +51,13 @@ export function OrderFormModal({ open, onClose, onSuccess }: OrderFormModalProps
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const handleStartDateChange = (val: string) => {
+    setStartDate(val);
+    if (val) {
+      setCustomMilestones(generateDefaultMilestones(val));
+    }
+  };
+
   const handleToggleCustom = (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
     setIsCustomMilestones(checked);
@@ -66,6 +74,14 @@ export function OrderFormModal({ open, onClose, onSuccess }: OrderFormModalProps
   ) => {
     setCustomMilestones((prev) => {
       const next = [...prev];
+      // Nếu là mốc 1 (Hồ sơ công bố) và đổi ngày bắt đầu: Tự động gán ngày xong là + 28 ngày chuẩn
+      if (index === 0 && field === "startDate" && val) {
+        try {
+          const autoEndDate = format(addDays(new Date(val), 28), "yyyy-MM-dd");
+          next[0] = { ...next[0], startDate: val, endDate: autoEndDate, durationDays: 28 };
+          return next;
+        } catch {}
+      }
       next[index] = { ...next[index], [field]: val };
       return next;
     });
@@ -141,11 +157,10 @@ export function OrderFormModal({ open, onClose, onSuccess }: OrderFormModalProps
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700">Ngày bắt đầu đơn *</label>
-              <Input
-                type="date"
+              <label className="text-xs font-semibold text-slate-700">Ngày bắt đầu đơn (dd/mm/yyyy) *</label>
+              <DateInputVN
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={handleStartDateChange}
                 required
               />
             </div>
@@ -302,20 +317,19 @@ export function OrderFormModal({ open, onClose, onSuccess }: OrderFormModalProps
                       </span>
                       {m.stepNumber === 1 && (
                         <span className="text-[10px] text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded font-medium">
-                          Quy chuẩn 25-28 ngày
+                          Quy chuẩn 28 ngày
                         </span>
                       )}
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="text-[10px] text-slate-500 block mb-1">
-                          Ngày bắt đầu:
+                          Ngày bắt đầu (dd/mm/yyyy):
                         </label>
-                        <Input
-                          type="date"
+                        <DateInputVN
                           value={m.startDate}
-                          onChange={(e) =>
-                            handleMilestoneChange(idx, "startDate", e.target.value)
+                          onChange={(val) =>
+                            handleMilestoneChange(idx, "startDate", val)
                           }
                           className="h-8 text-xs bg-slate-50"
                           required={isCustomMilestones}
@@ -323,13 +337,12 @@ export function OrderFormModal({ open, onClose, onSuccess }: OrderFormModalProps
                       </div>
                       <div>
                         <label className="text-[10px] text-slate-500 block mb-1">
-                          Ngày dự kiến xong:
+                          Ngày dự kiến xong (dd/mm/yyyy):
                         </label>
-                        <Input
-                          type="date"
+                        <DateInputVN
                           value={m.endDate}
-                          onChange={(e) =>
-                            handleMilestoneChange(idx, "endDate", e.target.value)
+                          onChange={(val) =>
+                            handleMilestoneChange(idx, "endDate", val)
                           }
                           className="h-8 text-xs bg-slate-50"
                           required={isCustomMilestones}
