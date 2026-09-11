@@ -1,4 +1,4 @@
-﻿FROM node:20-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -9,9 +9,10 @@ RUN apk add --no-cache libc6-compat
 RUN npm install -g pnpm
 
 # Copy package metadata để cache layer dependencies
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml* ./
 
-RUN echo "public-hoist-pattern[]=" > .npmrc && pnpm install --frozen-lockfile
+# Cài đặt dependencies (dùng --no-frozen-lockfile để tự cập nhật lockfile nếu có gói mới được thêm)
+RUN pnpm install --no-frozen-lockfile
 
 # Copy toàn bộ source code
 COPY . .
