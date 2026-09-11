@@ -21,7 +21,7 @@ export const milestoneService = {
 
         if (updates.status === "COMPLETED") {
           updatedItem.completedAt = m.completedAt || new Date().toISOString();
-        } else if (updates.status && updates.status !== "COMPLETED") {
+        } else if (updates.status) {
           delete updatedItem.completedAt;
         }
 
