@@ -1,4 +1,4 @@
-﻿version: '3.8'
+version: '3.8'
 
 services:
   thai-huong-app:
@@ -8,10 +8,10 @@ services:
     container_name: thai-huong-schedule
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3001:3001"
     environment:
       - NODE_ENV=production
-      - PORT=3000
+      - PORT=3001
     logging:
       driver: "json-file"
       options:
