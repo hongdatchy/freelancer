@@ -65,6 +65,24 @@ export const notificationService = {
     }
   },
 
+  // Kiểm tra thiết bị iOS (iPhone / iPad)
+  isIOS(): boolean {
+    if (typeof window === "undefined" || typeof navigator === "undefined") return false;
+    return (
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+    );
+  },
+
+  // Kiểm tra xem có đang mở dưới dạng App độc lập (Standalone PWA) không
+  isStandalone(): boolean {
+    if (typeof window === "undefined") return false;
+    return (
+      (window.navigator as any).standalone === true ||
+      window.matchMedia("(display-mode: standalone)").matches
+    );
+  },
+
   // Yêu cầu quyền thông báo qua Firebase Cloud Messaging (FCM)
   async requestNotificationPermission(
     options?: string | { orderCode?: string; role?: "ADMIN" | "CUSTOMER" }
@@ -77,13 +95,43 @@ export const notificationService = {
         ? "CUSTOMER"
         : "ADMIN";
 
-    if (typeof window === "undefined" || !("Notification" in window)) {
+    if (typeof window === "undefined") {
       return false;
+    }
+
+    // Xử lý riêng cho iPhone / iPad
+    if (this.isIOS()) {
+      if (!this.isStandalone()) {
+        alert(
+          "📱 Hướng dẫn nhận thông báo trên iPhone:\n\n" +
+          "1. Bấm nút Chia sẻ (biểu tượng ô vuông có mũi tên ⎋ ở dưới cùng Safari)\n" +
+          "2. Cuộn xuống chọn 'Thêm vào Màn hình chính' (Add to Home Screen)\n" +
+          "3. Ra Màn hình chính mở ứng dụng Thái Hương vừa thêm để bấm Bật thông báo nhé!"
+        );
+        return false;
+      }
+
+      if (!("Notification" in window)) {
+        alert(
+          "⚠️ Thiết bị iPhone của bạn chưa hỗ trợ Web Push. Tính năng này yêu cầu phiên bản iOS 16.4 trở lên."
+        );
+        return false;
+      }
+    } else {
+      if (!("Notification" in window)) {
+        alert("Trình duyệt hiện tại của bạn không hỗ trợ tính năng thông báo đẩy.");
+        return false;
+      }
     }
 
     try {
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
+        if (this.isIOS()) {
+          alert("Quyền thông báo chưa được cấp. Bạn hãy vào Cài đặt của iPhone > Thông báo > tìm ứng dụng Thái Hương để bật Cho phép nhé!");
+        } else {
+          alert("Trình duyệt chưa được cấp quyền thông báo. Bạn hãy bấm vào biểu tượng cài đặt/ổ khóa bên cạnh thanh địa chỉ URL để cho phép nhé!");
+        }
         return false;
       }
 

@@ -62,10 +62,6 @@ export default function DashboardPage() {
         title: "🔔 [Thái Hương - Quản Trị Viên]",
         body: "Đã kích hoạt thông báo thành công cho thiết bị quản trị! Trình duyệt sẽ nhận nhắc lịch tiến độ cho tất cả các đơn hàng.",
       });
-    } else {
-      alert(
-        "Trình duyệt không cho phép quyền thông báo. Bạn hãy bấm vào biểu tượng cài đặt/ổ khóa bên cạnh thanh địa chỉ URL để cấp quyền Thông báo nhé!"
-      );
     }
   };
 
