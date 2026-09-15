@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/layout/header";
 import Footer from "@/layout/footer";
 import { NotificationProvider } from "@/context/notification-context";
+import { AuthProvider } from "@/context/auth-context";
 
 export const viewport: Viewport = {
   themeColor: "#1e3a8a",
@@ -41,11 +42,13 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className="min-h-screen flex flex-col bg-slate-50/50 font-sans antialiased text-slate-900">
-        <NotificationProvider>
-          <Header />
-          <main className="flex-1 container mx-auto px-4 py-6">{children}</main>
-          <Footer />
-        </NotificationProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <Header />
+            <main className="flex-1 container mx-auto px-4 py-6">{children}</main>
+            <Footer />
+          </NotificationProvider>
+        </AuthProvider>
       </body>
     </html>
   );
