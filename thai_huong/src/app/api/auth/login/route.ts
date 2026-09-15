@@ -5,7 +5,8 @@ export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();
 
-    const expectedEmail = process.env.ADMIN_EMAIL || "thaontt.thaohuong@gmail.com";
+    const expectedEmail =
+      process.env.ADMIN_EMAIL || "thaontt.thaihuong@gmail.com";
     const expectedPassword = process.env.ADMIN_PASSWORD || "thao2002@";
 
     // Kiểm tra đăng nhập Admin
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
     if (!isEmailValid || !isPasswordValid) {
       return NextResponse.json(
         { error: "Tài khoản hoặc mật khẩu không chính xác" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
     console.error("Login error:", err);
     return NextResponse.json(
       { error: "Lỗi hệ thống khi đăng nhập" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
