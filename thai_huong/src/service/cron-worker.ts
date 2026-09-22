@@ -2,7 +2,8 @@ import cron from "node-cron";
 import { orderService } from "./order-service";
 import { generateMilestoneEmailHtml } from "@/lib/mail-template";
 import nodemailer from "nodemailer";
-import { format } from "date-fns";
+import { format, subDays, parseISO } from "date-fns";
+import { formatDateVN, subDaysExcludingSunday } from "@/lib/utils";
 
 let isJobRunning = false;
 let cronTask: cron.ScheduledTask | null = null;
@@ -30,6 +31,8 @@ function createMailTransporter() {
 
 /**
  * Quét toàn bộ Firestore tìm các mốc đến ngày thông báo để gửi mail tự động
+ * - Đại diện Thái Hương: Nhận sớm hơn khách hàng 1 ngày để chủ động chuẩn bị
+ * - Khách hàng: Nhận đúng ngày hẹn notifyDate
  */
 export async function scanAndSendDueReminders() {
   if (isJobRunning) {
@@ -57,66 +60,128 @@ export async function scanAndSendDueReminders() {
         const m = updatedMilestones[i];
         const config = m.notifyConfig;
 
-        // Điều kiện gửi:
-        // 1. Có ngày hẹn gửi notifyDate <= ngày hôm nay
-        // 2. Chưa gửi (isNotified !== true)
-        // 3. Mốc chưa hoàn thành
-        if (
-          config &&
-          config.notifyDate &&
-          config.notifyDate <= todayStr &&
-          !config.isNotified &&
-          m.status !== "COMPLETED"
-        ) {
+        if (!config || m.status === "COMPLETED") continue;
+        // Nếu đã hoàn thành gửi cả 2 bên rồi thì bỏ qua
+        if (config.isNotified) continue;
+
+        let milestoneChanged = false;
+        const updatedConfig = { ...config };
+
+        const customerNotifyDate = config.notifyDate;
+        const thaiHuongNotifyDate =
+          config.thaiHuongNotifyDate ||
+          (customerNotifyDate ? format(subDaysExcludingSunday(parseISO(customerNotifyDate), 1), "yyyy-MM-dd") : null);
+
+        const rawBaseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+        const trackingBaseUrl = rawBaseUrl.replace(/\/+$/, "");
+        const trackingUrl = trackingBaseUrl ? `${trackingBaseUrl}/track/${order.orderCode}` : undefined;
+
+        // ==============================================================
+        // LUỒNG 1: THÁI HƯƠNG (Đại diện Thái Hương nhận SỚM HƠN 1 NGÀY)
+        // ==============================================================
+        const shouldNotifyThaiHuong =
+          thaiHuongNotifyDate &&
+          thaiHuongNotifyDate <= todayStr &&
+          !config.isThaiHuongNotified;
+
+        if (shouldNotifyThaiHuong) {
           console.log(
-            `[Cron Worker] Phát hiện mốc cần gửi: Đơn ${order.orderCode} - Mốc #${m.stepNumber}: ${m.title}`
+            `[Cron Worker] Phát hiện mốc cần nhắc NỘI BỘ Thái Hương (trước 1 ngày): Đơn ${order.orderCode} - Mốc #${m.stepNumber}: ${m.title}`
           );
 
-          // 1. Gửi Email nếu bật tính năng
-          if (config.sendEmail !== false && transporter) {
-            const recipients = [order.customer.email, order.thaiHuongPIC.email].filter(Boolean);
+          if (config.sendEmail !== false && transporter && order.thaiHuongPIC?.email) {
+            try {
+              const thaiHuongMessage =
+                `[THÔNG BÁO NỘI BỘ THÁI HƯƠNG - SỚM HƠN KHÁCH HÀNG 1 NGÀY]\n` +
+                `Kính gửi bộ phận phụ trách (${order.thaiHuongPIC.name}), mốc "${m.title}" của đơn hàng ${order.orderCode} (${order.productName}) dự kiến sẽ được gửi thông báo tiến độ tới Khách hàng (${order.customer.name}) vào ngày mai (${customerNotifyDate ? formatDateVN(customerNotifyDate) : "sắp tới"}).\n` +
+                `Đề nghị Quý phòng ban/Đại diện rà soát kiểm tra kỹ tiến độ, nguyên vật liệu và quy trình sản xuất trước khi hệ thống gửi thông báo cho khách hàng.`;
 
-            if (recipients.length > 0) {
-              try {
-                const rawBaseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
-                const trackingBaseUrl = rawBaseUrl.replace(/\/+$/, "");
-                const trackingUrl = trackingBaseUrl ? `${trackingBaseUrl}/track/${order.orderCode}` : undefined;
+              const html = generateMilestoneEmailHtml({
+                order,
+                milestone: m,
+                type: "UPCOMING",
+                customMessage: thaiHuongMessage,
+                trackingUrl,
+              });
 
-                const customMessage =
-                  config.customMessage ||
-                  `Kính gửi Quý Khách hàng, mốc "${m.title}" của đơn hàng ${order.orderCode} (${order.productName}) đang đến hạn triển khai theo đúng kế hoạch sản xuất.`;
+              await transporter.sendMail({
+                from: `"Dược Mỹ Phẩm Thái Hương" <${process.env.SMTP_USER}>`,
+                to: order.thaiHuongPIC.email,
+                subject: `[Nội Bộ Thái Hương - Nhắc trước 1 ngày] Chuẩn bị tiến độ Mốc #${m.stepNumber}: ${m.title} - Đơn ${order.orderCode}`,
+                html,
+              });
 
-                const html = generateMilestoneEmailHtml({
-                  order,
-                  milestone: m,
-                  type: "UPCOMING",
-                  customMessage,
-                  trackingUrl,
-                });
-
-                await transporter.sendMail({
-                  from: `"Dược Mỹ Phẩm Thái Hương" <${process.env.SMTP_USER}>`,
-                  to: recipients.join(", "),
-                  subject: `[Thái Hương] Nhắc lịch tiến độ Mốc #${m.stepNumber}: ${m.title} - Đơn ${order.orderCode}`,
-                  html,
-                });
-
-                console.log(`[Cron Worker] Đã gửi email thành công tới: ${recipients.join(", ")}`);
-                sentCount++;
-              } catch (mailErr) {
-                console.error(`[Cron Worker] Lỗi gửi mail mốc #${m.stepNumber} đơn ${order.orderCode}:`, mailErr);
-              }
+              console.log(`[Cron Worker] Đã gửi email nội bộ Thái Hương thành công tới: ${order.thaiHuongPIC.email}`);
+              sentCount++;
+            } catch (mailErr) {
+              console.error(`[Cron Worker] Lỗi gửi mail Thái Hương mốc #${m.stepNumber} đơn ${order.orderCode}:`, mailErr);
             }
           }
 
-          // 2. Đánh dấu đã gửi thành công vào cấu hình của mốc
+          updatedConfig.isThaiHuongNotified = true;
+          updatedConfig.thaiHuongNotifiedAt = new Date().toISOString();
+          milestoneChanged = true;
+        }
+
+        // ==============================================================
+        // LUỒNG 2: KHÁCH HÀNG (Nhận đúng ngày notifyDate)
+        // ==============================================================
+        const shouldNotifyCustomer =
+          customerNotifyDate &&
+          customerNotifyDate <= todayStr &&
+          !config.isCustomerNotified;
+
+        if (shouldNotifyCustomer) {
+          console.log(
+            `[Cron Worker] Phát hiện mốc cần gửi KHÁCH HÀNG: Đơn ${order.orderCode} - Mốc #${m.stepNumber}: ${m.title}`
+          );
+
+          if (config.sendEmail !== false && transporter && order.customer?.email) {
+            try {
+              const customerMessage =
+                config.customMessage ||
+                `Kính gửi Quý Khách hàng, mốc "${m.title}" của đơn hàng ${order.orderCode} (${order.productName}) đang đến hạn triển khai theo đúng kế hoạch sản xuất.`;
+
+              const html = generateMilestoneEmailHtml({
+                order,
+                milestone: m,
+                type: "UPCOMING",
+                customMessage: customerMessage,
+                trackingUrl,
+              });
+
+              await transporter.sendMail({
+                from: `"Dược Mỹ Phẩm Thái Hương" <${process.env.SMTP_USER}>`,
+                to: order.customer.email,
+                subject: `[Thái Hương] Cập nhật tiến độ Mốc #${m.stepNumber}: ${m.title} - Đơn ${order.orderCode}`,
+                html,
+              });
+
+              console.log(`[Cron Worker] Đã gửi email khách hàng thành công tới: ${order.customer.email}`);
+              sentCount++;
+            } catch (mailErr) {
+              console.error(`[Cron Worker] Lỗi gửi mail khách hàng mốc #${m.stepNumber} đơn ${order.orderCode}:`, mailErr);
+            }
+          }
+
+          updatedConfig.isCustomerNotified = true;
+          updatedConfig.customerNotifiedAt = new Date().toISOString();
+          milestoneChanged = true;
+        }
+
+        // ==============================================================
+        // TỔNG KẾT: Đánh dấu hoàn tất khi cả 2 bên đã được xử lý
+        // ==============================================================
+        if (updatedConfig.isThaiHuongNotified && updatedConfig.isCustomerNotified) {
+          updatedConfig.isNotified = true;
+          updatedConfig.lastNotifiedAt = new Date().toISOString();
+          milestoneChanged = true;
+        }
+
+        if (milestoneChanged) {
           updatedMilestones[i] = {
             ...m,
-            notifyConfig: {
-              ...config,
-              isNotified: true,
-              lastNotifiedAt: new Date().toISOString(),
-            },
+            notifyConfig: updatedConfig,
           };
           isOrderUpdated = true;
         }
@@ -127,7 +192,7 @@ export async function scanAndSendDueReminders() {
         await orderService.updateOrder(order.id, {
           milestones: updatedMilestones,
         });
-        console.log(`[Cron Worker] Đã cập nhật trạng thái isNotified cho đơn: ${order.orderCode}`);
+        console.log(`[Cron Worker] Đã cập nhật trạng thái thông báo cho đơn: ${order.orderCode}`);
       }
     }
 

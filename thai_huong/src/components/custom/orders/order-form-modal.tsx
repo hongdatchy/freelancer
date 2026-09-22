@@ -14,7 +14,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateInputVN } from "@/components/custom/common/date-input-vn";
-import { format, addDays } from "date-fns";
+import { format, addDays, parseISO, differenceInDays } from "date-fns";
+import {
+  addDaysExcludingSunday,
+  differenceInDaysExcludingSunday,
+} from "@/lib/utils";
 import { PlusCircle, Settings2 } from "lucide-react";
 
 interface OrderFormModalProps {
@@ -74,11 +78,19 @@ export function OrderFormModal({ open, onClose, onSuccess }: OrderFormModalProps
   ) => {
     setCustomMilestones((prev) => {
       const next = [...prev];
-      // Nếu là mốc 1 (Hồ sơ công bố) và đổi ngày bắt đầu: Tự động gán ngày xong là + 28 ngày chuẩn
-      if (index === 0 && field === "startDate" && val) {
+      // Nếu là mốc 1 (Hồ sơ công bố) và đổi ngày bắt đầu: Tự động gán ngày xong là + 28 ngày làm việc (bỏ qua Chủ Nhật)
+      if (index === 0 && field === "startDate" && val && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
         try {
-          const autoEndDate = format(addDays(new Date(val), 28), "yyyy-MM-dd");
+          const autoEndDate = format(addDaysExcludingSunday(parseISO(val), 28), "yyyy-MM-dd");
           next[0] = { ...next[0], startDate: val, endDate: autoEndDate, durationDays: 28 };
+          return next;
+        } catch {}
+      }
+      // Nếu người dùng tự chỉnh sửa ngày kết thúc khác chuẩn:
+      if (field === "endDate" && val && next[index].startDate && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+        try {
+          const customDuration = differenceInDaysExcludingSunday(parseISO(val), parseISO(next[index].startDate));
+          next[index] = { ...next[index], [field]: val, durationDays: Math.max(0, customDuration) };
           return next;
         } catch {}
       }

@@ -12,11 +12,16 @@ export type MilestoneStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'DELAYED
 export interface MilestoneNotifyConfig {
   sendEmail: boolean;
   sendNotification: boolean;
-  notifyDate?: string;          // Ngày dự kiến gửi thông báo (YYYY-MM-DD)
-  remindDaysBefore: number;     // Báo trước X ngày
-  customMessage?: string;       // Nội dung thông báo / email dự kiến gửi
-  lastNotifiedAt?: string;      // Thời gian đã gửi thực tế
-  isNotified?: boolean;         // Trạng thái đã gửi hay chưa
+  notifyDate?: string;             // Ngày dự kiến gửi cho Khách hàng (YYYY-MM-DD)
+  thaiHuongNotifyDate?: string;    // Ngày dự kiến gửi cho Thái Hương (YYYY-MM-DD, sớm hơn 1 ngày)
+  remindDaysBefore: number;        // Báo trước X ngày
+  customMessage?: string;          // Nội dung thông báo / email dự kiến gửi
+  lastNotifiedAt?: string;         // Thời gian đã gửi thực tế hoàn tất
+  isNotified?: boolean;            // Trạng thái đã gửi hoàn tất cho cả 2 bên hay chưa
+  isThaiHuongNotified?: boolean;   // Đã gửi cho Thái Hương hay chưa
+  thaiHuongNotifiedAt?: string;    // Thời gian đã gửi cho Thái Hương
+  isCustomerNotified?: boolean;    // Đã gửi cho Khách hàng hay chưa
+  customerNotifiedAt?: string;     // Thời gian đã gửi cho Khách hàng
 }
 
 export interface MilestoneDTO {

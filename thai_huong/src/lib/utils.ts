@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { format, differenceInDays, isBefore, isToday, parseISO } from "date-fns";
+import { format, differenceInDays, isBefore, isToday, parseISO, addDays, subDays, getDay } from "date-fns";
 import { vi } from "date-fns/locale";
 
 export function cn(...inputs: ClassValue[]) {
@@ -68,16 +68,104 @@ export function getDaysRemaining(targetDateStr: string): {
     today.setHours(0, 0, 0, 0);
     target.setHours(0, 0, 0, 0);
 
-    const diff = differenceInDays(target, today);
-
     if (isToday(target)) {
       return { days: 0, isOverdue: false, isToday: true, label: "Hôm nay là hạn" };
     }
-    if (diff < 0) {
-      return { days: Math.abs(diff), isOverdue: true, isToday: false, label: `Quá hạn ${Math.abs(diff)} ngày` };
+
+    if (target < today) {
+      const diff = differenceInDaysExcludingSunday(today, target);
+      return { days: diff, isOverdue: true, isToday: false, label: `Quá hạn ${diff} ngày` };
     }
+
+    const diff = differenceInDaysExcludingSunday(target, today);
     return { days: diff, isOverdue: false, isToday: false, label: `Còn ${diff} ngày` };
   } catch {
     return { days: 0, isOverdue: false, isToday: false, label: "-" };
+  }
+}
+
+/**
+ * Kiểm tra xem ngày có phải là Chủ Nhật hay không
+ */
+export function isSunday(dateInput: Date | string): boolean {
+  try {
+    const d = typeof dateInput === "string" ? parseISO(dateInput) : new Date(dateInput);
+    return getDay(d) === 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Lấy ngày làm việc kế tiếp (nếu rơi vào Chủ Nhật thì tự động chuyển sang Thứ Hai)
+ */
+export function getNextWorkingDay(dateInput: Date | string): Date {
+  let d = typeof dateInput === "string" ? parseISO(dateInput) : new Date(dateInput);
+  if (getDay(d) === 0) {
+    d = addDays(d, 1);
+  }
+  return d;
+}
+
+/**
+ * Cộng thêm N ngày làm việc, tự động bỏ qua ngày Chủ Nhật (chỉ tính Thứ 2 đến Thứ 7)
+ */
+export function addDaysExcludingSunday(startDateInput: Date | string, days: number): Date {
+  let date = getNextWorkingDay(startDateInput);
+  if (days <= 0) return date;
+
+  let added = 0;
+  while (added < days) {
+    date = addDays(date, 1);
+    if (getDay(date) !== 0) {
+      added++;
+    }
+  }
+  return date;
+}
+
+/**
+ * Lùi lại N ngày làm việc, tự động bỏ qua ngày Chủ Nhật (nếu rơi vào Chủ Nhật thì lùi tiếp về Thứ 7)
+ */
+export function subDaysExcludingSunday(startDateInput: Date | string, days: number): Date {
+  let date = typeof startDateInput === "string" ? parseISO(startDateInput) : new Date(startDateInput);
+  if (getDay(date) === 0) {
+    date = subDays(date, 1);
+  }
+  if (days <= 0) return date;
+
+  let subtracted = 0;
+  while (subtracted < days) {
+    date = subDays(date, 1);
+    if (getDay(date) !== 0) {
+      subtracted++;
+    }
+  }
+  return date;
+}
+
+/**
+ * Tính khoảng cách số ngày làm việc giữa 2 ngày (không tính các ngày Chủ Nhật)
+ */
+export function differenceInDaysExcludingSunday(
+  endDateInput: Date | string,
+  startDateInput: Date | string
+): number {
+  try {
+    const start = typeof startDateInput === "string" ? parseISO(startDateInput) : new Date(startDateInput);
+    const end = typeof endDateInput === "string" ? parseISO(endDateInput) : new Date(endDateInput);
+    if (end <= start) return 0;
+
+    let current = start;
+    let count = 0;
+    while (current < end) {
+      current = addDays(current, 1);
+      if (getDay(current) !== 0) {
+        count++;
+      }
+    }
+    return count;
+  } catch {
+    return 0;
   }
 }

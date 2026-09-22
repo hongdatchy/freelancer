@@ -13,7 +13,12 @@ import {
   where,
   orderBy,
 } from "firebase/firestore";
-import { addDays, format, parseISO } from "date-fns";
+import { addDays, subDays, format, parseISO } from "date-fns";
+import {
+  addDaysExcludingSunday,
+  subDaysExcludingSunday,
+  getNextWorkingDay,
+} from "@/lib/utils";
 
 const ORDERS_COLLECTION = "orders";
 const LOCAL_STORAGE_KEY = "thai_huong_mock_orders";
@@ -40,19 +45,26 @@ export function removeUndefinedDeep<T>(obj: T): T {
   return obj;
 }
 
-// Helper: Tự động khởi tạo 7 mốc chuẩn theo quy trình
+// Helper: Tự động khởi tạo 7 mốc chuẩn theo quy trình (Bỏ qua ngày Chủ Nhật)
 export function generateDefaultMilestones(startDateStr: string): MilestoneDTO[] {
-  let currentDate = parseISO(startDateStr);
+  let currentDate = getNextWorkingDay(parseISO(startDateStr));
 
   return MILESTONE_DEFINITIONS.map((def) => {
-    // Mốc 1: Hồ sơ công bố cố định 28 ngày (hoặc 25 ngày)
+    // Mốc 1: Hồ sơ công bố cố định 28 ngày làm việc (không tính Chủ Nhật)
     const duration = def.defaultDurationDays || 3;
     const startStr = format(currentDate, "yyyy-MM-dd");
-    const endDate = addDays(currentDate, duration);
+    const endDate = addDaysExcludingSunday(currentDate, duration);
     const endStr = format(endDate, "yyyy-MM-dd");
 
-    // Ngày bắt đầu mốc tiếp theo nối tiếp mốc trước
-    currentDate = endDate;
+    // Lịch thông báo (bỏ qua Chủ Nhật):
+    // - Khách hàng: Mặc định trước ngày kết thúc 2 ngày làm việc (hoặc ngày bắt đầu nếu thời gian mốc ngắn)
+    const remindDays = Math.min(2, duration);
+    const customerNotifyDate = format(subDaysExcludingSunday(endDate, remindDays), "yyyy-MM-dd");
+    // - Đại diện Thái Hương: Nhận sớm hơn khách hàng 1 ngày làm việc (tránh rơi vào Chủ Nhật)
+    const thaiHuongNotifyDate = format(subDaysExcludingSunday(parseISO(customerNotifyDate), 1), "yyyy-MM-dd");
+
+    // Ngày bắt đầu mốc tiếp theo nối tiếp mốc trước (nếu rơi vào Chủ Nhật thì tự chuyển sang Thứ Hai)
+    currentDate = getNextWorkingDay(endDate);
 
     return {
       id: `milestone-${def.stepNumber}-${Date.now()}`,
@@ -66,9 +78,12 @@ export function generateDefaultMilestones(startDateStr: string): MilestoneDTO[] 
       notifyConfig: {
         sendEmail: true,
         sendNotification: true,
-        remindDaysBefore: 2,
-        notifyDate: format(addDays(currentDate, Math.max(duration - 2, 0)), "yyyy-MM-dd"),
+        remindDaysBefore: remindDays,
+        notifyDate: customerNotifyDate,
+        thaiHuongNotifyDate: thaiHuongNotifyDate,
         isNotified: false,
+        isThaiHuongNotified: false,
+        isCustomerNotified: false,
       },
     };
   });

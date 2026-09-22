@@ -16,6 +16,11 @@ import { DateInputVN } from "@/components/custom/common/date-input-vn";
 import { milestoneService } from "@/service/milestone-service";
 import { notificationService } from "@/service/notification-service";
 import { ShieldAlert, Send } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import {
+  addDaysExcludingSunday,
+  differenceInDaysExcludingSunday,
+} from "@/lib/utils";
 
 interface MilestoneEditModalProps {
   order: OrderDTO;
@@ -41,13 +46,32 @@ export function MilestoneEditModal({
 
   const isFixed = milestone.stepNumber === 1;
 
+  const handleStartDateChange = (val: string) => {
+    setStartDate(val);
+    // Nếu là mốc 1 (Hồ sơ công bố): Tự động tính ngày xong = ngày bắt đầu + 28 ngày làm việc (bỏ qua Chủ Nhật)
+    if (isFixed && val && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+      try {
+        const autoEndDate = format(addDaysExcludingSunday(parseISO(val), 28), "yyyy-MM-dd");
+        setEndDate(autoEndDate);
+      } catch {}
+    }
+  };
+
   const handleSave = async () => {
     setIsSubmitting(true);
     try {
+      let durationDays = milestone.durationDays;
+      try {
+        if (startDate && endDate) {
+          durationDays = Math.max(0, differenceInDaysExcludingSunday(parseISO(endDate), parseISO(startDate)));
+        }
+      } catch {}
+
       const updated = await milestoneService.updateMilestone(order.id, milestone.id, {
         status,
         startDate,
         endDate,
+        durationDays,
         notes,
       });
 
@@ -114,7 +138,7 @@ export function MilestoneEditModal({
               <label className="text-xs font-semibold text-slate-700">Ngày bắt đầu (dd/mm/yyyy):</label>
               <DateInputVN
                 value={startDate}
-                onChange={setStartDate}
+                onChange={handleStartDateChange}
               />
             </div>
             <div className="space-y-1.5">
@@ -123,6 +147,11 @@ export function MilestoneEditModal({
                 value={endDate}
                 onChange={setEndDate}
               />
+              {isFixed && (
+                <p className="text-[10px] text-indigo-600 mt-1">
+                  ⚡ Tự nhảy +28 ngày làm việc (bỏ qua Chủ Nhật, có thể nhập ngày khác nếu cần).
+                </p>
+              )}
             </div>
           </div>
 

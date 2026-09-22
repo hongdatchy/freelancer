@@ -3,8 +3,9 @@ import { OrderDTO } from "@/dto/OrderDTO";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MilestoneStatusBadge } from "../common/status-badge";
-import { formatDateVN, getDaysRemaining } from "@/lib/utils";
-import { Calendar, Clock, Bell, Edit, ShieldCheck, CalendarClock } from "lucide-react";
+import { formatDateVN, getDaysRemaining, subDaysExcludingSunday } from "@/lib/utils";
+import { Calendar, Clock, Bell, Edit, ShieldCheck, CalendarClock, Building, User } from "lucide-react";
+import { parseISO } from "date-fns";
 
 interface MilestoneCardProps {
   milestone: MilestoneDTO;
@@ -122,16 +123,43 @@ export function MilestoneCard({
 
         {/* Lịch gửi thông báo nếu đã cấu hình */}
         {milestone.notifyConfig?.notifyDate && (
-          <div className="text-[11px] text-blue-800 bg-blue-50/80 border border-blue-200/70 px-2.5 py-1 rounded-lg flex items-center justify-between">
-            <span className="flex items-center gap-1">
-              <CalendarClock className="w-3.5 h-3.5 text-blue-600" />
-              Lịch báo: <strong>{formatDateVN(milestone.notifyConfig.notifyDate)}</strong>
-            </span>
-            {milestone.notifyConfig.isNotified ? (
-              <span className="text-emerald-700 font-semibold text-[10px] bg-emerald-100/60 px-1.5 py-0.2 rounded">Đã gửi</span>
-            ) : (
-              <span className="text-slate-500 text-[10px]">Chờ gửi</span>
-            )}
+          <div className="text-[11px] bg-slate-50 border border-slate-200/80 p-2 rounded-lg space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1 text-slate-700">
+                <Building className="w-3 h-3 text-indigo-600 shrink-0" />
+                <span className="font-medium text-indigo-900">Thái Hương:</span>{" "}
+                <strong>
+                  {milestone.notifyConfig.thaiHuongNotifyDate
+                    ? formatDateVN(milestone.notifyConfig.thaiHuongNotifyDate)
+                    : formatDateVN(subDaysExcludingSunday(parseISO(milestone.notifyConfig.notifyDate), 1))}
+                </strong>
+              </span>
+              {milestone.notifyConfig.isThaiHuongNotified || milestone.notifyConfig.isNotified ? (
+                <span className="text-emerald-700 font-semibold text-[10px] bg-emerald-100 px-1.5 py-0.2 rounded">
+                  Đã gửi
+                </span>
+              ) : (
+                <span className="text-amber-700 font-medium text-[10px] bg-amber-100/80 px-1.5 py-0.2 rounded">
+                  Chờ gửi
+                </span>
+              )}
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1 text-slate-700">
+                <User className="w-3 h-3 text-blue-600 shrink-0" />
+                <span className="font-medium text-blue-900">Khách hàng:</span>{" "}
+                <strong>{formatDateVN(milestone.notifyConfig.notifyDate)}</strong>
+              </span>
+              {milestone.notifyConfig.isCustomerNotified || milestone.notifyConfig.isNotified ? (
+                <span className="text-emerald-700 font-semibold text-[10px] bg-emerald-100 px-1.5 py-0.2 rounded">
+                  Đã gửi
+                </span>
+              ) : (
+                <span className="text-amber-700 font-medium text-[10px] bg-amber-100/80 px-1.5 py-0.2 rounded">
+                  Chờ gửi
+                </span>
+              )}
+            </div>
           </div>
         )}
 
