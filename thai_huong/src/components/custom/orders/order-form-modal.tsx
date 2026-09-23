@@ -19,7 +19,7 @@ import {
   addDaysExcludingSunday,
   differenceInDaysExcludingSunday,
 } from "@/lib/utils";
-import { PlusCircle, Settings2, Plus, Trash2, Mail } from "lucide-react";
+import { PlusCircle, Settings2 } from "lucide-react";
 
 interface OrderFormModalProps {
   open: boolean;
@@ -38,28 +38,9 @@ export function OrderFormModal({ open, onClose, onSuccess }: OrderFormModalProps
 
   // Khách hàng
   const [customerName, setCustomerName] = useState("");
-  const [customerEmails, setCustomerEmails] = useState<string[]>([""]);
+  const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerCompany, setCustomerCompany] = useState("");
-
-  const handleAddEmail = () => {
-    setCustomerEmails((prev) => [...prev, ""]);
-  };
-
-  const handleRemoveEmail = (index: number) => {
-    setCustomerEmails((prev) => {
-      const next = prev.filter((_, idx) => idx !== index);
-      return next.length > 0 ? next : [""];
-    });
-  };
-
-  const handleEmailChange = (index: number, val: string) => {
-    setCustomerEmails((prev) => {
-      const next = [...prev];
-      next[index] = val;
-      return next;
-    });
-  };
 
   // Phụ trách Thái Hương
   const [picName, setPicName] = useState("Nguyễn Thị Thu Thảo");
@@ -120,9 +101,20 @@ export function OrderFormModal({ open, onClose, onSuccess }: OrderFormModalProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const validEmails = customerEmails.map((e) => e.trim()).filter(Boolean);
-    if (!productName || !customerName || validEmails.length === 0) {
+    const rawEmails = customerEmail
+      .split(/[,;\n]+/)
+      .map((e) => e.trim())
+      .filter(Boolean);
+
+    if (!productName || !customerName || rawEmails.length === 0) {
       alert("Vui lòng điền tên sản phẩm, tên khách hàng và ít nhất 1 email nhận thông báo");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const invalidEmails = rawEmails.filter((em) => !emailRegex.test(em));
+    if (invalidEmails.length > 0) {
+      alert(`Email không đúng định dạng: ${invalidEmails.join(", ")}`);
       return;
     }
 
@@ -144,8 +136,8 @@ export function OrderFormModal({ open, onClose, onSuccess }: OrderFormModalProps
         expectedDeliveryDate,
         customer: {
           name: customerName,
-          email: validEmails[0] || "",
-          emails: validEmails,
+          email: customerEmail.trim(),
+          emails: rawEmails,
           phone: customerPhone,
           company: customerCompany,
         },
@@ -253,59 +245,20 @@ export function OrderFormModal({ open, onClose, onSuccess }: OrderFormModalProps
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="text-xs text-slate-600 block mb-1">Công ty / Nhãn hàng</label>
-                <Input
-                  value={customerCompany}
-                  onChange={(e) => setCustomerCompany(e.target.value)}
-                  placeholder="Thương hiệu mỹ phẩm"
-                />
-              </div>
-            </div>
-
-            {/* Danh sách email khách hàng nhận thông báo */}
-            <div className="pt-2 border-t border-slate-200 space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-blue-600" />
-                  Danh sách Email nhận thông báo của khách hàng *
+                <label className="text-xs text-slate-600 block mb-1">
+                  Email nhận thông báo *
                 </label>
-                <button
-                  type="button"
-                  onClick={handleAddEmail}
-                  className="text-[11px] text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 hover:underline"
-                >
-                  <Plus className="w-3 h-3" />
-                  Thêm email
-                </button>
+                <Input
+                  type="text"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  placeholder="giamdoc.hoasen@gmail.com, thumua.hoasen@gmail.com, ketoan@hoasen.vn"
+                  required
+                />
+                <p className="text-[10px] text-slate-500 mt-1">
+                  💡 Nhập nhiều email cách nhau bằng dấu phẩy (,) hoặc chấm phẩy (;). Hệ thống sẽ gửi thông báo đồng thời cho tất cả các email này.
+                </p>
               </div>
-
-              <div className="space-y-2">
-                {customerEmails.map((email, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <Input
-                      type="email"
-                      value={email}
-                      onChange={(e) => handleEmailChange(idx, e.target.value)}
-                      placeholder={idx === 0 ? "Email chính (VD: giamdoc@hoasen.vn)" : `Email phụ ${idx} (VD: thumua@hoasen.vn)`}
-                      className="h-9 text-xs bg-white flex-1"
-                      required={idx === 0}
-                    />
-                    {customerEmails.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveEmail(idx)}
-                        className="p-2 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors shrink-0"
-                        title="Xóa email này"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <p className="text-[10px] text-slate-500">
-                💡 Hệ thống sẽ tự động gửi email thông báo tiến độ đồng thời cho tất cả các địa chỉ email của khách hàng ở trên.
-              </p>
             </div>
           </div>
 
