@@ -121,8 +121,8 @@ export function MilestoneCard({
           </p>
         )}
 
-        {/* Lịch gửi thông báo nếu đã cấu hình */}
-        {milestone.notifyConfig?.notifyDate && (
+        {/* Lịch gửi thông báo nội bộ (chỉ hiển thị cho quản trị viên, ẩn ở tab khách xem) */}
+        {!isReadOnly && milestone.notifyConfig?.notifyDate && (
           <div className="text-[11px] bg-slate-50 border border-slate-200/80 p-2 rounded-lg space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-1 text-slate-700">
