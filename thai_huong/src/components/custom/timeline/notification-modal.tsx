@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { OrderDTO } from "@/dto/OrderDTO";
+import { OrderDTO, getCustomerEmails } from "@/dto/OrderDTO";
 import { MilestoneDTO, MilestoneNotifyConfig } from "@/dto/MilestoneDTO";
 import {
   Dialog,
@@ -278,12 +278,24 @@ export function NotificationModal({
                 Sớm hơn 1 ngày
               </span>
             </div>
-            <div className="flex items-center justify-between text-slate-700 text-xs">
-              <div className="flex items-center gap-2">
-                <User className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                <span>
-                  <strong>Khách hàng:</strong> {order.customer.name} ({order.customer.email})
-                </span>
+            <div className="flex items-start justify-between text-slate-700 text-xs">
+              <div className="flex items-start gap-2">
+                <User className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+                <div>
+                  <span>
+                    <strong>Khách hàng:</strong> {order.customer.name}
+                  </span>
+                  <div className="text-[11px] text-slate-500 mt-1 flex flex-wrap gap-1">
+                    {getCustomerEmails(order.customer).map((em, idx) => (
+                      <span
+                        key={idx}
+                        className="bg-white border border-slate-200 px-1.5 py-0.5 rounded text-slate-700 font-mono text-[10px]"
+                      >
+                        {em}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
               <span className="text-[10px] text-blue-700 font-semibold bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded shrink-0">
                 Ngày chuẩn

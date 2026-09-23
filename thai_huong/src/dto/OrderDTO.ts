@@ -4,9 +4,25 @@ export type OrderStatus = 'DRAFT' | 'IN_PROGRESS' | 'COMPLETED' | 'DELAYED';
 
 export interface CustomerInfo {
   name: string;
-  email: string;
+  email: string;        // Email chính
+  emails?: string[];    // Danh sách nhiều email nhận thông báo của khách
   phone: string;
   company?: string;
+}
+
+export function getCustomerEmails(customer?: CustomerInfo): string[] {
+  if (!customer) return [];
+  if (Array.isArray(customer.emails) && customer.emails.length > 0) {
+    const list = customer.emails.map((e) => e.trim()).filter(Boolean);
+    if (list.length > 0) return list;
+  }
+  if (customer.email) {
+    return customer.email
+      .split(/[,;\s]+/)
+      .map((e) => e.trim())
+      .filter(Boolean);
+  }
+  return [];
 }
 
 export interface ThaiHuongPICInfo {

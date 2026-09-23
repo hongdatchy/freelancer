@@ -1,4 +1,4 @@
-import { OrderDTO } from "@/dto/OrderDTO";
+import { OrderDTO, getCustomerEmails } from "@/dto/OrderDTO";
 import { MilestoneDTO } from "@/dto/MilestoneDTO";
 import { NotificationLogDTO } from "@/dto/NotificationLogDTO";
 import { getFirebaseMessaging, db } from "@/lib/firebase";
@@ -24,7 +24,8 @@ export const notificationService = {
       ? `${trackingBaseUrl}/track/${order.orderCode}`
       : undefined;
 
-    const recipients = [order.customer.email, order.thaiHuongPIC.email].filter(Boolean);
+    const customerEmails = getCustomerEmails(order.customer);
+    const recipients = [...customerEmails, order.thaiHuongPIC.email].filter(Boolean);
 
     try {
       const res = await fetch("/api/send-email", {

@@ -1,6 +1,7 @@
 import cron from "node-cron";
 import { orderService } from "./order-service";
 import { generateMilestoneEmailHtml } from "@/lib/mail-template";
+import { getCustomerEmails } from "@/dto/OrderDTO";
 import nodemailer from "nodemailer";
 import { format, subDays, parseISO } from "date-fns";
 import { formatDateVN, subDaysExcludingSunday } from "@/lib/utils";
@@ -136,7 +137,9 @@ export async function scanAndSendDueReminders() {
             `[Cron Worker] Phát hiện mốc cần gửi KHÁCH HÀNG: Đơn ${order.orderCode} - Mốc #${m.stepNumber}: ${m.title}`
           );
 
-          if (config.sendEmail !== false && transporter && order.customer?.email) {
+          const customerEmails = getCustomerEmails(order.customer);
+
+          if (config.sendEmail !== false && transporter && customerEmails.length > 0) {
             try {
               const customerMessage =
                 config.customMessage ||
@@ -152,12 +155,12 @@ export async function scanAndSendDueReminders() {
 
               await transporter.sendMail({
                 from: `"Dược Mỹ Phẩm Thái Hương" <${process.env.SMTP_USER}>`,
-                to: order.customer.email,
+                to: customerEmails.join(", "),
                 subject: `[Thái Hương] Cập nhật tiến độ Mốc #${m.stepNumber}: ${m.title} - Đơn ${order.orderCode}`,
                 html,
               });
 
-              console.log(`[Cron Worker] Đã gửi email khách hàng thành công tới: ${order.customer.email}`);
+              console.log(`[Cron Worker] Đã gửi email khách hàng thành công tới: ${customerEmails.join(", ")}`);
               sentCount++;
             } catch (mailErr) {
               console.error(`[Cron Worker] Lỗi gửi mail khách hàng mốc #${m.stepNumber} đơn ${order.orderCode}:`, mailErr);
