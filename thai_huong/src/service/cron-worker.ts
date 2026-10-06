@@ -42,8 +42,10 @@ export async function scanAndSendDueReminders() {
   }
 
   isJobRunning = true;
-  const todayStr = format(new Date(), "yyyy-MM-dd");
-  console.log(`[Cron Worker] Bắt đầu quét lịch nhắc thông báo cho ngày: ${todayStr}`);
+  // Tính ngày hiện tại chuẩn theo múi giờ Việt Nam (Asia/Ho_Chi_Minh)
+  const nowVN = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }));
+  const todayStr = format(nowVN, "yyyy-MM-dd");
+  console.log(`[Cron Worker] Bắt đầu quét lịch nhắc thông báo cho ngày: ${todayStr} (Giờ VN)`);
 
   try {
     const orders = await orderService.getOrders();
@@ -51,9 +53,6 @@ export async function scanAndSendDueReminders() {
     let sentCount = 0;
 
     for (const order of orders) {
-      // Chỉ quét các đơn chưa hoàn tất toàn bộ
-      if (order.status === "COMPLETED") continue;
-
       let isOrderUpdated = false;
       const updatedMilestones = [...order.milestones];
 
@@ -61,7 +60,7 @@ export async function scanAndSendDueReminders() {
         const m = updatedMilestones[i];
         const config = m.notifyConfig;
 
-        if (!config || m.status === "COMPLETED") continue;
+        if (!config) continue;
         // Nếu đã hoàn thành gửi cả 2 bên rồi thì bỏ qua
         if (config.isNotified) continue;
 
@@ -216,14 +215,33 @@ export function initReminderCronJob() {
     return;
   }
 
-  // Lịch chạy: Đúng 08:00 sáng mỗi ngày ('0 8 * * *')
-  // Hoặc kiểm tra mỗi tiếng 1 lần ('0 * * * *') để không bỏ sót
-  cronTask = cron.schedule("0 8 * * *", async () => {
-    console.log("[Cron Worker] Đã đến 08:00 sáng, kích hoạt quét nhắc lịch tự động...");
-    await scanAndSendDueReminders();
-  });
+  // [BẢN CHÍNH THỨC 8H SÁNG - TẠM COMMENT ĐỂ TEST]:
+  // cronTask = cron.schedule(
+  //   "0 8 * * *",
+  //   async () => {
+  //     const timeVN = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
+  //     console.log(`[Cron Worker] Đã đến 08:00 sáng (Giờ Việt Nam: ${timeVN}), kích hoạt quét nhắc lịch tự động...`);
+  //     await scanAndSendDueReminders();
+  //   },
+  //   {
+  //     timezone: "Asia/Ho_Chi_Minh",
+  //   }
+  // );
 
-  console.log("[Cron Worker] ✅ Đã đăng ký cron job nhắc lịch thành công (Lịch: 08:00 sáng hàng ngày).");
+  // [BẢN TEST CÁCH 1]: Chạy mỗi 1 phút một lần (* * * * *) theo giờ Việt Nam để kiểm chứng nổ log
+  cronTask = cron.schedule(
+    "* * * * *",
+    async () => {
+      const timeVN = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
+      console.log(`[Cron Worker TEST] ⏰ Đã kích hoạt quét tự động! Giờ Việt Nam hiện tại: ${timeVN}`);
+      await scanAndSendDueReminders();
+    },
+    {
+      timezone: "Asia/Ho_Chi_Minh",
+    }
+  );
+
+  console.log("[Cron Worker TEST] ✅ Đã đăng ký cron job test chạy mỗi phút 1 lần (* * * * *) - Múi giờ Asia/Ho_Chi_Minh.");
 
   // Kiểm tra bù một lần khi Server vừa khởi động (sau 10 giây để server ổn định kết nối DB)
   setTimeout(() => {

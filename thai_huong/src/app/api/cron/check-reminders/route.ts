@@ -8,6 +8,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       message: "Đã thực hiện quét và kiểm tra lịch thông báo thành công.",
+      vietnamTime: new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }),
       timestamp: new Date().toISOString(),
     });
   } catch (err: any) {
