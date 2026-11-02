@@ -58,7 +58,7 @@ export function generateMilestoneEmailHtml(params: {
 <body>
   <div class="container">
     <div class="header">
-      <h1>công ty Cổ phần Tập Đoàn Dược phẩm Thái Hương</h1>
+      <h1>Công ty Cổ phần Tập Đoàn Dược phẩm Thái Hương</h1>
       <p>Hệ thống Theo dõi & Cập nhật Tiến độ Sản xuất</p>
     </div>
     <div class="content">

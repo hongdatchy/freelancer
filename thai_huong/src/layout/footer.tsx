@@ -3,7 +3,7 @@ export function Footer() {
     <footer className="border-t border-slate-200 bg-white py-8 text-center text-xs text-slate-500 mt-auto">
       <div className="container mx-auto px-4">
         <p className="font-semibold text-slate-700">
-          công ty Cổ phần Tập Đoàn Dược phẩm Thái Hương
+          Công ty Cổ phần Tập Đoàn Dược phẩm Thái Hương
         </p>
         <p className="mt-1">
           Nhà máy sản xuất mỹ phẩm chuẩn cGMP-ASEAN & ISO 22716
