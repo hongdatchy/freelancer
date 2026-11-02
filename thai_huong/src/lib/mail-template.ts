@@ -58,14 +58,14 @@ export function generateMilestoneEmailHtml(params: {
 <body>
   <div class="container">
     <div class="header">
-      <h1>CÔNG TY CỔ PHẦN DƯỢC MỸ PHẨM THÁI HƯƠNG</h1>
+      <h1>công ty Cổ phần Tập Đoàn Dược phẩm Thái Hương</h1>
       <p>Hệ thống Theo dõi & Cập nhật Tiến độ Sản xuất</p>
     </div>
     <div class="content">
       <div class="status-badge">${statusText}</div>
       <h2 style="margin: 0 0 16px 0; font-size: 18px;">Mốc #${milestone.stepNumber}: ${milestone.title}</h2>
       
-      ${customMessage ? `<p style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px; margin-bottom: 16px; font-size: 14px; border-radius: 4px;">${customMessage}</p>` : ''}
+      ${customMessage ? `<p style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px; margin-bottom: 16px; font-size: 14px; border-radius: 4px;">${customMessage}</p>` : ""}
 
       <div class="card">
         <div class="row"><span class="label">Mã đơn hàng:</span><span class="value">${order.orderCode}</span></div>
@@ -73,15 +73,19 @@ export function generateMilestoneEmailHtml(params: {
         <div class="row"><span class="label">Khách hàng:</span><span class="value">${order.customer.name}</span></div>
         <div class="row"><span class="label">Thời gian bắt đầu:</span><span class="value">${formatDateVN(milestone.startDate)}</span></div>
         <div class="row"><span class="label">Thời gian dự kiến hoàn thành:</span><span class="value">${formatDateVN(milestone.endDate)}</span></div>
-        ${milestone.durationDays ? `<div class="row"><span class="label">Thời lượng dự kiến:</span><span class="value">${milestone.durationDays} ngày</span></div>` : ''}
+        ${milestone.durationDays ? `<div class="row"><span class="label">Thời lượng dự kiến:</span><span class="value">${milestone.durationDays} ngày</span></div>` : ""}
         <div class="row"><span class="label">Đại diện Thái Hương:</span><span class="value">${order.thaiHuongPIC.name} (${order.thaiHuongPIC.email})</span></div>
       </div>
 
-      ${trackingUrl ? `
+      ${
+        trackingUrl
+          ? `
       <div style="text-align: center;">
         <a href="${trackingUrl}" class="btn" target="_blank">Xem Chi Tiết Timeline Tiến Độ Trực Tuyến</a>
       </div>
-      ` : ''}
+      `
+          : ""
+      }
     </div>
     <div class="footer">
       <p>Email này được gửi tự động từ Hệ thống Quản lý Tiến độ Thái Hương.<br>Nếu có bất kỳ thắc mắc nào, vui lòng phản hồi email này hoặc liên hệ hotline phòng sản xuất.</p>
